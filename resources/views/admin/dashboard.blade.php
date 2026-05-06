@@ -1,5 +1,26 @@
 @php
     $user = auth()->user();
+
+    $currentPath = request()->path();
+
+    function adminMoney($value) {
+        return 'Rp ' . number_format((float) $value, 0, ',', '.');
+    }
+
+    function adminInitial($name) {
+        return strtoupper(substr($name ?: 'A', 0, 1));
+    }
+
+    function adminStatusClass($status) {
+        $status = strtoupper((string) $status);
+
+        return match ($status) {
+            'PAID', 'SUCCESS', 'APPROVED', 'OK' => 'is-success',
+            'UNPAID', 'PENDING', 'PROCESS', 'WAITING' => 'is-warning',
+            'REJECTED', 'FAILED', 'CANCELLED', 'CANCELED' => 'is-danger',
+            default => 'is-muted',
+        };
+    }
 @endphp
 
 <!DOCTYPE html>
@@ -7,866 +28,1321 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    
-    <title>Admin Panel | CROWDNIK</title>
+
+    <title>Admin Panel | RUBIK</title>
 
     <style>
-        :root{
-            --bg:#f5f7fb;
-            --card:#ffffff;
-            --text:#0f172a;
-            --muted:#64748b;
-            --border:#e7ebf3;
-            --primary:#2563eb;
-            --primary-2:#1d4ed8;
-            --danger:#ef4444;
-            --shadow: 0 18px 45px rgba(15,23,42,.08);
-            --shadow-soft: 0 10px 22px rgba(15,23,42,.06);
-            --radius:18px;
-            --radius-sm:14px;
-            --sidebar:#0b1220;
-            --sidebar-2:#0f1a30;
-            --sidebar-text:#dbe7ff;
-            --sidebar-muted:#9db3dd;
-            --chip:#eef2ff;
+        :root {
+            --bg: #f7f9fd;
+            --bg-soft: #eef4ff;
+            --card: #ffffff;
+            --card-soft: #f9fbff;
+            --text: #101828;
+            --muted: #667085;
+            --muted-2: #98a2b3;
+            --line: #e7ebf3;
+
+            --blue: #3157f8;
+            --blue-2: #2348db;
+            --blue-soft: #eef3ff;
+            --green: #12b76a;
+            --green-soft: #eafaf2;
+            --yellow: #f79009;
+            --yellow-soft: #fff6e6;
+            --red: #f04438;
+            --red-soft: #fff0ee;
+            --purple: #7a5af8;
+            --purple-soft: #f3f0ff;
+
+            --shadow: 0 18px 40px rgba(16, 24, 40, .06);
+            --shadow-soft: 0 10px 24px rgba(16, 24, 40, .045);
+
+            --radius-xl: 28px;
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+
+            --sidebar: 260px;
+            --topbar: 74px;
         }
 
-        *{ box-sizing:border-box; }
-        html,body{ height:100%; }
-        body{
-            margin:0;
-            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-            color:var(--text);
-            background: radial-gradient(1200px 600px at 10% 0%, #eaf0ff 0%, transparent 60%),
-                        radial-gradient(900px 500px at 90% 10%, #e9fbff 0%, transparent 55%),
-                        var(--bg);
+        * {
+            box-sizing: border-box;
         }
-        a{ color:inherit; text-decoration:none; }
-        button{ font-family:inherit; }
 
-        /* LAYOUT */
-        .app{
-            min-height:100vh;
-            display:grid;
-            grid-template-columns: 280px 1fr;
+        html,
+        body {
+            min-height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(900px 420px at 55% -10%, rgba(49, 87, 248, .10), transparent 62%),
+                radial-gradient(760px 380px at 96% 8%, rgba(18, 183, 106, .08), transparent 58%),
+                var(--bg);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input,
+        select {
+            font-family: inherit;
+        }
+
+        .admin-shell {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: var(--sidebar) 1fr;
         }
 
         /* SIDEBAR */
-        .sidebar{
-            position:sticky;
-            top:0;
-            height:100vh;
-            padding:22px 16px;
-            background: linear-gradient(180deg, var(--sidebar) 0%, var(--sidebar-2) 100%);
-            border-right: 1px solid rgba(255,255,255,.06);
-            color:var(--sidebar-text);
-        }
-        .brand{
-            display:flex;
-            align-items:center;
-            gap:12px;
-            padding:10px 12px;
-            border-radius:16px;
-        }
-        .logo{
-            width:42px;height:42px;
-            border-radius:14px;
-            background: linear-gradient(135deg, #60a5fa 0%, #2563eb 45%, #22c55e 100%);
-            box-shadow: 0 14px 30px rgba(37,99,235,.25);
-            display:grid;
-            place-items:center;
-            color:#fff;
-            font-weight:800;
-            letter-spacing:.5px;
-        }
-        .brand h2{
-            margin:0;
-            font-size:15px;
-            line-height:1.1;
-        }
-        .brand p{
-            margin:4px 0 0;
-            font-size:12px;
-            color:var(--sidebar-muted);
+        .sidebar {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            background: rgba(255, 255, 255, .86);
+            backdrop-filter: blur(18px);
+            border-right: 1px solid var(--line);
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            z-index: 60;
         }
 
-        .side-search{
-            margin:14px 12px 8px;
-            position:relative;
-        }
-        .side-search input{
-            width:100%;
-            padding:12px 12px 12px 40px;
-            border-radius:14px;
-            border:1px solid rgba(255,255,255,.10);
-            background: rgba(255,255,255,.06);
-            color:var(--sidebar-text);
-            outline:none;
-        }
-        .side-search input::placeholder{ color:rgba(219,231,255,.65); }
-        .side-search .icon{
-            position:absolute;
-            left:12px;
-            top:50%;
-            transform:translateY(-50%);
-            opacity:.8;
-            font-size:14px;
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 10px 18px;
+            border-bottom: 1px solid var(--line);
         }
 
-        .nav{
-            margin-top:14px;
-            padding:0 6px;
-        }
-        .nav-section{
-            margin:14px 8px 8px;
-            font-size:11px;
-            letter-spacing:.12em;
-            color:rgba(219,231,255,.55);
-            text-transform:uppercase;
-        }
-        .nav a{
-            display:flex;
-            align-items:center;
-            gap:10px;
-            padding:12px 12px;
-            border-radius:14px;
-            margin:6px 6px;
-            color:var(--sidebar-text);
-            border:1px solid transparent;
-            transition:.18s ease;
-        }
-        .nav a:hover{
-            background: rgba(255,255,255,.07);
-            border-color: rgba(255,255,255,.08);
-            transform: translateY(-1px);
-        }
-        .nav a.active{
-            background: rgba(37,99,235,.22);
-            border-color: rgba(96,165,250,.40);
-            box-shadow: 0 12px 24px rgba(37,99,235,.14);
-        }
-        .nav .bullet{
-            width:34px;height:34px;
-            border-radius:12px;
-            display:grid;
-            place-items:center;
-            background: rgba(255,255,255,.06);
-        }
-        .nav .meta{
-            display:flex;
-            flex-direction:column;
-            line-height:1.15;
-        }
-        .nav .meta b{ font-size:13px; font-weight:700; }
-        .nav .meta span{ font-size:11.5px; color:rgba(219,231,255,.65); margin-top:3px; }
-
-        .sidebar-footer{
-            position:absolute;
-            left:16px;
-            right:16px;
-            bottom:18px;
-            background: rgba(255,255,255,.06);
-            border:1px solid rgba(255,255,255,.08);
-            border-radius:16px;
-            padding:12px;
-        }
-        .who{
-            display:flex;
-            gap:10px;
-            align-items:center;
-        }
-        .avatar{
-            width:38px;height:38px;
-            border-radius:14px;
-            background: rgba(255,255,255,.12);
-            display:grid;
-            place-items:center;
-            font-weight:800;
-        }
-        .who .name{
-            display:flex;
-            flex-direction:column;
-        }
-        .who .name b{ font-size:13px; }
-        .who .name span{ font-size:11.5px; color:rgba(219,231,255,.70); margin-top:3px; }
-
-        /* MAIN */
-        .main{
-            padding:26px;
+        .brand-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 15px;
+            display: grid;
+            place-items: center;
+            background:
+                linear-gradient(135deg, #3157f8 0%, #5a7cff 52%, #12b76a 100%);
+            color: #fff;
+            font-weight: 950;
+            letter-spacing: -.04em;
+            box-shadow: 0 14px 28px rgba(49, 87, 248, .24);
         }
 
-        .topbar{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:16px;
-            margin-bottom:18px;
+        .brand-name {
+            min-width: 0;
         }
 
-        .topbar-left{
-            display:flex;
-            flex-direction:column;
-            gap:4px;
-        }
-        .title{
-            margin:0;
-            font-size:22px;
-            letter-spacing:-0.02em;
-        }
-        .subtitle{
-            color:var(--muted);
-            font-size:13px;
+        .brand-name strong {
+            display: block;
+            font-size: 15px;
+            line-height: 1.1;
+            letter-spacing: -.02em;
         }
 
-        .topbar-right{
-            display:flex;
-            align-items:center;
-            gap:10px;
+        .brand-name span {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--muted);
         }
 
-        .pill{
-            display:flex;
-            align-items:center;
-            gap:8px;
-            padding:10px 12px;
-            background: var(--card);
-            border:1px solid var(--border);
-            border-radius:999px;
-            box-shadow: var(--shadow-soft);
-            font-size:13px;
-            color:var(--muted);
-        }
-        .dot{
-            width:9px;height:9px;border-radius:99px;
-            background:#22c55e;
-            box-shadow: 0 0 0 4px rgba(34,197,94,.14);
+        .sidebar-search {
+            margin: 16px 4px 12px;
+            position: relative;
         }
 
-        .btn{
-            border:1px solid var(--border);
-            background: var(--card);
+        .sidebar-search span {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted-2);
+            font-size: 14px;
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            height: 44px;
+            border-radius: 15px;
+            border: 1px solid var(--line);
+            background: #f7f9fd;
+            outline: none;
+            padding: 0 14px 0 40px;
+            font-size: 13px;
             color: var(--text);
-            padding:10px 12px;
-            border-radius:12px;
-            cursor:pointer;
-            box-shadow: var(--shadow-soft);
-            transition:.18s ease;
-            font-size:13px;
-            font-weight:700;
-        }
-        .btn:hover{ transform: translateY(-1px); }
-        .btn-danger{
-            border-color: rgba(239,68,68,.35);
-            color: var(--danger);
+            transition: .18s ease;
         }
 
-        /* GRID CONTENT */
-        .grid{
-            display:grid;
-            grid-template-columns: 1.2fr .8fr;
-            gap:18px;
+        .sidebar-search input:focus {
+            border-color: rgba(49, 87, 248, .35);
+            box-shadow: 0 0 0 4px rgba(49, 87, 248, .08);
+            background: #fff;
         }
 
-        .panel{
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding:18px;
+        .nav-scroll {
+            overflow: auto;
+            padding-right: 2px;
+            flex: 1;
         }
 
-        .cards{
-            display:grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap:12px;
-            margin-bottom:16px;
+        .nav-label {
+            margin: 18px 10px 8px;
+            color: var(--muted-2);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .11em;
+            text-transform: uppercase;
         }
-        .stat{
-            background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-            border:1px solid var(--border);
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 10px;
+            margin: 5px 2px;
             border-radius: 16px;
-            padding:14px;
-            box-shadow: var(--shadow-soft);
-            min-height:86px;
-        }
-        .stat .k{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:10px;
-            font-size:12px;
-            color:var(--muted);
-        }
-        .stat .v{
-            font-size:20px;
-            font-weight:900;
-            margin-top:8px;
-            letter-spacing:-0.02em;
-        }
-        .badge{
-            font-size:11px;
-            padding:6px 8px;
-            border-radius:999px;
-            background: var(--chip);
-            color: var(--primary);
-            border:1px solid rgba(37,99,235,.12);
-            font-weight:800;
-            white-space:nowrap;
+            border: 1px solid transparent;
+            color: #475467;
+            transition: .18s ease;
         }
 
-        .section-head{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:12px;
-            margin-bottom:12px;
-        }
-        .section-head h3{
-            margin:0;
-            font-size:14px;
-        }
-        .section-head .hint{
-            color:var(--muted);
-            font-size:12px;
+        .nav-item:hover {
+            background: var(--blue-soft);
+            color: var(--blue);
+            transform: translateX(2px);
         }
 
-        /* MENU QUICK ACTIONS */
-        .quick{
-            display:grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap:12px;
+        .nav-item.active {
+            color: var(--blue);
+            background: var(--blue-soft);
+            border-color: rgba(49, 87, 248, .12);
+            box-shadow: inset 3px 0 0 var(--blue);
         }
-        .qa{
-            border:1px solid var(--border);
-            border-radius: 16px;
-            padding:14px;
+
+        .nav-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: #f2f5fb;
+            flex: 0 0 auto;
+            font-size: 16px;
+        }
+
+        .nav-item.active .nav-icon {
             background: #fff;
             box-shadow: var(--shadow-soft);
-            transition:.18s ease;
-            display:flex;
-            gap:12px;
-            align-items:flex-start;
-            min-height:86px;
         }
-        .qa:hover{
-            transform: translateY(-2px);
-            border-color: rgba(37,99,235,.25);
-            box-shadow: 0 14px 26px rgba(37,99,235,.10);
-        }
-        .qa .ic{
-            width:40px;height:40px;
-            border-radius:14px;
-            display:grid;
-            place-items:center;
-            background: rgba(37,99,235,.08);
-            color: var(--primary);
-            font-size:18px;
-            flex: 0 0 auto;
-        }
-        .qa .t{
-            display:flex;
-            flex-direction:column;
-            gap:5px;
-        }
-        .qa .t b{ font-size:13px; }
-        .qa .t span{ font-size:12px; color:var(--muted); line-height:1.35; }
 
-        /* TABLE */
-        .table-wrap{
-            overflow:auto;
-            border:1px solid var(--border);
-            border-radius: 16px;
+        .nav-text {
+            min-width: 0;
         }
-        table{
-            width:100%;
-            border-collapse:separate;
-            border-spacing:0;
-            min-width: 760px;
-            background:#fff;
+
+        .nav-text b {
+            display: block;
+            font-size: 13px;
+            line-height: 1.1;
+            color: inherit;
         }
-        thead th{
-            text-align:left;
-            font-size:12px;
+
+        .nav-text span {
+            display: block;
+            margin-top: 4px;
+            font-size: 11.5px;
             color: var(--muted);
-            padding:12px 14px;
-            border-bottom:1px solid var(--border);
-            background: #fbfcff;
-        }
-        tbody td{
-            padding:12px 14px;
-            border-bottom:1px solid var(--border);
-            font-size:13px;
-        }
-        tbody tr:hover td{
-            background:#fafcff;
-        }
-        .status{
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            padding:6px 10px;
-            border-radius:999px;
-            font-size:12px;
-            font-weight:800;
-            border:1px solid;
-        }
-        .st-ok{ background: rgba(34,197,94,.10); color:#16a34a; border-color: rgba(34,197,94,.25); }
-        .st-warn{ background: rgba(245,158,11,.10); color:#b45309; border-color: rgba(245,158,11,.25); }
-        .st-bad{ background: rgba(239,68,68,.10); color:#dc2626; border-color: rgba(239,68,68,.25); }
-
-        .right-panel{
-            display:flex;
-            flex-direction:column;
-            gap:18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .mini-actions{
-            display:grid;
-            grid-template-columns: 1fr 1fr;
-            gap:12px;
-        }
-        .mini{
-            border:1px solid var(--border);
-            border-radius: 16px;
-            padding:14px;
-            background:#fff;
+        .sidebar-user {
+            margin-top: 14px;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 12px;
+            background: linear-gradient(180deg, #fff 0%, #f9fbff 100%);
             box-shadow: var(--shadow-soft);
         }
-        .mini b{ font-size:13px; }
-        .mini p{ margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.45; }
 
-        .link{
-            display:inline-flex;
-            align-items:center;
-            gap:8px;
-            margin-top:10px;
-            color:var(--primary);
-            font-weight:800;
-            font-size:12.5px;
+        .user-mini {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 15px;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, #101828, #344054);
+            color: #fff;
+            font-weight: 900;
+        }
+
+        .user-mini b {
+            display: block;
+            font-size: 13px;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-mini span {
+            display: block;
+            margin-top: 4px;
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+
+        /* MAIN */
+        .main {
+            min-width: 0;
+            padding: 18px 24px 30px;
+        }
+
+        .topbar {
+            height: var(--topbar);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .hamburger {
+            display: none;
+            width: 42px;
+            height: 42px;
+            border: 1px solid var(--line);
+            background: #fff;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 950;
+            color: var(--text);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .page-title {
+            min-width: 0;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 24px;
+            line-height: 1.1;
+            letter-spacing: -.04em;
+        }
+
+        .page-title p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .top-center {
+            flex: 1;
+            max-width: 430px;
+        }
+
+        .global-search {
+            position: relative;
+        }
+
+        .global-search span {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted-2);
+        }
+
+        .global-search input {
+            width: 100%;
+            height: 46px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, .82);
+            outline: none;
+            padding: 0 18px 0 44px;
+            box-shadow: var(--shadow-soft);
+            font-size: 13px;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-btn,
+        .logout-btn {
+            height: 42px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #fff;
+            box-shadow: var(--shadow-soft);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: .18s ease;
+            color: var(--text);
+        }
+
+        .icon-btn {
+            width: 42px;
+            font-size: 17px;
+        }
+
+        .logout-btn {
+            padding: 0 14px;
+            gap: 8px;
+            color: var(--red);
+            font-weight: 800;
+            font-size: 13px;
+            border-color: rgba(240, 68, 56, .18);
+        }
+
+        .icon-btn:hover,
+        .logout-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .status-pill {
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-soft);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .live-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 99px;
+            background: var(--green);
+            box-shadow: 0 0 0 5px rgba(18, 183, 106, .13);
+        }
+
+        /* DASHBOARD HERO */
+        .hero {
+            display: grid;
+            grid-template-columns: 1.45fr .75fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .hero-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-xl);
+            background:
+                radial-gradient(420px 240px at 88% 8%, rgba(255, 255, 255, .18), transparent 55%),
+                linear-gradient(135deg, #3157f8 0%, #233fd1 58%, #172554 100%);
+            color: #fff;
+            padding: 24px;
+            box-shadow: 0 24px 46px rgba(49, 87, 248, .22);
+            min-height: 188px;
+        }
+
+        .hero-card::after {
+            content: "";
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border-radius: 999px;
+            right: -70px;
+            bottom: -100px;
+            background: rgba(255, 255, 255, .11);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 620px;
+        }
+
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 32px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .14);
+            border: 1px solid rgba(255, 255, 255, .18);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .hero h2 {
+            margin: 16px 0 8px;
+            font-size: 30px;
+            line-height: 1.05;
+            letter-spacing: -.055em;
+        }
+
+        .hero p {
+            margin: 0;
+            color: rgba(255, 255, 255, .76);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .hero-link {
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 850;
+            background: #fff;
+            color: var(--blue);
+            box-shadow: 0 14px 24px rgba(0, 0, 0, .10);
+        }
+
+        .hero-link.secondary {
+            background: rgba(255, 255, 255, .13);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .18);
+            box-shadow: none;
+        }
+
+        .mini-summary {
+            border-radius: var(--radius-xl);
+            background: #fff;
+            border: 1px solid var(--line);
+            padding: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .mini-summary-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .mini-summary-head b {
+            font-size: 14px;
+        }
+
+        .mini-summary-head span {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 12px 0;
+            border-top: 1px solid var(--line);
+        }
+
+        .summary-row:first-of-type {
+            border-top: 0;
+        }
+
+        .summary-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
+
+        .summary-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .summary-left b {
+            display: block;
+            font-size: 13px;
+        }
+
+        .summary-left span {
+            display: block;
+            margin-top: 3px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .summary-value {
+            font-size: 14px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            padding: 17px;
+            box-shadow: var(--shadow-soft);
+            min-height: 132px;
+        }
+
+        .stat-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .stat-icon {
+            width: 43px;
+            height: 43px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .stat-card.green .stat-icon {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+
+        .stat-card.yellow .stat-icon {
+            background: var(--yellow-soft);
+            color: var(--yellow);
+        }
+
+        .stat-card.purple .stat-icon {
+            background: var(--purple-soft);
+            color: var(--purple);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12.5px;
+            font-weight: 750;
+        }
+
+        .stat-value {
+            margin-top: 13px;
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 950;
+            letter-spacing: -.045em;
+        }
+
+        .stat-note {
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .up {
+            color: var(--green);
+        }
+
+        /* CONTENT GRID */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 18px;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-inner {
+            padding: 18px;
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 18px 18px 0;
+        }
+
+        .panel-title b {
+            display: block;
+            font-size: 15px;
+            letter-spacing: -.02em;
+        }
+
+        .panel-title span {
+            display: block;
+            margin-top: 4px;
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+
+        .panel-action {
+            height: 38px;
+            padding: 0 13px;
+            border-radius: 13px;
+            background: var(--blue);
+            color: #fff;
+            font-weight: 850;
+            font-size: 12.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 14px 24px rgba(49, 87, 248, .20);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--line);
+            padding: 0 18px;
+            margin-top: 16px;
+            overflow: auto;
+        }
+
+        .tab {
+            padding: 14px 14px;
+            border-bottom: 2px solid transparent;
+            font-size: 13px;
+            font-weight: 850;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: var(--blue);
+            border-bottom-color: var(--blue);
+        }
+
+        .table-tools {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px 0;
+        }
+
+        .table-search {
+            position: relative;
+            flex: 1;
+            max-width: 380px;
+        }
+
+        .table-search span {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted-2);
+        }
+
+        .table-search input {
+            width: 100%;
+            height: 42px;
+            border-radius: 15px;
+            border: 1px solid var(--line);
+            background: #f9fbff;
+            outline: none;
+            padding: 0 14px 0 40px;
+            font-size: 13px;
+        }
+
+        .filter-btn {
+            height: 42px;
+            border-radius: 15px;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--text);
+            padding: 0 14px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            padding: 16px 18px 18px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 780px;
+        }
+
+        thead th {
+            background: #f8faff;
+            color: var(--muted);
+            font-size: 11.5px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            text-align: left;
+            padding: 13px 14px;
+            border-top: 1px solid var(--line);
+            border-bottom: 1px solid var(--line);
+        }
+
+        thead th:first-child {
+            border-left: 1px solid var(--line);
+            border-radius: 15px 0 0 15px;
+        }
+
+        thead th:last-child {
+            border-right: 1px solid var(--line);
+            border-radius: 0 15px 15px 0;
+        }
+
+        tbody td {
+            padding: 15px 14px;
+            border-bottom: 1px solid var(--line);
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover td {
+            background: #fbfdff;
+        }
+
+        .identity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .identity-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            background: var(--blue-soft);
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 950;
+            flex: 0 0 auto;
+        }
+
+        .identity b {
+            display: block;
+            font-size: 13px;
+            line-height: 1.15;
+        }
+
+        .identity span {
+            display: block;
+            margin-top: 3px;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 28px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-size: 11.5px;
+            font-weight: 950;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .status.is-success {
+            color: #027a48;
+            background: var(--green-soft);
+            border-color: rgba(18, 183, 106, .16);
+        }
+
+        .status.is-warning {
+            color: #b54708;
+            background: var(--yellow-soft);
+            border-color: rgba(247, 144, 9, .18);
+        }
+
+        .status.is-danger {
+            color: #b42318;
+            background: var(--red-soft);
+            border-color: rgba(240, 68, 56, .18);
+        }
+
+        .status.is-muted {
+            color: #475467;
+            background: #f2f4f7;
+            border-color: #eaecf0;
+        }
+
+        .money {
+            font-weight: 950;
+            letter-spacing: -.02em;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .empty {
+            padding: 34px 18px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* QUICK ACTIONS RIGHT */
+        .quick-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .quick-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 14px;
+            background: #fff;
+            transition: .18s ease;
+        }
+
+        .quick-card:hover {
+            border-color: rgba(49, 87, 248, .18);
+            box-shadow: var(--shadow-soft);
+            transform: translateY(-1px);
+        }
+
+        .quick-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .quick-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            background: var(--blue-soft);
+            color: var(--blue);
+            flex: 0 0 auto;
+        }
+
+        .quick-card:nth-child(2) .quick-icon {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+
+        .quick-card:nth-child(3) .quick-icon {
+            background: var(--yellow-soft);
+            color: var(--yellow);
+        }
+
+        .quick-card:nth-child(4) .quick-icon {
+            background: var(--purple-soft);
+            color: var(--purple);
+        }
+
+        .quick-left b {
+            display: block;
+            font-size: 13px;
+        }
+
+        .quick-left span {
+            display: block;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+
+        .quick-arrow {
+            color: var(--muted-2);
+            font-weight: 950;
+        }
+
+        .notes {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(16, 24, 40, .48);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+        }
+
+        body.sidebar-open {
+            overflow: hidden;
+        }
+
+        body.sidebar-open .overlay {
+            display: block;
         }
 
         /* RESPONSIVE */
-        @media (max-width: 1100px){
-            .cards{ grid-template-columns: repeat(2, 1fr); }
-            .grid{ grid-template-columns: 1fr; }
-        }
-        @media (max-width: 860px){
-            .app{ grid-template-columns: 1fr; }
-            .sidebar{
-                position:relative;
-                height:auto;
-                border-right:none;
-                border-bottom:1px solid rgba(255,255,255,.06);
+        @media (max-width: 1180px) {
+            .hero,
+            .content-grid {
+                grid-template-columns: 1fr;
             }
-            .sidebar-footer{ position:relative; left:auto; right:auto; bottom:auto; margin-top:14px; }
-            .quick{ grid-template-columns: repeat(2, 1fr); }
+
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .top-center {
+                display: none;
+            }
         }
-        @media (max-width: 520px){
-            .main{ padding:16px; }
-            .cards{ grid-template-columns: 1fr; }
-            .quick{ grid-template-columns: 1fr; }
-            .mini-actions{ grid-template-columns: 1fr; }
+
+        @media (max-width: 860px) {
+            .admin-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 86vw;
+                max-width: 320px;
+                transform: translateX(-105%);
+                transition: .22s ease;
+                box-shadow: 24px 0 50px rgba(16, 24, 40, .18);
+            }
+
+            body.sidebar-open .sidebar {
+                transform: translateX(0);
+            }
+
+            .hamburger {
+                display: inline-grid;
+                place-items: center;
+                flex: 0 0 auto;
+            }
+
+            .main {
+                padding: 12px 14px 24px;
+            }
+
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: 40;
+                height: auto;
+                min-height: 66px;
+                padding: 10px;
+                border-radius: 20px;
+                background: rgba(247, 249, 253, .86);
+                backdrop-filter: blur(14px);
+                border: 1px solid var(--line);
+            }
+
+            .page-title h1 {
+                font-size: 19px;
+            }
+
+            .page-title p {
+                font-size: 12px;
+            }
+
+            .status-pill {
+                display: none;
+            }
+
+            .hero-card {
+                min-height: auto;
+                padding: 20px;
+            }
+
+            .hero h2 {
+                font-size: 24px;
+            }
+
+            .hero p {
+                font-size: 13px;
+            }
         }
-        /* ===== MOBILE OFFCANVAS SIDEBAR ===== */
-.hamburger{
-  display:none;
-  border:1px solid var(--border);
-  background: var(--card);
-  color: var(--text);
-  padding:10px 12px;
-  border-radius:12px;
-  cursor:pointer;
-  box-shadow: var(--shadow-soft);
-  font-size:16px;
-  font-weight:900;
-  line-height:1;
-}
 
-.overlay{
-  display:none;
-  position:fixed;
-  inset:0;
-  background: rgba(2, 6, 23, .55);
-  backdrop-filter: blur(2px);
-  z-index: 40;
-  opacity:0;
-  transition: opacity .18s ease;
-}
+        @media (max-width: 620px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
 
-body.sidebar-open{
-  overflow:hidden; /* lock scroll */
-}
+            .top-actions .icon-btn {
+                display: none;
+            }
 
-/* Override aturan lama max-width 860px */
-@media (max-width: 860px){
-  .app{
-    grid-template-columns: 1fr; /* main full */
-  }
+            .logout-btn {
+                width: 42px;
+                padding: 0;
+                font-size: 0;
+            }
 
-  /* Topbar lebih rapat */
-  .topbar{
-    position:sticky;
-    top:0;
-    z-index:20;
-    background: rgba(245,247,251,.85);
-    backdrop-filter: blur(6px);
-    border-radius: 16px;
-    padding: 12px;
-    border: 1px solid var(--border);
-  }
+            .logout-btn span {
+                font-size: 17px;
+            }
 
-  .hamburger{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    margin-right:10px;
-  }
+            .hero-actions {
+                flex-direction: column;
+            }
 
-  /* Sidebar jadi drawer */
-  .sidebar{
-    position:fixed;          /* penting: bukan relative */
-    top:0;
-    left:0;
-    height:100vh;
-    width: 86vw;
-    max-width: 320px;
-    z-index:50;
-    transform: translateX(-105%);
-    transition: transform .22s ease;
-    border-right: 1px solid rgba(255,255,255,.06);
-  }
+            .hero-link {
+                width: 100%;
+            }
 
-  body.sidebar-open .sidebar{
-    transform: translateX(0);
-  }
+            .table-tools {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-  /* overlay aktif */
-  body.sidebar-open .overlay{
-    display:block;
-    opacity:1;
-  }
+            .table-search {
+                max-width: none;
+            }
 
-  /* footer sidebar tetap nempel bawah */
-  .sidebar-footer{
-    position:absolute;
-    left:16px;
-    right:16px;
-    bottom:18px;
-    margin-top:0;
-  }
+            .filter-btn {
+                width: 100%;
+            }
 
-  /* quick actions 2 kolom biar nyaman */
-  .quick{
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+            table {
+                min-width: 0;
+            }
 
-/* Extra small: quick actions 1 kolom */
-@media (max-width: 520px){
-  .quick{ grid-template-columns: 1fr; }
+            .table-wrap {
+                overflow: visible;
+            }
 
-  /* pills + logout biar gak kepotong */
-  .topbar{
-    gap:10px;
-  }
-  .topbar-right{
-    flex-wrap:wrap;
-    justify-content:flex-start;
-  }
-}
+            .table-wrap table,
+            .table-wrap thead,
+            .table-wrap tbody,
+            .table-wrap th,
+            .table-wrap td,
+            .table-wrap tr {
+                display: block;
+            }
 
-/* ====== MOBILE UI POLISH (ADMIN MAIN) ====== */
-@media (max-width: 860px){
-  /* main padding lebih kecil */
-  .main{
-    padding: 14px;
-  }
+            .table-wrap thead {
+                display: none;
+            }
 
-  /* topbar lebih compact & enak */
-  .topbar{
-    padding: 10px 12px;
-    border-radius: 16px;
-    gap: 10px;
-  }
-  .topbar-left{
-    gap: 2px;
-  }
-  .title{
-    font-size: 18px;
-    line-height: 1.15;
-  }
-  .subtitle{
-    font-size: 12px;
-  }
-  .topbar-right{
-    gap: 8px;
-  }
-  .pill{
-    padding: 8px 10px;
-    font-size: 12px;
-  }
-  .btn{
-    padding: 9px 10px;
-    font-size: 12px;
-    border-radius: 12px;
-  }
+            .table-wrap tbody tr {
+                border: 1px solid var(--line);
+                border-radius: 18px;
+                margin-bottom: 12px;
+                overflow: hidden;
+                box-shadow: var(--shadow-soft);
+            }
 
-  /* grid konten jadi 1 kolom rapi */
-  .grid{
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .panel{
-    padding: 14px;
-    border-radius: 18px;
-  }
+            .table-wrap tbody td {
+                display: flex;
+                justify-content: space-between;
+                gap: 14px;
+                padding: 11px 12px;
+                border-bottom: 1px solid var(--line);
+                background: #fff;
+            }
 
-  /* STAT CARDS: 1 kolom atau 2 kolom tergantung lebar */
-  .cards{
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-}
+            .table-wrap tbody td:last-child {
+                border-bottom: 0;
+            }
 
-@media (min-width: 520px) and (max-width: 860px){
-  /* tablet kecil: stat cards 2 kolom */
-  .cards{
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+            .table-wrap tbody td::before {
+                content: attr(data-label);
+                color: var(--muted);
+                font-weight: 900;
+                font-size: 11px;
+                flex: 0 0 90px;
+            }
 
-@media (max-width: 520px){
-  /* stat card lebih pendek */
-  .stat{
-    padding: 12px;
-    min-height: 78px;
-    border-radius: 16px;
-  }
-  .stat .k{
-    font-size: 11.5px;
-  }
-  .stat .v{
-    font-size: 18px;
-    margin-top: 6px;
-  }
-  .badge{
-    font-size: 10.5px;
-    padding: 5px 8px;
-  }
-
-  /* Quick actions jadi 1 kolom biar readable */
-  .quick{
-    grid-template-columns: 1fr !important;
-    gap: 10px;
-  }
-  .qa{
-    padding: 12px;
-    border-radius: 16px;
-    min-height: auto;
-  }
-  .qa .ic{
-    width: 38px;
-    height: 38px;
-    border-radius: 14px;
-    font-size: 17px;
-  }
-  .qa .t b{
-    font-size: 13px;
-  }
-  .qa .t span{
-    font-size: 12px;
-  }
-
-  /* Section headings lebih rapat */
-  .section-head{
-    margin-bottom: 10px;
-  }
-  .section-head h3{
-    font-size: 13.5px;
-  }
-  .section-head .hint{
-    font-size: 11.5px;
-  }
-
-  /* TABLE: ubah jadi "mobile cards" (tanpa ubah HTML) */
-  .table-wrap{
-    border-radius: 16px;
-    overflow: visible; /* kita pakai mode cards, bukan scroll horizontal */
-    border: none;
-    background: transparent;
-  }
-  table{
-    min-width: 0;      /* stop forcing 760px */
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 10px; /* jarak antar card */
-    background: transparent;
-  }
-  thead{
-    display: none; /* header hilang di mobile */
-  }
-  tbody tr{
-    display: block;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: var(--shadow-soft);
-    overflow: hidden;
-  }
-  tbody td{
-    display: flex;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    white-space: normal;
-    font-size: 12.5px;
-  }
-  tbody td:last-child{
-    border-bottom: none;
-  }
-
-  /* label per kolom berdasarkan urutan table Anda:
-     Module | Action | Status | Time  */
-  tbody td:nth-child(1)::before{ content:"Module"; }
-  tbody td:nth-child(2)::before{ content:"Action"; }
-  tbody td:nth-child(3)::before{ content:"Status"; }
-  tbody td:nth-child(4)::before{ content:"Time"; }
-
-  tbody td::before{
-    color: var(--muted);
-    font-weight: 800;
-    font-size: 11px;
-    flex: 0 0 84px;
-  }
-
-  /* status chip lebih kecil */
-  .status{
-    font-size: 11px;
-    padding: 6px 9px;
-  }
-
-  /* Right panel mini cards rapihin */
-  .mini-actions{
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .mini{
-    border-radius: 16px;
-    padding: 12px;
-  }
-  .link{
-    font-size: 12px;
-  }
-}
-
+            .identity {
+                justify-content: flex-end;
+                text-align: right;
+            }
+        }
     </style>
 </head>
 
 <body>
-<div class="app">
+<div class="admin-shell">
     <div class="overlay" onclick="toggleSidebar(false)"></div>
 
     {{-- SIDEBAR --}}
     <aside class="sidebar">
         <div class="brand">
-            <div class="logo">CW</div>
-            <div>
-                <h2>Crowdink</h2>
-                <p>Admin Console</p>
+            <div class="brand-logo">RB</div>
+            <div class="brand-name">
+                <strong>RUBIK</strong>
+                <span>Admin Console</span>
             </div>
         </div>
 
-        <div class="side-search">
-            <span class="icon">🔎</span>
-            <input type="text" placeholder="Search menu…" oninput="filterMenu(this.value)" />
+        <div class="sidebar-search">
+            <span>⌕</span>
+            <input type="text" placeholder="Search menu..." oninput="filterMenu(this.value)">
         </div>
 
-        <nav class="nav" id="navMenu">
-            <div class="nav-section">Management</div>
+        <div class="nav-scroll">
+            <nav id="navMenu">
+                <div class="nav-label">Main Menu</div>
 
-            <a href="/admin/users" data-label="users kelola user vip">
-                <div class="bullet">👥</div>
-                <div class="meta">
-                    <b>Users</b>
-                    <span>Kelola user & VIP</span>
-                </div>
-            </a>
+                <a class="nav-item" href="/admin" data-label="dashboard overview admin panel">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-text">
+                        <b>Dashboard</b>
+                        <span>Overview sistem</span>
+                    </div>
+                </a>
 
-            <a href="/admin/vip" data-label="vip settings aturan level">
-                <div class="bullet">⭐</div>
-                <div class="meta">
-                    <b>VIP Settings</b>
-                    <span>Aturan level VIP</span>
-                </div>
-            </a>
+                <a class="nav-item" href="/admin/users" data-label="users kelola user vip saldo">
+                    <div class="nav-icon">👥</div>
+                    <div class="nav-text">
+                        <b>Users</b>
+                        <span>Kelola user & VIP</span>
+                    </div>
+                </a>
 
-            <a href="/admin/products" data-label="products produk tier">
-                <div class="bullet">📦</div>
-                <div class="meta">
-                    <b>Products</b>
-                    <span>Produk & tier</span>
-                </div>
-            </a>
+                <a class="nav-item" href="/admin/products" data-label="products produk tier investasi">
+                    <div class="nav-icon">📦</div>
+                    <div class="nav-text">
+                        <b>Products</b>
+                        <span>Produk & tier</span>
+                    </div>
+                </a>
 
-            <a href="/admin/deposits" data-label="deposits riwayat isi saldo">
-                <div class="bullet">💰</div>
-                <div class="meta">
-                    <b>Deposits</b>
-                    <span>Riwayat isi saldo</span>
-                </div>
-            </a>
+                <a class="nav-item" href="/admin/deposits" data-label="deposits deposit saldo pembayaran">
+                    <div class="nav-icon">💳</div>
+                    <div class="nav-text">
+                        <b>Deposits</b>
+                        <span>Riwayat isi saldo</span>
+                    </div>
+                </a>
 
-            <a href="{{ route('admin.forum.index') }}" data-label="forum posts comments">
-                <div class="bullet">💬</div>
-                <div class="meta">
-                    <b>Forum</b>
-                    <span>Posting & komentar user</span>
-                </div>
-            </a>
+                <a class="nav-item" href="{{ route('admin.withdraw.page') }}" data-label="withdraw penarikan saldo">
+                    <div class="nav-icon">↗</div>
+                    <div class="nav-text">
+                        <b>Withdraw</b>
+                        <span>Permintaan penarikan</span>
+                    </div>
+                </a>
 
-            <a href="{{ route('admin.withdraw.page') }}" data-label="withdraw penarikan permintaan">
-                <div class="bullet">⬆️</div>
-                <div class="meta">
-                    <b>Withdraw</b>
-                    <span>Permintaan penarikan</span>
-                </div>
-            </a>
+                <a class="nav-item" href="{{ route('admin.referral') }}" data-label="referral komisi invite users">
+                    <div class="nav-icon">🎁</div>
+                    <div class="nav-text">
+                        <b>Referral</b>
+                        <span>Users & komisi</span>
+                    </div>
+                </a>
 
-            <a href="{{ route('admin.referral') }}" data-label="referral komisi invite">
-                <div class="bullet">🎁</div>
-                <div class="meta">
-                    <b>Referral</b>
-                    <span>Overview, users, komisi</span>
-                </div>
-            </a>
+                <a class="nav-item" href="{{ route('admin.forum.index') }}" data-label="forum post komentar team">
+                    <div class="nav-icon">💬</div>
+                    <div class="nav-text">
+                        <b>Forum</b>
+                        <span>Posting & komentar</span>
+                    </div>
+                </a>
 
-            <a href="/admin/logs" data-label="logs aktivitas sistem">
-                <div class="bullet">📜</div>
-                <div class="meta">
-                    <b>Logs</b>
-                    <span>Aktivitas sistem</span>
-                </div>
-            </a>
+                <div class="nav-label">System</div>
 
-            <div class="nav-section">System</div>
+                <a class="nav-item" href="/admin/vip" data-label="vip settings level rule">
+                    <div class="nav-icon">⭐</div>
+                    <div class="nav-text">
+                        <b>VIP Settings</b>
+                        <span>Aturan level VIP</span>
+                    </div>
+                </a>
 
-            <a href="/" data-label="home kembali ke website">
-                <div class="bullet">🏠</div>
-                <div class="meta">
-                    <b>Back to Site</b>
-                    <span>Kembali ke website</span>
-                </div>
-            </a>
-        </nav>
+                <a class="nav-item" href="/admin/logs" data-label="logs aktivitas sistem">
+                    <div class="nav-icon">📜</div>
+                    <div class="nav-text">
+                        <b>Logs</b>
+                        <span>Aktivitas sistem</span>
+                    </div>
+                </a>
 
-        <div class="sidebar-footer">
-            <div class="who">
-                <div class="avatar">{{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}</div>
-                <div class="name">
-                    <b>{{ $user->name }}</b>
-                    <span>Administrator</span>
+                <a class="nav-item" href="/" data-label="website back site home">
+                    <div class="nav-icon">🌐</div>
+                    <div class="nav-text">
+                        <b>Back to Site</b>
+                        <span>Kembali ke website</span>
+                    </div>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-mini">
+                <div class="avatar">{{ adminInitial($user->name ?? 'Admin') }}</div>
+                <div>
+                    <b>{{ $user->name ?? 'Admin' }}</b>
+                    <span>Super Administrator</span>
                 </div>
             </div>
         </div>
@@ -874,321 +1350,449 @@ body.sidebar-open{
 
     {{-- MAIN --}}
     <main class="main">
-        <div class="topbar">
-             <button class="hamburger" type="button" aria-label="Open menu" onclick="toggleSidebar(true)">☰</button>
+        <header class="topbar">
+            <div class="top-left">
+                <button class="hamburger" type="button" onclick="toggleSidebar(true)">☰</button>
 
-            <div class="topbar-left">
-                <h1 class="title">Admin Panel</h1> 
-                
-                <div class="subtitle">
-                    Selamat datang kembali, <b>{{ $user->name }}</b>. Kelola sistem Anda dari satu tempat.
+                <div class="page-title">
+                    <h1>Rubik Dashboard</h1>
+                    <p>Selamat datang kembali, <b>{{ $user->name ?? 'Admin' }}</b>. Pantau transaksi, user, dan operasional dari satu panel.</p>
                 </div>
             </div>
 
-            <div class="topbar-right">
-                <div class="pill" title="System status">
-                    <span class="dot"></span>
+            <div class="top-center">
+                <div class="global-search">
+                    <span>⌕</span>
+                    <input type="text" placeholder="Search for anything here..." oninput="filterDashboardTables(this.value)">
+                </div>
+            </div>
+
+            <div class="top-actions">
+                <div class="status-pill">
+                    <span class="live-dot"></span>
                     <span>System Online</span>
                 </div>
 
+                <a href="/admin/deposits" class="icon-btn" title="Deposits">💳</a>
+                <a href="{{ route('admin.withdraw.page') }}" class="icon-btn" title="Withdraw">↗</a>
+
                 <form action="/logout" method="POST" style="margin:0">
                     @csrf
-                    <button class="btn btn-danger" type="submit">Logout</button>
+                    <button class="logout-btn" type="submit">
+                        <span>⎋</span>
+                        Logout
+                    </button>
                 </form>
             </div>
-        </div>
+        </header>
 
-        <div class="grid">
-
-            {{-- LEFT --}}
-            <section class="panel">
-                {{-- STAT CARDS (placeholder; sambungkan ke data Anda nanti) --}}
-                <div class="cards">
-                    <div class="stat">
-                        <div class="k">
-                            <span>Total Users</span>
-                            <span class="badge">+ this month</span>
-                        </div>
-                        <div class="v" id="statUsers">—</div>
+        {{-- HERO --}}
+        <section class="hero">
+            <div class="hero-card">
+                <div class="hero-content">
+                    <div class="hero-kicker">
+                        <span>✦</span>
+                        Admin Workspace
                     </div>
 
-                    <div class="stat">
-                        <div class="k">
-                            <span>Products</span>
-                            <span class="badge">active</span>
-                        </div>
-                        <div class="v" id="statProducts">—</div>
-                    </div>
+                    <h2>Kelola RUBIK lebih cepat, rapi, dan profesional.</h2>
 
-                    <div class="stat">
-                        <div class="k">
-                            <span>Deposits</span>
-                            <span class="badge">today</span>
-                        </div>
-                        <div class="v" id="statDeposits">—</div>
-                    </div>
+                    <p>
+                        Dashboard ini disiapkan untuk monitoring deposit, withdraw, user, produk,
+                        referral, dan aktivitas operasional dengan tampilan yang lebih clean seperti sistem admin modern.
+                    </p>
 
-                    <div class="stat">
-                        <div class="k">
-                            <span>Withdraw Queue</span>
-                            <span class="badge">pending</span>
-                        </div>
-                        <div class="v" id="statWithdraw">—</div>
+                    <div class="hero-actions">
+                        <a href="/admin/deposits" class="hero-link">Open Deposits →</a>
+                        <a href="{{ route('admin.withdraw.page') }}" class="hero-link secondary">Review Withdraw →</a>
                     </div>
                 </div>
+            </div>
 
-                <div class="section-head">
+            <div class="mini-summary">
+                <div class="mini-summary-head">
+                    <b>Operational Snapshot</b>
+                    <span>{{ now()->format('d M Y') }}</span>
+                </div>
+
+                <div class="summary-row">
+                    <div class="summary-left">
+                        <div class="summary-icon">👥</div>
+                        <div>
+                            <b>New Users</b>
+                            <span>This month</span>
+                        </div>
+                    </div>
+                    <div class="summary-value">{{ number_format($stats['new_users_month'] ?? 0) }}</div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="summary-left">
+                        <div class="summary-icon">💳</div>
+                        <div>
+                            <b>Unpaid Deposit</b>
+                            <span>Need review</span>
+                        </div>
+                    </div>
+                    <div class="summary-value">{{ number_format($stats['deposit_unpaid'] ?? 0) }}</div>
+                </div>
+
+                <div class="summary-row">
+                    <div class="summary-left">
+                        <div class="summary-icon">↗</div>
+                        <div>
+                            <b>Withdraw Queue</b>
+                            <span>Pending request</span>
+                        </div>
+                    </div>
+                    <div class="summary-value">{{ number_format($stats['withdraw_pending'] ?? 0) }}</div>
+                </div>
+            </div>
+        </section>
+
+        {{-- STATS --}}
+        <section class="stats">
+            <div class="stat-card">
+                <div class="stat-top">
                     <div>
-                        <h3>Quick Actions</h3>
-                        <div class="hint">Akses cepat ke menu yang paling sering dipakai</div>
+                        <div class="stat-label">Total Users</div>
+                        <div class="stat-value">{{ number_format($stats['total_users'] ?? 0) }}</div>
                     </div>
+                    <div class="stat-icon">👥</div>
                 </div>
-
-                <div class="quick">
-                    <a class="qa" href="/admin/users">
-                        <div class="ic">👥</div>
-                        <div class="t">
-                            <b>Kelola Users</b>
-                            <span>Update user, VIP, dan kontrol akses.</span>
-                        </div>
-                    </a>
-
-                    <a class="qa" href="/admin/products">
-                        <div class="ic">📦</div>
-                        <div class="t">
-                            <b>Kelola Products</b>
-                            <span>Tambah/ubah produk & tier dengan cepat.</span>
-                        </div>
-                    </a>
-
-                    <a class="qa" href="/admin/deposits">
-                        <div class="ic">💰</div>
-                        <div class="t">
-                            <b>Riwayat Deposits</b>
-                            <span>Audit top up & status pembayaran.</span>
-                        </div>
-                    </a>
-
-                    <a class="qa" href="{{ route('admin.withdraw.page') }}">
-                        <div class="ic">⬆️</div>
-                        <div class="t">
-                            <b>Withdraw Requests</b>
-                            <span>Proses antrian penarikan saldo.</span>
-                        </div>
-                    </a>
-
-                    <a class="qa" href="/admin/vip">
-                        <div class="ic">⭐</div>
-                        <div class="t">
-                            <b>VIP Settings</b>
-                            <span>Atur aturan level & benefit VIP.</span>
-                        </div>
-                    </a>
-
-                    <a class="qa" href="/admin/logs">
-                        <div class="ic">📜</div>
-                        <div class="t">
-                            <b>System Logs</b>
-                            <span>Monitor aktivitas & troubleshooting.</span>
-                        </div>
-                    </a>
+                <div class="stat-note">
+                    <span class="up">↗</span>
+                    {{ number_format($stats['new_users_month'] ?? 0) }} user baru bulan ini
                 </div>
+            </div>
 
-                <div style="height:16px"></div>
-
-                <div class="section-head">
+            <div class="stat-card green">
+                <div class="stat-top">
                     <div>
-                        <h3>Recent Activity</h3>
-                        <div class="hint">Contoh tabel (silakan sambungkan ke database/log Anda)</div>
+                        <div class="stat-label">Paid Deposits</div>
+                        <div class="stat-value">{{ adminMoney($stats['deposit_paid'] ?? 0) }}</div>
                     </div>
-                    <div class="hint">Last 7 entries</div>
+                    <div class="stat-icon">💳</div>
+                </div>
+                <div class="stat-note">
+                    <span class="up">●</span>
+                    {{ adminMoney($stats['deposit_today'] ?? 0) }} deposit hari ini
+                </div>
+            </div>
+
+            <div class="stat-card yellow">
+                <div class="stat-top">
+                    <div>
+                        <div class="stat-label">Products</div>
+                        <div class="stat-value">{{ number_format($stats['active_products'] ?? 0) }}</div>
+                    </div>
+                    <div class="stat-icon">📦</div>
+                </div>
+                <div class="stat-note">
+                    <span>●</span>
+                    Dari total {{ number_format($stats['total_products'] ?? 0) }} produk
+                </div>
+            </div>
+
+            <div class="stat-card purple">
+                <div class="stat-top">
+                    <div>
+                        <div class="stat-label">Withdraw Queue</div>
+                        <div class="stat-value">{{ number_format($stats['withdraw_pending'] ?? 0) }}</div>
+                    </div>
+                    <div class="stat-icon">↗</div>
+                </div>
+                <div class="stat-note">
+                    <span>●</span>
+                    {{ number_format($stats['withdraw_paid'] ?? 0) }} sudah dibayar
+                </div>
+            </div>
+        </section>
+
+        {{-- CONTENT --}}
+        <section class="content-grid">
+            {{-- LEFT TABLE --}}
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <b>Latest Deposits</b>
+                        <span>Riwayat deposit terbaru dari seluruh user.</span>
+                    </div>
+
+                    <a href="/admin/deposits" class="panel-action">View All</a>
+                </div>
+
+                <div class="tabs">
+                    <a class="tab active" href="/admin/deposits">All Deposits</a>
+                    <a class="tab" href="/admin/deposits?status=UNPAID">Unpaid</a>
+                    <a class="tab" href="/admin/deposits?status=PAID">Paid</a>
+                </div>
+
+                <div class="table-tools">
+                    <div class="table-search">
+                        <span>⌕</span>
+                        <input type="text" placeholder="Search order / user..." data-table-search="depositTable">
+                    </div>
+
+                    <button class="filter-btn" type="button">Export</button>
                 </div>
 
                 <div class="table-wrap">
-                    <table>
+                    <table id="depositTable">
                         <thead>
                         <tr>
-                            <th style="width:30%">Module</th>
-                            <th>Action</th>
-                            <th style="width:18%">Status</th>
-                            <th style="width:18%">Time</th>
+                            <th>Order ID</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Date</th>
                         </tr>
                         </thead>
+
                         <tbody>
-                        {{-- Placeholder rows; ganti dengan loop data Anda --}}
-                        <tr>
-                            <td>Withdraw</td>
-                            <td>New request created</td>
-                            <td><span class="status st-warn">Pending</span></td>
-                            <td>{{ now()->subMinutes(7)->format('d M Y H:i') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Deposits</td>
-                            <td>Payment confirmed</td>
-                            <td><span class="status st-ok">Success</span></td>
-                            <td>{{ now()->subMinutes(18)->format('d M Y H:i') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Products</td>
-                            <td>Tier updated</td>
-                            <td><span class="status st-ok">Success</span></td>
-                            <td>{{ now()->subHours(2)->format('d M Y H:i') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Users</td>
-                            <td>VIP level changed</td>
-                            <td><span class="status st-ok">Success</span></td>
-                            <td>{{ now()->subHours(5)->format('d M Y H:i') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Logs</td>
-                            <td>System check</td>
-                            <td><span class="status st-ok">OK</span></td>
-                            <td>{{ now()->subDay()->format('d M Y H:i') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Deposits</td>
-                            <td>Callback received</td>
-                            <td><span class="status st-ok">Success</span></td>
-                            <td>{{ now()->subDays(2)->format('d M Y H:i') }}</td>
-                        </tr>
-                        <tr>
-                            <td>Withdraw</td>
-                            <td>Request rejected</td>
-                            <td><span class="status st-bad">Rejected</span></td>
-                            <td>{{ now()->subDays(3)->format('d M Y H:i') }}</td>
-                        </tr>
+                        @forelse(($latestDeposits ?? collect()) as $deposit)
+                            <tr>
+                                <td data-label="Order ID">
+                                    <b>{{ $deposit->order_id }}</b>
+                                </td>
+
+                                <td data-label="User">
+                                    <div class="identity">
+                                        <div class="identity-avatar">
+                                            {{ adminInitial($deposit->user->name ?? 'U') }}
+                                        </div>
+                                        <div>
+                                            <b>{{ $deposit->user->name ?? 'Unknown User' }}</b>
+                                            <span>{{ $deposit->user->phone ?? 'No phone' }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td data-label="Amount">
+                                    <span class="money">{{ adminMoney($deposit->amount) }}</span>
+                                </td>
+
+                                <td data-label="Method">
+                                    <span class="muted">{{ $deposit->method ?? '-' }}</span>
+                                </td>
+
+                                <td data-label="Status">
+                                    <span class="status {{ adminStatusClass($deposit->status) }}">
+                                        {{ $deposit->status }}
+                                    </span>
+                                </td>
+
+                                <td data-label="Date">
+                                    <span class="muted">{{ optional($deposit->created_at)->format('d M Y H:i') }}</span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty">Belum ada data deposit.</div>
+                                </td>
+                            </tr>
+                        @endforelse
                         </tbody>
                     </table>
                 </div>
-            </section>
+            </div>
 
             {{-- RIGHT --}}
-            <aside class="right-panel">
-                <section class="panel">
-                    <div class="section-head">
-                        <h3>Shortcuts</h3>
-                        <div class="hint">Panel ringkas</div>
-                    </div>
-
-                    <div class="mini-actions">
-                        <div class="mini">
-                            <b>Withdraw</b>
-                            <p>Prioritaskan permintaan pending untuk mempercepat SLA.</p>
-                            <a class="link" href="{{ route('admin.withdraw.page') }}">Open Withdraw →</a>
-                        </div>
-
-                        <div class="mini">
-                            <b>Deposits</b>
-                            <p>Audit transaksi yang statusnya belum final / mismatch.</p>
-                            <a class="link" href="/admin/deposits">Open Deposits →</a>
-                        </div>
-
-                        <div class="mini">
-                            <b>Products</b>
-                            <p>Pastikan tier, pricing, dan stok selalu up-to-date.</p>
-                            <a class="link" href="/admin/products">Open Products →</a>
-                        </div>
-
-                        <div class="mini">
-                            <b>Logs</b>
-                            <p>Telusuri error/aktivitas untuk troubleshooting cepat.</p>
-                            <a class="link" href="/admin/logs">Open Logs →</a>
+            <div style="display:grid; gap:18px;">
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">
+                            <b>Quick Actions</b>
+                            <span>Akses cepat menu penting admin.</span>
                         </div>
                     </div>
-                </section>
 
-                <section class="panel">
-                    <div class="section-head">
-                        <h3>Admin Notes</h3>
-                        <div class="hint">Opsional</div>
+                    <div class="panel-inner">
+                        <div class="quick-list">
+                            <a class="quick-card" href="/admin/users">
+                                <div class="quick-left">
+                                    <div class="quick-icon">👥</div>
+                                    <div>
+                                        <b>Manage Users</b>
+                                        <span>Update saldo, VIP, dan detail user.</span>
+                                    </div>
+                                </div>
+                                <div class="quick-arrow">→</div>
+                            </a>
+
+                            <a class="quick-card" href="/admin/deposits">
+                                <div class="quick-left">
+                                    <div class="quick-icon">💳</div>
+                                    <div>
+                                        <b>Review Deposits</b>
+                                        <span>Cek pembayaran manual dan status deposit.</span>
+                                    </div>
+                                </div>
+                                <div class="quick-arrow">→</div>
+                            </a>
+
+                            <a class="quick-card" href="{{ route('admin.withdraw.page') }}">
+                                <div class="quick-left">
+                                    <div class="quick-icon">↗</div>
+                                    <div>
+                                        <b>Withdraw Queue</b>
+                                        <span>Proses permintaan penarikan user.</span>
+                                    </div>
+                                </div>
+                                <div class="quick-arrow">→</div>
+                            </a>
+
+                            <a class="quick-card" href="/admin/products">
+                                <div class="quick-left">
+                                    <div class="quick-icon">📦</div>
+                                    <div>
+                                        <b>Manage Products</b>
+                                        <span>Atur produk, harga, profit, dan tier.</span>
+                                    </div>
+                                </div>
+                                <div class="quick-arrow">→</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">
+                            <b>Latest Withdrawals</b>
+                            <span>Permintaan penarikan terbaru.</span>
+                        </div>
+
+                        <a href="{{ route('admin.withdraw.page') }}" class="panel-action">Open</a>
                     </div>
 
-                    <div style="color:var(--muted); font-size:13px; line-height:1.55">
-                        Anda bisa sambungkan statistik di atas ke backend (query counts) dan “Recent Activity”
-                        dari tabel logs / transaksi, agar panel ini menjadi benar-benar informatif seperti referensi.
-                    </div>
-                </section>
-            </aside>
+                    <div class="table-wrap">
+                        <table id="withdrawTable">
+                            <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
 
-        </div>
+                            <tbody>
+                            @forelse(($latestWithdrawals ?? collect()) as $withdraw)
+                                <tr>
+                                    <td data-label="User">
+                                        <div class="identity">
+                                            <div class="identity-avatar">
+                                                {{ adminInitial($withdraw->user->name ?? 'U') }}
+                                            </div>
+                                            <div>
+                                                <b>{{ $withdraw->user->name ?? 'Unknown User' }}</b>
+                                                <span>{{ optional($withdraw->created_at)->format('d M Y H:i') }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td data-label="Amount">
+                                        <span class="money">{{ adminMoney($withdraw->amount ?? 0) }}</span>
+                                    </td>
+
+                                    <td data-label="Status">
+                                        <span class="status {{ adminStatusClass($withdraw->status) }}">
+                                            {{ $withdraw->status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3">
+                                        <div class="empty">Belum ada data withdraw.</div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+        </section>
     </main>
 </div>
 
 <script>
-    // Set active nav item berdasarkan URL
-    (function setActiveNav(){
-        const path = window.location.pathname;
-        const links = document.querySelectorAll('#navMenu a');
-        links.forEach(a => {
-            const href = a.getAttribute('href');
-            if (!href) return;
-            // active jika path sama persis atau path diawali href (untuk nested)
-            const isActive = (href !== '/' && path.startsWith(href)) || (href === path);
-            if (isActive) a.classList.add('active');
-        });
-    })();
+    function toggleSidebar(open) {
+        document.body.classList.toggle('sidebar-open', open === true);
+    }
 
-    // Simple filter menu by search
-    function filterMenu(q){
+    function filterMenu(q) {
         q = (q || '').toLowerCase().trim();
-        const links = document.querySelectorAll('#navMenu a');
-        links.forEach(a => {
-            const label = (a.getAttribute('data-label') || a.textContent || '').toLowerCase();
-            a.style.display = !q || label.includes(q) ? 'flex' : 'none';
+
+        document.querySelectorAll('#navMenu .nav-item').forEach((item) => {
+            const label = (item.getAttribute('data-label') || item.textContent || '').toLowerCase();
+            item.style.display = !q || label.includes(q) ? 'flex' : 'none';
         });
     }
 
-    // Placeholder stats (ganti dengan data real dari backend bila perlu)
-    // Anda bisa isi dari Blade: window.__STATS__ = {...}
-    (function(){
-        const stats = window.__STATS__ || {
-            users: "—",
-            products: "—",
-            deposits: "—",
-            withdraw: "—"
-        };
+    function filterTable(tableId, query) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
 
-        document.getElementById('statUsers').textContent = stats.users;
-        document.getElementById('statProducts').textContent = stats.products;
-        document.getElementById('statDeposits').textContent = stats.deposits;
-        document.getElementById('statWithdraw').textContent = stats.withdraw;
+        query = (query || '').toLowerCase().trim();
+
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+            const text = tr.textContent.toLowerCase();
+            tr.style.display = !query || text.includes(query) ? '' : 'none';
+        });
+    }
+
+    function filterDashboardTables(q) {
+        filterTable('depositTable', q);
+        filterTable('withdrawTable', q);
+    }
+
+    document.querySelectorAll('[data-table-search]').forEach((input) => {
+        input.addEventListener('input', function () {
+            filterTable(this.getAttribute('data-table-search'), this.value);
+        });
+    });
+
+    (function setActiveNav() {
+        const path = window.location.pathname.replace(/\/$/, '');
+
+        document.querySelectorAll('#navMenu .nav-item').forEach((item) => {
+            const href = (item.getAttribute('href') || '').replace(/\/$/, '');
+
+            if (!href) return;
+
+            const active =
+                (href === '/admin' && path === '/admin') ||
+                (href !== '/admin' && path.startsWith(href));
+
+            item.classList.toggle('active', active);
+        });
+    })();
+
+    (function mobileEvents() {
+        document.querySelectorAll('#navMenu a').forEach((link) => {
+            link.addEventListener('click', () => {
+                if (window.matchMedia('(max-width: 860px)').matches) {
+                    toggleSidebar(false);
+                }
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (!window.matchMedia('(max-width: 860px)').matches) {
+                toggleSidebar(false);
+            }
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') toggleSidebar(false);
+        });
     })();
 </script>
-<script>
-  function toggleSidebar(open){
-    const shouldOpen = open === true;
-    document.body.classList.toggle('sidebar-open', shouldOpen);
-  }
-
-  // Close drawer kalau klik link menu (di mobile)
-  (function bindSidebarClose(){
-    const nav = document.getElementById('navMenu');
-    if (!nav) return;
-
-    nav.addEventListener('click', (e) => {
-      const a = e.target.closest('a');
-      if (!a) return;
-
-      // hanya mobile drawer
-      if (window.matchMedia('(max-width: 860px)').matches){
-        toggleSidebar(false);
-      }
-    });
-
-    // close jika resize ke desktop agar state bersih
-    window.addEventListener('resize', () => {
-      if (!window.matchMedia('(max-width: 860px)').matches){
-        toggleSidebar(false);
-      }
-    });
-
-    // close dengan ESC
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') toggleSidebar(false);
-    });
-  })();
-</script>
-
 </body>
 </html>

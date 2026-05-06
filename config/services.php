@@ -35,4 +35,22 @@ return [
         ],
     ],
 
+'jayapay' => [
+    'merchant_code' => env('JAYAPAY_MERCHANT_CODE'),
+
+    // DEPOSIT
+    'create_order_url' => env('JAYAPAY_CREATE_ORDER_URL'),
+    'notify_url' => env('JAYAPAY_NOTIFY_URL'),
+    'expiry_period' => env('JAYAPAY_EXPIRY_PERIOD', 1440),
+
+    // WITHDRAW
+    'payout_url' => env('JAYAPAY_PAYOUT_URL'),
+    'withdraw_notify_url' => env('JAYAPAY_WITHDRAW_NOTIFY_URL'),
+    'withdraw_order_type' => env('JAYAPAY_WITHDRAW_ORDER_TYPE', '0'),
+
+    // KEYS
+    'private_key' => env('JAYAPAY_PRIVATE_KEY'),
+    'platform_public_key' => env('JAYAPAY_PLATFORM_PUBLIC_KEY'),
+],
+
 ];

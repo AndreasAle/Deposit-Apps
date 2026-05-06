@@ -1,386 +1,783 @@
+
+@php
+    $lockedReferralCode = request('ref') ?: session('referral_code');
+    $referralInputValue = old('referral_code', $lockedReferralCode);
+    $isReferralLocked = !empty($lockedReferralCode);
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <title>Daftar Akun | Crowdnik</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --text:#0f172a;
-      --muted:#64748b;
-      --border: rgba(15,23,42,.10);
+      --green:#18c79b;
+      --green-2:#42dfb2;
+      --green-3:#0b8f70;
+      --green-dark:#0d7f67;
 
-      --card: rgba(255,255,255,.78);
-      --card-strong: rgba(255,255,255,.92);
+      --dark:#031816;
+      --dark-2:#05231f;
+      --dark-3:#010f0d;
 
-      --shadow: 0 30px 80px rgba(15,23,42,.16);
-      --shadow-soft: 0 16px 34px rgba(15,23,42,.10);
-
-      --primary1:#6d28d9; /* purple */
-      --primary2:#06b6d4; /* cyan */
+      --white:#ffffff;
+      --text:#10322c;
+      --muted:#6c8b82;
+      --line:#e2eee9;
       --danger:#ef4444;
 
-      --radius: 22px;
-      --radius-sm: 16px;
+      --shadow-page:0 28px 70px rgba(0,0,0,.30);
+      --shadow-card:0 18px 38px rgba(6,34,29,.16);
     }
 
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    *{
+      box-sizing:border-box;
+    }
+
+    html,
+    body{
+      min-height:100%;
+    }
+
     body{
       margin:0;
       min-height:100vh;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color: var(--text);
-
-      /* WHITE PREMIUM BACKGROUND */
-      background:
-        radial-gradient(1100px 600px at 12% 8%, rgba(59,130,246,.18), transparent 60%),
-        radial-gradient(900px 520px at 90% 18%, rgba(14,165,233,.14), transparent 55%),
-        radial-gradient(900px 520px at 50% 105%, rgba(124,58,237,.10), transparent 60%),
-        linear-gradient(180deg, #ffffff 0%, #f5f7ff 55%, #eef2ff 100%);
-
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 22px;
-      overflow:hidden;
+      font-family:'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--text);
+      display:block;
+      padding:0;
+      overflow-x:hidden;
+      position:relative;
+      background:#ffffff;
+      -webkit-tap-highlight-color:transparent;
     }
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background: radial-gradient(900px 520px at 50% 10%, rgba(255,255,255,.75), transparent 60%);
-      opacity: .55;
+    body::before,
+    body::after{
+      content:none !important;
     }
 
-    .wrap{
-      width: 100%;
-      max-width: 560px;
+    a{
+      color:inherit;
+    }
+
+    button,
+    input{
+      font-family:inherit;
+    }
+
+    .page{
+      width:100%;
+      max-width:none;
+      min-height:100vh;
       position:relative;
       z-index:1;
+      animation:pageEnter .45s ease both;
+    }
+
+    .shell{
+      position:relative;
+      overflow:hidden;
+      width:100%;
+      max-width:none;
+      min-height:100vh;
+      border-radius:0;
+      background:#ffffff;
+      border:none;
+      box-shadow:none;
+    }
+
+    .shell::before{
+      content:none !important;
+    }
+
+    .hero{
+      position:relative;
+      width:100%;
+      height:176px;
+      overflow:hidden;
+      background:
+        linear-gradient(152deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.04) 28%, transparent 29%),
+        radial-gradient(260px 160px at 92% 105%, rgba(0,223,130,.22), transparent 62%),
+        radial-gradient(230px 160px at 16% 0%, rgba(3,98,76,.58), transparent 72%),
+        linear-gradient(180deg, #10251f 0%, #041311 58%, #020908 100%);
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      left:-48px;
+      top:-34px;
+      width:190px;
+      height:170px;
+      border-radius:44% 56% 54% 46% / 42% 44% 56% 58%;
+      background:
+        radial-gradient(circle at 30% 18%, rgba(255,255,255,.12), transparent 34%),
+        linear-gradient(145deg, rgba(0,223,130,.22), rgba(3,98,76,.48));
+      box-shadow:
+        0 0 50px rgba(0,223,130,.08),
+        inset 0 1px 0 rgba(255,255,255,.08);
+      animation:blobFloat 6s ease-in-out infinite;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      right:-38px;
+      top:-38px;
+      width:168px;
+      height:138px;
+      border-radius:34px 0 0 64px;
+      background:
+        radial-gradient(circle at 26% 26%, rgba(255,255,255,.18), transparent 34%),
+        linear-gradient(145deg, rgba(214,255,240,.16), rgba(0,223,130,.08));
+      border:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(4px);
+      -webkit-backdrop-filter:blur(4px);
+      animation:blobFloat2 7s ease-in-out infinite;
+    }
+
+    .heroShape{
+      position:absolute;
+      pointer-events:none;
+    }
+
+    .shapeOne{
+      width:170px;
+      height:130px;
+      right:-28px;
+      top:26px;
+      border-radius:48% 52% 58% 42% / 42% 48% 52% 58%;
+      background:
+        radial-gradient(circle at 26% 22%, rgba(255,255,255,.10), transparent 34%),
+        linear-gradient(135deg, rgba(0,223,130,.16), rgba(3,98,76,.40));
+      box-shadow:0 0 40px rgba(0,223,130,.10);
+      animation:shapeMoveOne 6.2s ease-in-out infinite;
+    }
+
+    .shapeTwo{
+      width:86px;
+      height:86px;
+      right:56px;
+      top:82px;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 32% 24%, rgba(255,255,255,.50), rgba(204,255,240,.20) 34%, rgba(0,223,130,.12) 100%);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:
+        0 18px 30px rgba(0,0,0,.18),
+        0 0 30px rgba(0,223,130,.12);
+      animation:shapeMoveTwo 5.6s ease-in-out infinite;
+    }
+
+    .shapeThree{
+      width:126px;
+      height:104px;
+      left:90px;
+      top:-44px;
+      border-radius:38% 62% 64% 36% / 40% 44% 56% 60%;
+      background:
+        linear-gradient(145deg, rgba(214,255,240,.22), rgba(0,223,130,.08));
+      border:1px solid rgba(255,255,255,.07);
+      animation:shapeMoveThree 7s ease-in-out infinite;
+    }
+
+    .backBubble{
+      position:absolute;
+      top:20px;
+      left:20px;
+      z-index:5;
+      width:auto;
+      height:auto;
+      padding:0;
+      border-radius:0;
+      background:transparent;
+      box-shadow:none;
+      border:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:5px;
+      color:#ffffff;
+      font-size:12px;
+      font-weight:800;
+      text-decoration:none;
+    }
+
+    .backBubble span{
+      font-size:22px;
+      line-height:1;
+      font-weight:700;
+      margin-top:-2px;
     }
 
     .card{
-      border-radius: var(--radius);
-      background: linear-gradient(180deg, var(--card-strong) 0%, var(--card) 100%);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      overflow:hidden;
       position:relative;
+      z-index:5;
+      width:100%;
+      margin:-30px 0 0;
+      min-height:calc(100vh - 146px);
+      background:
+        radial-gradient(220px 140px at 100% 100%, rgba(98,221,177,.22), transparent 60%),
+        radial-gradient(180px 120px at 78% 18%, rgba(255,255,255,.16), transparent 58%),
+        linear-gradient(135deg, #e8fbf2 0%, #d7f5e7 52%, #c8efd9 100%);
+      border:none;
+      border-radius:28px 28px 0 0;
+      padding:22px 24px 24px;
+      box-shadow:0 -12px 32px rgba(6,34,29,.10);
+      animation:cardFloat .55s ease both;
+      overflow:hidden;
     }
 
-    .card::after{
+    .card::before{
       content:"";
       position:absolute;
-      inset:-2px;
+      inset:0;
       pointer-events:none;
       background:
-        radial-gradient(520px 320px at 18% 18%, rgba(109,40,217,.16), transparent 62%),
-        radial-gradient(520px 320px at 88% 22%, rgba(6,182,212,.14), transparent 62%),
-        radial-gradient(520px 380px at 50% 115%, rgba(59,130,246,.10), transparent 65%);
-      opacity: 1;
+        radial-gradient(180px 120px at 20% 0%, rgba(255,255,255,.22), transparent 60%),
+        radial-gradient(260px 180px at 100% 100%, rgba(24,199,155,.10), transparent 66%);
+      opacity:1;
     }
 
-    .inner{
+    .card > *{
       position:relative;
       z-index:1;
-      padding: 30px 28px 26px;
     }
 
-    .head{
+    .brandInside{
       display:flex;
+      flex-direction:column;
       align-items:center;
-      justify-content:space-between;
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 12px;
-      min-width: 0;
+      text-align:center;
+      margin:0 0 16px;
     }
 
     .logoBox{
-      width: 68px;
-      height: 68px;
-      border-radius: 22px;
-      background: rgba(255,255,255,.75);
-      border: 1px solid rgba(15,23,42,.10);
-      box-shadow: 0 18px 36px rgba(15,23,42,.12);
+      width:70px;
+      height:70px;
+      border-radius:24px;
+      background:#ffffff;
+      border:1px solid rgba(24,199,155,.16);
+      box-shadow:
+        0 16px 34px rgba(10,47,39,.10),
+        0 0 0 1px rgba(255,255,255,.75) inset;
       display:grid;
       place-items:center;
       overflow:hidden;
-      flex: 0 0 68px;
+      margin-bottom:10px;
     }
 
     .logoBox img{
-      width: 46px;
-      height: 46px;
-      object-fit: contain;
+      width:50px;
+      height:50px;
+      object-fit:contain;
       display:block;
     }
 
-    .brandText{
-      display:flex;
-      flex-direction:column;
-      line-height:1.1;
-      min-width: 0;
-    }
-
-    .brandText b{
-      font-size: 15px;
-      letter-spacing: .2px;
-    }
-
-    .brandText span{
-      margin-top:4px;
-      font-size: 12.5px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      max-width: 260px;
-    }
-
-    .secure{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      padding: 9px 11px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.72);
-      border: 1px solid rgba(15,23,42,.10);
-      color: #334155;
-      font-size: 12.5px;
-      white-space:nowrap;
-    }
-
-    .secureDot{
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 0 4px rgba(34,197,94,.14);
+    .brandTitle{
+      margin:0;
+      font-size:15px;
+      line-height:1.15;
+      font-weight:800;
+      color:#0d7f67;
+      letter-spacing:-.01em;
     }
 
     .title{
-      margin: 6px 0 6px;
-      font-size: 26px;
-      letter-spacing: -0.03em;
-      line-height:1.15;
+      text-align:center;
+      margin:0;
+      font-size:25px;
+      line-height:1.08;
+      font-weight:800;
+      color:#173d35;
+      letter-spacing:-.04em;
     }
 
     .subtitle{
-      margin: 0 0 18px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
+      text-align:center;
+      margin:9px 0 18px;
+      color:#6c8b82;
+      font-size:13px;
+      line-height:1.5;
+      font-weight:500;
     }
 
-    /* ERRORS */
     .error{
-      background: rgba(239,68,68,.10);
-      border: 1px solid rgba(239,68,68,.22);
-      color: #991b1b;
-      padding: 12px 12px;
-      border-radius: 14px;
-      font-size: 13px;
-      margin-bottom: 14px;
-      line-height: 1.5;
+      margin-bottom:14px;
+      padding:11px 12px;
+      border-radius:14px;
+      background:rgba(239,68,68,.08);
+      border:1px solid rgba(239,68,68,.18);
+      color:#b42318;
+      font-size:12.5px;
+      line-height:1.45;
+      font-weight:500;
     }
+
     .error ul{
-      margin: 0;
-      padding-left: 18px;
+      margin:0;
+      padding-left:18px;
     }
-    .error li{ margin: 4px 0; }
 
-    /* FORM */
-    .field{ margin-bottom: 12px; }
-    label{
+    .error li{
+      margin:4px 0;
+    }
+
+    .field{
+      margin-bottom:12px;
+    }
+
+    .label{
       display:block;
-      font-size: 12.5px;
-      color: #334155;
-      margin-bottom: 7px;
-      font-weight: 800;
+      margin:0 0 7px;
+      font-size:11.5px;
+      line-height:1.2;
+      color:#668078;
+      font-weight:700;
     }
 
-    .control{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      padding: 12px 12px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.70);
-      border: 1px solid rgba(15,23,42,.10);
-      transition: .18s ease;
-    }
-    .control:focus-within{
-      border-color: rgba(6,182,212,.40);
-      box-shadow: 0 0 0 4px rgba(6,182,212,.14);
-      transform: translateY(-1px);
-      background: rgba(255,255,255,.92);
+    .inputWrap{
+      position:relative;
     }
 
-    .prefix{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      color: #475569;
-      font-weight: 900;
-      font-size: 13px;
-      white-space: nowrap;
-      padding-right: 10px;
-      border-right: 1px solid rgba(15,23,42,.08);
-    }
-
-    input{
+    .input{
       width:100%;
-      border:none;
+      height:50px;
+      border-radius:15px;
+      border:1px solid rgba(13,127,103,.14);
+      background:
+        radial-gradient(circle at 90% 0%, rgba(255,255,255,.72), transparent 42%),
+        linear-gradient(135deg, rgba(238,255,248,.92), rgba(216,246,233,.82));
       outline:none;
-      background: transparent;
-      color: var(--text);
-      font-size: 14.5px;
-      padding: 2px 4px;
+      padding:0 14px;
+      font-size:13.5px;
+      color:#10322c;
+      font-weight:700;
+      transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background .18s ease,
+        transform .18s ease;
+      box-shadow:
+        0 10px 22px rgba(6,34,29,.045),
+        inset 0 1px 0 rgba(255,255,255,.62);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
     }
-    input::placeholder{ color: rgba(15,23,42,.35); }
 
-    .suffixBtn{
+    .input.with-icon{
+      padding-left:48px;
+    }
+
+    .input.input-phone{
+      padding-left:74px;
+    }
+
+    .input.input-password{
+      padding-right:48px;
+    }
+
+    .input:focus{
+      border-color:rgba(0,201,122,.36);
+      background:
+        radial-gradient(circle at 90% 0%, rgba(255,255,255,.82), transparent 42%),
+        linear-gradient(135deg, rgba(248,255,252,.98), rgba(214,250,234,.92));
+      box-shadow:
+        0 0 0 4px rgba(0,201,122,.10),
+        0 12px 24px rgba(6,34,29,.065),
+        inset 0 1px 0 rgba(255,255,255,.74);
+      transform:translateY(-1px);
+    }
+
+    .input::placeholder{
+      color:#8fa79f;
+      font-weight:500;
+    }
+
+    .prefixIcon{
+      position:absolute;
+      top:50%;
+      left:14px;
+      transform:translateY(-50%);
+      z-index:3;
+      width:28px;
+      height:28px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#0d7f67;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.78), transparent 40%),
+        linear-gradient(135deg, rgba(232,255,246,.96), rgba(198,239,222,.84));
+      border:1px solid rgba(13,127,103,.12);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.68),
+        0 6px 12px rgba(6,34,29,.045);
+      pointer-events:none;
+    }
+
+    .prefixIcon svg{
+      width:15px;
+      height:15px;
+      display:block;
+    }
+
+    .prefix62{
+      position:absolute;
+      top:50%;
+      left:14px;
+      transform:translateY(-50%);
+      z-index:3;
+      min-width:46px;
+      height:28px;
+      padding:0 9px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.78), transparent 40%),
+        linear-gradient(135deg, rgba(232,255,246,.96), rgba(198,239,222,.84));
+      border:1px solid rgba(13,127,103,.12);
+      color:#0d7f67;
+      font-size:12.5px;
+      line-height:1;
+      font-weight:850;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.68),
+        0 6px 12px rgba(6,34,29,.045);
+      pointer-events:none;
+    }
+
+    .togglePass{
+      position:absolute;
+      top:50%;
+      right:9px;
+      transform:translateY(-50%);
+      width:34px;
+      height:34px;
       border:none;
-      background: rgba(255,255,255,.85);
-      color: #0f172a;
-      padding: 10px 10px;
-      border-radius: 14px;
+      border-radius:12px;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.72), transparent 40%),
+        linear-gradient(135deg, rgba(232,255,246,.92), rgba(198,239,222,.78));
       cursor:pointer;
       display:grid;
       place-items:center;
-      border: 1px solid rgba(15,23,42,.10);
-      transition:.18s ease;
+      color:#0d7f67;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.62),
+        0 6px 14px rgba(6,34,29,.05);
+      transition:
+        transform .18s ease,
+        background .18s ease,
+        color .18s ease,
+        box-shadow .18s ease;
     }
-    .suffixBtn:hover{
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-soft);
+
+    .togglePass:hover{
+      transform:translateY(-50%) translateY(-1px);
+      color:#03624C;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.82), transparent 40%),
+        linear-gradient(135deg, rgba(241,255,250,.98), rgba(184,236,212,.90));
+      box-shadow:
+        0 8px 16px rgba(6,34,29,.075),
+        0 0 0 3px rgba(0,201,122,.08),
+        inset 0 1px 0 rgba(255,255,255,.74);
+    }
+
+    .togglePass svg{
+      width:18px;
+      height:18px;
+      display:block;
+      stroke-width:2.1;
     }
 
     .hint{
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 12.5px;
-      line-height: 1.45;
+      margin:7px 0 0;
+      font-size:11.5px;
+      line-height:1.45;
+      color:#6e877f;
+      font-weight:500;
     }
 
-    .row{
+    .helperRow{
       display:flex;
-      justify-content:space-between;
       align-items:center;
-      gap: 12px;
-      margin: 12px 0 14px;
+      justify-content:space-between;
+      gap:10px;
+      margin:9px 0 15px;
       flex-wrap:wrap;
     }
 
-    .linkInline a{
-      color: #1d4ed8;
-      font-weight: 900;
-      text-decoration:none;
-      border-bottom: 1px dashed rgba(29,78,216,.35);
+    .helperText{
+      font-size:11.5px;
+      line-height:1.4;
+      color:#6e877f;
+      font-weight:500;
     }
-    .linkInline a:hover{ border-bottom-color: rgba(29,78,216,.75); }
+
+    .helperLink{
+      font-size:11.5px;
+      line-height:1.4;
+      color:#0d7f67;
+      font-weight:800;
+      text-decoration:none;
+    }
+
+    .helperLink:hover{
+      text-decoration:underline;
+    }
 
     .btn{
       width:100%;
+      height:52px;
       border:none;
+      border-radius:14px;
       cursor:pointer;
-      padding: 13px 14px;
-      border-radius: 16px;
-      font-weight: 900;
-      font-size: 15px;
-      letter-spacing: .2px;
-      color: #081022;
-      background: linear-gradient(135deg, var(--primary1) 0%, var(--primary2) 100%);
-      box-shadow: 0 18px 42px rgba(109,40,217,.18);
-      transition: .18s ease;
+      color:#ffffff;
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:.01em;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.16), transparent 34%),
+        linear-gradient(135deg, #031816 0%, #0a2f27 35%, #0d5c46 68%, #00c97a 100%);
+      box-shadow:
+        0 14px 28px rgba(0,0,0,.18),
+        0 10px 26px rgba(0,223,130,.18),
+        inset 0 1px 0 rgba(255,255,255,.12);
+      transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        filter .2s ease,
+        background .2s ease;
+      position:relative;
+      overflow:hidden;
     }
-    .btn:hover{ transform: translateY(-1px); opacity: .95; }
-    .btn:active{ transform: translateY(0px); opacity: .92; }
 
-    .divider{
-      display:flex;
-      align-items:center;
-      gap: 12px;
-      margin: 16px 0 14px;
-      color: rgba(100,116,139,.9);
-      font-size: 12px;
-    }
-    .divider::before,
-    .divider::after{
+    .btn::before{
       content:"";
-      height: 1px;
-      background: rgba(15,23,42,.10);
-      flex:1;
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%);
+      pointer-events:none;
     }
 
-    .footerLink{
+    .btn::after{
+      content:"";
+      position:absolute;
+      top:0;
+      left:-120%;
+      width:55%;
+      height:100%;
+      background:linear-gradient(
+        to right,
+        transparent,
+        rgba(255,255,255,.22),
+        transparent
+      );
+      transform:skewX(-18deg);
+      animation:btnShine 3.2s infinite;
+      pointer-events:none;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.03);
+      box-shadow:
+        0 18px 34px rgba(0,0,0,.22),
+        0 14px 34px rgba(0,223,130,.22),
+        inset 0 1px 0 rgba(255,255,255,.14);
+    }
+
+    .btn:active{
+      transform:translateY(0);
+      filter:brightness(.99);
+    }
+
+    .footer{
+      margin-top:14px;
       text-align:center;
-      font-size: 13.5px;
-      color: var(--muted);
-      padding-bottom: 4px;
+      font-size:12.5px;
+      line-height:1.5;
+      color:#6c8b82;
+      font-weight:500;
     }
-    .footerLink a{
-      color: #1d4ed8;
-      font-weight: 900;
+
+    .footer a{
+      color:#0d7f67;
+      font-weight:800;
       text-decoration:none;
-      border-bottom: 1px dashed rgba(29,78,216,.35);
-    }
-    .footerLink a:hover{ border-bottom-color: rgba(29,78,216,.75); }
-
-    /* Responsive */
-    @media (max-width: 420px){
-      .inner{ padding: 26px 18px 20px; }
-      .logoBox{ width: 62px; height: 62px; border-radius: 20px; }
-      .logoBox img{ width: 42px; height: 42px; }
-      .title{ font-size: 24px; }
     }
 
-    @media (min-width: 900px){
-      .wrap{ max-width: 620px; }
-      .inner{ padding: 34px 34px 28px; }
-      .title{ font-size: 28px; }
-      input{ font-size: 15.5px; }
-      .btn{ padding: 14px 16px; font-size: 15.5px; }
+    .footer a:hover{
+      text-decoration:underline;
     }
+
+    @keyframes pageEnter{
+      from{
+        opacity:0;
+        transform:translateY(12px);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+
+    @keyframes cardFloat{
+      from{
+        opacity:0;
+        transform:translateY(14px);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+
+    @keyframes blobFloat{
+      0%,100%{
+        transform:translate3d(0,0,0) rotate(0deg);
+      }
+      50%{
+        transform:translate3d(-8px,8px,0) rotate(5deg);
+      }
+    }
+
+    @keyframes blobFloat2{
+      0%,100%{
+        transform:translate3d(0,0,0);
+      }
+      50%{
+        transform:translate3d(7px,-7px,0);
+      }
+    }
+
+    @keyframes shapeMoveOne{
+      0%,100%{
+        transform:translate3d(0,0,0) rotate(0deg);
+      }
+      50%{
+        transform:translate3d(-8px,6px,0) rotate(4deg);
+      }
+    }
+
+    @keyframes shapeMoveTwo{
+      0%,100%{
+        transform:translate3d(0,0,0) scale(1);
+      }
+      50%{
+        transform:translate3d(-4px,-8px,0) scale(1.04);
+      }
+    }
+
+    @keyframes shapeMoveThree{
+      0%,100%{
+        transform:translate3d(0,0,0) rotate(0deg);
+      }
+      50%{
+        transform:translate3d(7px,5px,0) rotate(-4deg);
+      }
+    }
+
+    @keyframes btnShine{
+      0%{
+        left:-120%;
+      }
+      20%{
+        left:180%;
+      }
+      100%{
+        left:180%;
+      }
+    }
+
+    @media (max-width:380px){
+      body{
+        padding:0;
+      }
+
+      .page{
+        max-width:none;
+      }
+
+      .hero{
+        height:168px;
+      }
+
+      .card{
+        padding:22px 20px 22px;
+      }
+
+      .title{
+        font-size:24px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *,
+      *::before,
+      *::after{
+        animation:none !important;
+        transition:none !important;
+      }
+    }
+
+    .input.is-referral-locked{
+  color:#0d7f67;
+  font-weight:900;
+  letter-spacing:.04em;
+  cursor:not-allowed;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(255,255,255,.82), transparent 42%),
+    linear-gradient(135deg, rgba(232,255,246,.98), rgba(200,246,226,.92));
+  border-color:rgba(13,127,103,.22);
+  box-shadow:
+    0 0 0 3px rgba(0,201,122,.08),
+    0 10px 22px rgba(6,34,29,.045),
+    inset 0 1px 0 rgba(255,255,255,.68);
+}
+
+.input.is-referral-locked::selection{
+  background:rgba(13,127,103,.16);
+}
   </style>
 </head>
-
 <body>
-  <div class="wrap">
-    <section class="card" role="region" aria-label="Daftar Crowdnik">
-      <div class="inner">
+  <main class="page">
+    <section class="shell" role="region" aria-label="Daftar Crowdnik">
 
-        <div class="head">
-          <div class="brand">
-            <div class="logoBox">
-              <img src="/logo.png" alt="Crowdnik">
-            </div>
-            <div class="brandText">
-              <b>Crowdnik</b>
-              <span>Buat akun baru</span>
-            </div>
-          </div>
+      <div class="hero">
+        <a href="/login" class="backBubble" aria-label="Kembali ke login">
+          <span>‹</span>
+          Back
+        </a>
 
-          <div class="secure" title="Form aman">
-            <span class="secureDot"></span>
-            <span>Secure</span>
+        <div class="heroShape shapeOne"></div>
+        <div class="heroShape shapeTwo"></div>
+        <div class="heroShape shapeThree"></div>
+      </div>
+
+      <div class="card">
+        <div class="brandInside">
+          <div class="logoBox">
+            <img src="/logo.png" alt="Crowdnik">
           </div>
         </div>
 
-        <div class="title">Daftar</div>
-        <div class="subtitle">Lengkapi formulir di bawah ini untuk membuat akun Crowdnik.</div>
+        <h1 class="title">Buat Akun</h1>
+        <p class="subtitle">Daftar untuk mulai memakai akun Crowdnik.</p>
 
         {{-- ERROR VALIDATION --}}
         @if ($errors->any())
@@ -393,49 +790,43 @@
           </div>
         @endif
 
-        <form method="POST" action="/register" autocomplete="off" novalidate>
+        <form method="POST" action="{{ route('register.store') }}" autocomplete="off" novalidate>
           @csrf
 
           <div class="field">
-            <label for="name">Nama Panggilan</label>
-            <div class="control">
-              <div class="prefix" aria-hidden="true">
-                <!-- user icon -->
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M20 21a8 8 0 0 0-16 0" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <label class="label" for="name">Nama Panggilan</label>
+            <div class="inputWrap">
+              <span class="prefixIcon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </div>
+              </span>
 
-              <input
-                id="name"
-                type="text"
-                name="name"
-                value="{{ old('name') }}"
-                placeholder="Masukkan nama panggilan"
-                required
-              />
+<input
+  class="input with-icon"
+  id="name"
+  type="text"
+  name="name"
+  value="{{ old('name') }}"
+  placeholder="Masukkan nama panggilan"
+  required
+/>
             </div>
           </div>
 
           <div class="field">
-            <label for="phone">Nomor Telepon</label>
-            <div class="control">
-              <div class="prefix" aria-hidden="true">
-                <!-- phone icon -->
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07A19.5 19.5 0 0 1 3.15 9.81 19.86 19.86 0 0 1 .08 1.18A2 2 0 0 1 2.06 -1h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L6.09 6.91a16 16 0 0 0 7 7l1.58-1.06a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92Z"
-                        stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>+62</span>
-              </div>
+            <label class="label" for="phone">Nomor Telepon</label>
+            <div class="inputWrap">
+              <span class="prefix62">+62</span>
 
               <input
+                class="input input-phone"
                 id="phone"
                 type="tel"
                 name="phone"
                 value="{{ old('phone') }}"
-                placeholder="Contoh: 08123456789"
+                placeholder="08123456789"
                 inputmode="numeric"
                 pattern="08[0-9]{8,12}"
                 required
@@ -444,92 +835,136 @@
           </div>
 
           <div class="field">
-            <label for="referral_code">Kode Referral (Opsional)</label>
-            <div class="control">
-              <div class="prefix" aria-hidden="true">
-                <!-- gift icon -->
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M20 12v10H4V12" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M22 7H2v5h20V7Z" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 22V7" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7Z" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7Z" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <label class="label" for="referral_code">Kode Referral <span style="font-weight:500;">(Opsional)</span></label>
+            <div class="inputWrap">
+              <span class="prefixIcon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 22V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </div>
+              </span>
 
-              <input
-                id="referral_code"
-                type="text"
-                name="referral_code"
-                value="{{ old('referral_code', request('ref')) }}"
-                placeholder="Masukkan kode referral (jika ada)"
-              />
+       <input
+  class="input with-icon {{ $isReferralLocked ? 'is-referral-locked' : '' }}"
+  id="referral_code"
+  type="text"
+  name="referral_code"
+  value="{{ $referralInputValue }}"
+  placeholder="Masukkan kode referral"
+  autocomplete="off"
+  {{ $isReferralLocked ? 'readonly' : '' }}
+  data-locked-referral="{{ $isReferralLocked ? $lockedReferralCode : '' }}"
+/>
             </div>
-            <div class="hint">
-              Jika kamu punya link referral, kode biasanya sudah terisi otomatis.
-            </div>
+
+           <div class="hint">
+  @if($isReferralLocked)
+    Kode referral dari link undangan sudah terkunci dan tidak bisa dihapus.
+  @else
+    Jika kamu punya link referral, kode biasanya sudah terisi otomatis.
+  @endif
+</div>
           </div>
 
           <div class="field">
-            <label for="password">Kata Sandi</label>
-            <div class="control">
-              <div class="prefix" aria-hidden="true">
-                <!-- lock icon -->
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z"
-                        stroke="rgba(71,85,105,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <label class="label" for="password">Password</label>
+            <div class="inputWrap">
+              <span class="prefixIcon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                  <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </div>
+              </span>
 
               <input
+                class="input with-icon input-password"
                 id="password"
                 type="password"
                 name="password"
-                placeholder="Buat kata sandi"
+                placeholder="Buat password"
                 required
               />
 
-              <button class="suffixBtn" type="button" onclick="togglePassword()" aria-label="Tampilkan/Sembunyikan password">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12Z" stroke="rgba(15,23,42,.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="rgba(15,23,42,.75)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <button class="togglePass" type="button" onclick="togglePassword()" aria-label="Tampilkan password">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
+                  <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
             </div>
 
             <div class="hint">
-              Gunakan kombinasi huruf & angka agar lebih aman.
+              Gunakan kombinasi huruf dan angka agar lebih aman.
             </div>
           </div>
 
           {{-- Honeypot anti bot --}}
-          <input type="text" name="website" style="display:none">
+          <input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none">
 
-          <div class="row">
-            <div class="hint">Dengan daftar, kamu menyetujui ketentuan Crowdnik.</div>
-            <div class="hint linkInline"><a href="/login">Masuk</a></div>
+          <div class="helperRow">
+            <div class="helperText">Dengan daftar, kamu menyetujui ketentuan Crowdnik.</div>
+            <a class="helperLink" href="/login">Masuk</a>
           </div>
 
           <button class="btn" type="submit">Daftar</button>
         </form>
 
-        <div class="divider">Crowdnik</div>
-
-        <div class="footerLink">
+        <div class="footer">
           Sudah punya akun? <a href="/login">Masuk sekarang</a>
         </div>
-
       </div>
     </section>
-  </div>
+  </main>
 
   <script>
     function togglePassword(){
       const input = document.getElementById('password');
+      const icon = document.getElementById('eyeIcon');
+
       if(!input) return;
-      input.type = input.type === 'password' ? 'text' : 'password';
+
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+
+      if(icon){
+        icon.innerHTML = isHidden
+          ? '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.88 5.09A9.77 9.77 0 0 1 12 4.86C18.5 4.86 22.5 12 22.5 12a17.56 17.56 0 0 1-3.09 4.08" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.61 6.61C3.32 8.78 1.5 12 1.5 12s4 7.14 10.5 7.14a9.9 9.9 0 0 0 4.1-.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+          : '<path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      }
     }
   </script>
+
+  <script>
+  (function lockReferralInput(){
+    const input = document.getElementById('referral_code');
+    if(!input) return;
+
+    const lockedValue = input.dataset.lockedReferral || '';
+
+    if(!lockedValue) return;
+
+    input.value = lockedValue;
+    input.readOnly = true;
+
+    input.addEventListener('input', function(){
+      this.value = lockedValue;
+    });
+
+    input.addEventListener('paste', function(e){
+      e.preventDefault();
+      this.value = lockedValue;
+    });
+
+    input.addEventListener('keydown', function(e){
+      const allowedKeys = ['Tab', 'Shift', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+      if(!allowedKeys.includes(e.key)){
+        e.preventDefault();
+      }
+    });
+  })();
+</script>
 </body>
 </html>

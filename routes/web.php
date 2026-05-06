@@ -1,22 +1,25 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\DepositController;
-use App\Http\Controllers\Admin\AdminController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\DepositController;
 use App\Http\Controllers\InvestmentController;
+use App\Http\Controllers\MarketController;
+use App\Http\Controllers\ProductBuyController;
 use App\Http\Controllers\PayoutAccountController;
 use App\Http\Controllers\WithdrawalController;
-use App\Http\Controllers\Admin\WithdrawalAdminController;
 use App\Http\Controllers\ReferralController;
-use App\Http\Controllers\Admin\ReferralAdminController;
 use App\Http\Controllers\ForumController;
-use App\Http\Controllers\Admin\AdminForumController;
 use App\Http\Controllers\SaldoController;
+
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\WithdrawalAdminController;
+use App\Http\Controllers\Admin\ReferralAdminController;
+use App\Http\Controllers\Admin\AdminForumController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,66 +27,243 @@ use App\Http\Controllers\SaldoController;
 |--------------------------------------------------------------------------
 */
 
-
-
 Route::get('/', function () {
     return redirect('/login');
 });
 
-
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware('auth');
-
 /*
 |--------------------------------------------------------------------------
-| AUTH ROUTES (GUEST ONLY)
+| GUEST ROUTES
 |--------------------------------------------------------------------------
 */
-/*
-|--------------------------------------------------------------------------
-| GUEST
-|--------------------------------------------------------------------------
-*/
+
 Route::middleware('guest')->group(function () {
+    Route::get('/register', [AuthController::class, 'showRegister'])
+        ->name('register');
 
-    Route::get('/register', [AuthController::class, 'showRegister']);
     Route::post('/register', [AuthController::class, 'register'])
-        ->middleware('throttle:3,1');
+        ->middleware('throttle:3,1')
+        ->name('register.store');
 
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::get('/login', [AuthController::class, 'showLogin'])
+        ->name('login');
+
     Route::post('/login', [AuthController::class, 'login'])
-        ->middleware('throttle:5,1');
+        ->middleware('throttle:5,1')
+        ->name('login.store');
 });
 
+/*
+|--------------------------------------------------------------------------
+| AUTH USER ROUTES
+|--------------------------------------------------------------------------
+*/
 
+Route::middleware('auth')->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Auth Action
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Main Pages
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/pasar', [MarketController::class, 'index'])
+        ->name('market.index');
+
+    Route::get('/investasi', [InvestmentController::class, 'index'])
+        ->name('investasi.index');
+
+    Route::get('/akun', function () {
+        return view('ui.akun');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Saldo
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/saldo/rincian', [SaldoController::class, 'index'])
+        ->name('saldo.rincian');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Deposit
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/deposit', [DepositController::class, 'index'])
+        ->name('deposit.index');
+
+    Route::post('/deposit', [DepositController::class, 'store'])
+        ->name('deposit.store');
+
+    Route::get('/deposit/history', [DepositController::class, 'history'])
+        ->name('deposit.history');
+
+    Route::get('/deposit/invoice/{id}', [DepositController::class, 'invoice'])
+        ->name('deposit.invoice');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Product Buy / Investment Action
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/product/buy/{id}', [ProductBuyController::class, 'buy']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payout Accounts API + UI
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('auth')->group(function () {
+
+        // UI halaman tambah rekening
+        Route::view('/ui/payout-accounts', 'payout_accounts.index')
+            ->name('payout-accounts.ui');
+
+        // API rekening bank/e-wallet
+        Route::get('/payout-accounts', [PayoutAccountController::class, 'index'])
+            ->name('payout-accounts.index');
+
+        Route::post('/payout-accounts', [PayoutAccountController::class, 'store'])
+            ->name('payout-accounts.store');
+
+        Route::put('/payout-accounts/{id}', [PayoutAccountController::class, 'update'])
+            ->name('payout-accounts.update');
+
+        Route::delete('/payout-accounts/{id}', [PayoutAccountController::class, 'destroy'])
+            ->name('payout-accounts.destroy');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Withdrawals User
+    |--------------------------------------------------------------------------
+    */
+
+    Route::view('/withdraw/history', 'withdrawals.history')
+        ->name('withdrawals.history');
+
+    Route::view('/ui/withdrawals', 'withdrawals.index')
+        ->name('withdrawals.page');
+
+    Route::get('/withdrawals', [WithdrawalController::class, 'index'])
+        ->name('withdrawals.index');
+
+    Route::post('/withdrawals', [WithdrawalController::class, 'store'])
+        ->name('withdrawals.store');
+
+    Route::get('/withdrawals/{id}', [WithdrawalController::class, 'show'])
+        ->name('withdrawals.show');
+
+    Route::post('/withdrawals/{id}/cancel', [WithdrawalController::class, 'cancel'])
+        ->name('withdrawals.cancel');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Referral
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/referral', [ReferralController::class, 'index'])
+        ->name('referral.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Team / Forum User
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/team', [ForumController::class, 'index'])
+        ->name('team.index');
+
+    Route::post('/team/posts', [ForumController::class, 'storePost'])
+        ->name('team.posts.store');
+
+    Route::get('/team/posts/{post}', [ForumController::class, 'show'])
+        ->name('team.show');
+
+    Route::post('/team/posts/{post}/comments', [ForumController::class, 'storeComment'])
+        ->name('team.comments.store');
+
+    Route::delete('/team/posts/{post}', [ForumController::class, 'destroyPost'])
+        ->name('team.posts.destroy');
+
+    Route::delete('/team/comments/{comment}', [ForumController::class, 'destroyComment'])
+        ->name('team.comments.destroy');
+
+    /*
+    |--------------------------------------------------------------------------
+    | UI Direct View Routes
+    |--------------------------------------------------------------------------
+    */
+
+
+
+
+});
+Route::post('/payment/jayapay/deposit/callback', [DepositController::class, 'callback'])
+    ->name('payment.jayapay.deposit.callback');
+
+Route::post('/payment/jayapay/withdrawal/callback', [WithdrawalController::class, 'jayaPayCallback'])
+    ->name('payment.jayapay.withdrawal.callback');
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN
+| ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Dashboard
+        |--------------------------------------------------------------------------
+        */
+
         Route::get('/', [AdminController::class, 'index']);
-    });
 
-    
-Route::middleware(['auth', 'admin'])
-    ->prefix('admin')
-    ->group(function () {
+/*
+|--------------------------------------------------------------------------
+| Admin Users
+|--------------------------------------------------------------------------
+*/
 
-        Route::get('/', [AdminController::class, 'index']);
+Route::get('/users', [UserController::class, 'index'])
+    ->name('admin.users.index');
 
-        Route::get('/users', [UserController::class, 'index']);
-        Route::get('/users/{id}', [UserController::class, 'show']);
-        Route::post('/users/{id}/vip', [UserController::class, 'updateVip']);
-        Route::post('/users/{id}/saldo', [UserController::class, 'updateSaldo']);
-    });
+Route::get('/users/{id}', [UserController::class, 'show'])
+    ->name('admin.users.show');
 
-Route::middleware(['auth', 'admin'])
-    ->prefix('admin')
-    ->group(function () {
+Route::post('/users/{id}/vip', [UserController::class, 'updateVip'])
+    ->name('admin.users.updateVip');
+
+Route::post('/users/{id}/saldo', [UserController::class, 'updateSaldo'])
+    ->name('admin.users.updateSaldo');
+
+Route::post('/users/{id}/saldo-penarikan', [UserController::class, 'updateSaldoPenarikan'])
+    ->name('admin.users.updateSaldoPenarikan');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Products
+        |--------------------------------------------------------------------------
+        */
 
         Route::get('/products', [AdminProductController::class, 'index']);
         Route::get('/products/create', [AdminProductController::class, 'create']);
@@ -91,90 +271,42 @@ Route::middleware(['auth', 'admin'])
 
         Route::get('/products/{id}/edit', [AdminProductController::class, 'edit']);
         Route::post('/products/{id}/update', [AdminProductController::class, 'update']);
-
         Route::post('/products/{id}/toggle', [AdminProductController::class, 'toggle']);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Withdrawals
+        |--------------------------------------------------------------------------
+        */
 
-          Route::get('/withdrawals', [WithdrawalAdminController::class, 'index']);
-    Route::post('/withdrawals/{id}/approve', [WithdrawalAdminController::class, 'approve']);
-    Route::post('/withdrawals/{id}/reject', [WithdrawalAdminController::class, 'reject']);
-    Route::post('/withdrawals/{id}/paid', [WithdrawalAdminController::class, 'markPaid']);
+        Route::get('/withdrawals', [WithdrawalAdminController::class, 'index']);
+        Route::post('/withdrawals/{id}/approve', [WithdrawalAdminController::class, 'approve']);
+        Route::post('/withdrawals/{id}/reject', [WithdrawalAdminController::class, 'reject']);
+        Route::post('/withdrawals/{id}/paid', [WithdrawalAdminController::class, 'markPaid']);
 
+        Route::view('/withdraw', 'admin.withdrawals.index')
+            ->name('admin.withdraw.page');
 
-      Route::view('/ui/withdrawals', 'admin.withdrawals.index');
+        Route::view('/ui/withdrawals', 'admin.withdrawals.index');
 
-          // admin withdraw page (UI)
-    Route::view('/withdraw', 'admin.withdrawals.index')
-      ->name('admin.withdraw.page');
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Referral
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/referral', [ReferralAdminController::class, 'index'])
+            ->name('admin.referral');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Forum
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/forum', [AdminForumController::class, 'index'])
+            ->name('admin.forum.index');
+
+        Route::get('/forum/posts/{post}', [AdminForumController::class, 'show'])
+            ->name('admin.forum.show');
     });
-
-/*
-|--------------------------------------------------------------------------
-| USER AUTH
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth')->group(function () {
-
-
-    Route::post('/logout', [AuthController::class, 'logout']);
-     Route::get('/saldo/rincian', [SaldoController::class, 'index'])->name('saldo.rincian');
-       Route::get('/deposit/history', [DepositController::class, 'history'])->name('deposit.history');
-});
-
-
-
-Route::middleware('auth')->group(function () {
-    Route::get('/deposit', [DepositController::class, 'index']);
-    Route::post('/deposit', [DepositController::class, 'store']);
-    Route::post('/deposit/callback/{order_id}', [DepositController::class, 'callback']);
-
-     // payout accounts
-  Route::get('/payout-accounts', [PayoutAccountController::class, 'index']);
-  Route::post('/payout-accounts', [PayoutAccountController::class, 'store']);
-  Route::put('/payout-accounts/{id}', [PayoutAccountController::class, 'update']);
-  Route::delete('/payout-accounts/{id}', [PayoutAccountController::class, 'destroy']);
-
-  // withdrawals (user)
-  Route::get('/withdrawals', [WithdrawalController::class, 'index']);
-  Route::get('/withdrawals/{id}', [WithdrawalController::class, 'show']);
-  Route::post('/withdrawals', [WithdrawalController::class, 'store']);
-  Route::post('/withdrawals/{id}/cancel', [WithdrawalController::class, 'cancel']);
-
-    Route::view('/ui/payout-accounts', 'payout_accounts.index');
-  Route::view('/ui/withdrawals', 'withdrawals.index');
-   Route::get('/referral', [ReferralController::class, 'index'])->name('referral.index');
-
-    Route::get('/team', [ForumController::class, 'index'])->name('team.index');
-    Route::post('/team/posts', [ForumController::class, 'storePost'])->name('team.posts.store');
-
-    Route::get('/team/posts/{post}', [ForumController::class, 'show'])->name('team.show');
-    Route::post('/team/posts/{post}/comments', [ForumController::class, 'storeComment'])->name('team.comments.store');
-
-    Route::delete('/team/posts/{post}', [ForumController::class, 'destroyPost'])->name('team.posts.destroy');
-    Route::delete('/team/comments/{comment}', [ForumController::class, 'destroyComment'])->name('team.comments.destroy');
-
-});
-
-
-Route::middleware('auth')->post(
-    '/product/buy/{id}',
-    [\App\Http\Controllers\ProductBuyController::class, 'buy']
-);
-
-Route::middleware('auth')->get('/investasi', [InvestmentController::class, 'index'])
-    ->name('investasi.index');
-
-Route::middleware(['auth', 'admin'])
-    ->prefix('admin')
-    ->group(function () {
-        Route::get('/referral', [ReferralAdminController::class, 'index'])->name('admin.referral');
-    });
-
-    Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
-    Route::get('/forum', [AdminForumController::class, 'index'])->name('admin.forum.index');
-    Route::get('/forum/posts/{post}', [AdminForumController::class, 'show'])->name('admin.forum.show');
-});
-
-Route::get('/akun', function () {
-  return view('ui.akun');
-})->middleware('auth');

@@ -18,7 +18,7 @@ class PayoutAccountController extends Controller
   {
     $data = $request->validate([
       'type' => ['required', Rule::in(['BANK','EWALLET'])],
-      'provider' => ['required','string','max:50'],
+      'provider' => ['required', 'string', 'max:50', Rule::in($this->allowedProviders())],
       'account_name' => ['required','string','max:100'],
       'account_number' => ['required','string','max:50'],
       'is_default' => ['nullable','boolean'],
@@ -46,7 +46,7 @@ class PayoutAccountController extends Controller
 
     $data = $request->validate([
       'type' => ['sometimes', Rule::in(['BANK','EWALLET'])],
-      'provider' => ['sometimes','string','max:50'],
+      'provider' => ['sometimes', 'string', 'max:50', Rule::in($this->allowedProviders())],
       'account_name' => ['sometimes','string','max:100'],
       'account_number' => ['sometimes','string','max:50'],
       'is_default' => ['nullable','boolean'],
@@ -69,5 +69,23 @@ class PayoutAccountController extends Controller
     $account->delete();
 
     return response()->json(['message' => 'Payout account deleted']);
+  }
+
+  private function allowedProviders(): array
+  {
+    return [
+      'BCA',
+      'BRI',
+      'BNI',
+      'MANDIRI',
+      'PERMATA',
+      'CIMB',
+      'BSI',
+      'DANA',
+      'OVO',
+      'GOPAY',
+      'SHOPEEPAY',
+      'LINKAJA',
+    ];
   }
 }

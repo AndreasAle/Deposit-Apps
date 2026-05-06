@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    // LIST USER (sudah kamu punya, ini buat rapi aja)
+    // LIST USER
     public function index()
     {
         $users = User::latest()->get();
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -20,46 +21,98 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::findOrFail($id);
+
         return view('admin.users.show', compact('user'));
     }
 
-    // UPDATE VIP (OVERRIDE)
+    // UPDATE VIP
     public function updateVip(Request $request, $id)
     {
         $request->validate([
-            'vip_level' => 'required|integer|min:0|max:10'
+            'vip_level' => 'required|integer|min:0|max:10',
         ]);
 
         $user = User::findOrFail($id);
 
-        $oldVip = $user->vip_level;
-        $user->vip_level = $request->vip_level;
+        $oldVip = (int) ($user->vip_level ?? 0);
+        $user->vip_level = (int) $request->vip_level;
         $user->save();
 
-        // (nanti bisa masuk ke table logs)
-        // AdminLog::create(...)
-
-        return back()->with('success', "VIP user berhasil diubah dari VIP $oldVip ke VIP {$user->vip_level}");
+        return back()->with('success', "VIP user berhasil diubah dari VIP {$oldVip} ke VIP {$user->vip_level}");
     }
 
+    // UPDATE SALDO UTAMA
     public function updateSaldo(Request $request, $id)
     {
         $request->validate([
-            'amount' => 'required|numeric'
+            'amount' => 'required|numeric',
         ]);
 
         $user = User::findOrFail($id);
 
-        $oldSaldo = $user->saldo;
-        $user->saldo += $request->amount; // bisa + atau -
+        $amount = (float) $request->amount;
+        $oldSaldo = (float) ($user->saldo ?? 0);
+
+        $newSaldo = $oldSaldo + $amount;
+
+        if ($newSaldo < 0) {
+            return back()->with('error', 'Saldo utama tidak boleh minus.');
+        }
+
+        $user->saldo = $newSaldo;
         $user->save();
 
-        activity_log(
-            Auth::id(),
-            'ADMIN_UPDATE_SALDO',
-            "User #{$user->id} saldo {$oldSaldo} → {$user->saldo}"
-        );
+        if (function_exists('activity_log')) {
+            activity_log(
+                Auth::id(),
+                'ADMIN_UPDATE_SALDO_UTAMA',
+                "User #{$user->id} saldo utama {$oldSaldo} → {$user->saldo}"
+            );
+        }
 
-        return back()->with('success', 'Saldo berhasil diperbarui');
+        return back()->with('success', 'Saldo utama berhasil diperbarui');
+    }
+
+    // UPDATE SALDO PENARIKAN
+    public function updateSaldoPenarikan(Request $request, $id)
+    {
+        $request->validate([
+            'amount' => 'required|numeric',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        $amount = (float) $request->amount;
+        $oldSaldoPenarikan = (float) ($user->saldo_penarikan ?? 0);
+        $oldSaldoPenarikanTotal = (float) ($user->saldo_penarikan_total ?? 0);
+
+        $newSaldoPenarikan = $oldSaldoPenarikan + $amount;
+
+        if ($newSaldoPenarikan < 0) {
+            return back()->with('error', 'Saldo penarikan tidak boleh minus.');
+        }
+
+        $user->saldo_penarikan = $newSaldoPenarikan;
+
+        /*
+         * saldo_penarikan_total = histori total saldo tarik yang pernah ditambahkan.
+         * Jadi hanya naik kalau admin menambahkan saldo penarikan.
+         * Kalau admin mengurangi saldo, total histori jangan ikut turun.
+         */
+        if ($amount > 0) {
+            $user->saldo_penarikan_total = $oldSaldoPenarikanTotal + $amount;
+        }
+
+        $user->save();
+
+        if (function_exists('activity_log')) {
+            activity_log(
+                Auth::id(),
+                'ADMIN_UPDATE_SALDO_PENARIKAN',
+                "User #{$user->id} saldo penarikan {$oldSaldoPenarikan} → {$user->saldo_penarikan}"
+            );
+        }
+
+        return back()->with('success', 'Saldo penarikan berhasil diperbarui');
     }
 }

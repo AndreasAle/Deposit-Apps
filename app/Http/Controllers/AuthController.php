@@ -11,70 +11,96 @@ use App\Support\ReferralCode;
 class AuthController extends Controller
 {
     // FORM REGISTER
-    public function showRegister()
+    public function showRegister(Request $request)
     {
+        if ($request->filled('ref')) {
+            session([
+                'referral_code' => strtoupper(trim($request->query('ref')))
+            ]);
+        }
+
         return view('auth.register');
     }
 
     // PROSES REGISTER
-public function register(Request $request)
-{
-    // Honeypot anti bot
-    if ($request->filled('website')) {
-        return back();
-    }
-
-    $request->validate([
-        'name' => 'required|string|max:100',
-        'phone' => 'required|string|unique:users,phone',
-        'password' => 'required|min:6',
-        'referral_code' => 'nullable|string|max:20', // jangan exists dulu
-    ]);
-
-    $referrer = null;
-
-    if ($request->filled('referral_code')) {
-        $refCode = strtoupper(trim($request->referral_code));
-
-        $referrer = User::where('referral_code', $refCode)->first();
-
-        if (!$referrer) {
-            return back()
-                ->withErrors(['referral_code' => 'Kode referral tidak ditemukan'])
-                ->withInput();
+    public function register(Request $request)
+    {
+        // Honeypot anti bot
+        if ($request->filled('website')) {
+            return back();
         }
 
-        // opsional: blok admin jadi referrer
-        if ($referrer->role === 'admin') {
-            return back()
-                ->withErrors(['referral_code' => 'Kode referral tidak valid'])
-                ->withInput();
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'phone' => 'required|string|unique:users,phone',
+            'password' => 'required|min:6',
+            'referral_code' => 'nullable|string|max:20',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Referral Code Lock
+        |--------------------------------------------------------------------------
+        | Kalau user datang dari /register?ref=XXXXX,
+        | kode referral disimpan di session.
+        | Jadi walaupun input referral dihapus/diubah dari frontend,
+        | backend tetap pakai kode dari session.
+        */
+        $refCode = session('referral_code')
+            ?: $request->input('referral_code');
+
+        $refCode = $refCode
+            ? strtoupper(trim($refCode))
+            : null;
+
+        $referrer = null;
+
+        if ($refCode) {
+            $referrer = User::where('referral_code', $refCode)->first();
+
+            if (!$referrer) {
+                return back()
+                    ->withErrors(['referral_code' => 'Kode referral tidak ditemukan'])
+                    ->withInput();
+            }
+
+            // Blok admin jadi referrer
+            if ($referrer->role === 'admin') {
+                return back()
+                    ->withErrors(['referral_code' => 'Kode referral tidak valid'])
+                    ->withInput();
+            }
         }
+
+        $user = User::create([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'password' => Hash::make($request->password),
+
+            'saldo' => 0,
+            'saldo_penarikan' => 0,
+            'saldo_penarikan_total' => 0,
+            'saldo_hold' => 0,
+
+            'vip_level' => 0,
+            'role' => 'user',
+
+            'referral_code' => ReferralCode::generateUnique(10),
+            'referred_by_user_id' => $referrer?->id,
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hapus session referral setelah berhasil daftar
+        |--------------------------------------------------------------------------
+        | Biar kode referral tidak kebawa ke register berikutnya.
+        */
+        session()->forget('referral_code');
+
+        Auth::login($user);
+
+        return redirect('/dashboard');
     }
-
-
-    // opsional: blok admin jadi referrer
-    if ($referrer && $referrer->role === 'admin') {
-        return back()->withErrors(['referral_code' => 'Kode referral tidak valid'])->withInput();
-    }
-
-    $user = User::create([
-        'name' => $request->name,
-        'phone' => $request->phone,
-        'password' => Hash::make($request->password),
-        'saldo' => 0,
-        'vip_level' => 0,
-        'role' => 'user',
-
-        'referral_code' => ReferralCode::generateUnique(10),
-        'referred_by_user_id' => $referrer?->id,
-    ]);
-
-    Auth::login($user);
-
-    return redirect('/dashboard');
-}
-
 
     // FORM LOGIN
     public function showLogin()
@@ -111,8 +137,10 @@ public function register(Request $request)
     public function logout(Request $request)
     {
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/login');
     }
 }

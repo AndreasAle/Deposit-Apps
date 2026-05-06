@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductCategory;
-use App\Models\UserInvestment;
-use App\Services\ReferralService;
-
-// callback() needs these:
-use Illuminate\Support\Facades\DB;
 use App\Models\Deposit;
+use App\Models\ProductCategory;
 use App\Models\User;
+use App\Models\UserInvestment;
 use App\Models\VipRule;
+use App\Services\ReferralService;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -18,17 +16,44 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
         $categories = ProductCategory::with(['products' => function ($q) {
             $q->where('is_active', 1);
         }])->get();
 
-        // ✅ INI YANG DITAMBAH: ambil investasi aktif user, mapping by product_id
-        $activeInvestments = UserInvestment::where('user_id', $user->id)
+        $activeInvestmentRows = UserInvestment::query()
+            ->where('user_id', $user->id)
             ->where('status', 'active')
-            ->get()
-            ->keyBy('product_id');
+            ->get();
 
-        return view('dashboard', compact('user', 'categories', 'activeInvestments'));
+        $activeInvestments = $activeInvestmentRows->keyBy('product_id');
+
+        $totalInvestasi = (int) $activeInvestmentRows->sum('price');
+        $activePlanCount = (int) $activeInvestmentRows->count();
+        $totalDailyProfit = (int) $activeInvestmentRows->sum('daily_profit');
+        $totalProfit = (int) $activeInvestmentRows->sum('total_profit');
+
+        $saldoUtama = (int) ($user->saldo ?? 0);
+        $saldoPenarikan = (int) ($user->saldo_penarikan ?? 0);
+        $saldoHold = (int) ($user->saldo_hold ?? 0);
+        $saldoPenarikanTotal = (int) ($user->saldo_penarikan_total ?? 0);
+
+        return view('dashboard', compact(
+            'user',
+            'categories',
+            'activeInvestments',
+            'saldoUtama',
+            'saldoPenarikan',
+            'saldoHold',
+            'saldoPenarikanTotal',
+            'totalInvestasi',
+            'activePlanCount',
+            'totalDailyProfit',
+            'totalProfit'
+        ));
     }
 
     public function callback($order_id)
@@ -46,13 +71,15 @@ class DashboardController extends Controller
             }
 
             $deposit->status = 'PAID';
+            $deposit->paid_at = now();
             $deposit->save();
 
-            $user = User::lockForUpdate()->findOrFail($deposit->user_id);
+            $user = User::where('id', $deposit->user_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            $user->saldo += $deposit->amount;
+            $user->saldo = (int) $user->saldo + (int) $deposit->amount;
 
-            // VIP calc
             $totalDeposit = Deposit::where('user_id', $user->id)
                 ->where('status', 'PAID')
                 ->sum('amount');
@@ -61,20 +88,20 @@ class DashboardController extends Controller
                 ->orderBy('min_total_deposit', 'asc')
                 ->get();
 
-            $newVip = $user->vip_level;
+            $newVip = (int) ($user->vip_level ?? 0);
+
             foreach ($vipRules as $rule) {
-                if ($totalDeposit >= $rule->min_total_deposit) {
-                    $newVip = $rule->vip_level;
+                if ((int) $totalDeposit >= (int) $rule->min_total_deposit) {
+                    $newVip = (int) $rule->vip_level;
                 }
             }
 
-            if ($newVip > $user->vip_level) {
+            if ($newVip > (int) ($user->vip_level ?? 0)) {
                 $user->vip_level = $newVip;
             }
 
             $user->save();
 
-            // ✅ REFERRAL COMMISSION: deposit 5%
             (new ReferralService())->give(
                 $user,
                 'deposit',
@@ -84,10 +111,12 @@ class DashboardController extends Controller
             );
 
             DB::commit();
+
             return back()->with('success', 'Deposit berhasil, saldo & VIP diperbarui');
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);
+
             return back()->with('error', 'Terjadi kesalahan saat memproses deposit');
         }
     }
