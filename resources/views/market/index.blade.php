@@ -1,3 +1,4 @@
+ @include('partials.anti-inspect')
 @php
     $user = auth()->user();
 

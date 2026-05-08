@@ -35,13 +35,13 @@ class Withdrawal extends Model
         'reject_reason',
         'failed_reason',
         'proof_url',
-
-        // Dates
-        'requested_at',
-        'processing_at',
-        'approved_at',
-        'paid_at',
-        'failed_at',
+// Dates
+'requested_at',
+'processing_at',
+'processed_at',
+'approved_at',
+'paid_at',
+'failed_at',
     ];
 
     protected $casts = [
@@ -52,11 +52,12 @@ class Withdrawal extends Model
         'gateway_response' => 'array',
         'gateway_callback' => 'array',
 
-        'requested_at' => 'datetime',
-        'processing_at' => 'datetime',
-        'approved_at' => 'datetime',
-        'paid_at' => 'datetime',
-        'failed_at' => 'datetime',
+'requested_at' => 'datetime',
+'processing_at' => 'datetime',
+'processed_at' => 'datetime',
+'approved_at' => 'datetime',
+'paid_at' => 'datetime',
+'failed_at' => 'datetime',
     ];
 
     /*

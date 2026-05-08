@@ -1,3 +1,5 @@
+{{-- Rubik Premium — Investasi Saya (NO @extends) --}}
+ @include('partials.anti-inspect')
 @php
   $user = $user ?? auth()->user();
 
@@ -1437,8 +1439,8 @@
             <path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M15 6h5v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Deposit 5%
-          <span>Produk 3%</span>
+        Produk 33%
+        <span>Referral aktif</span>
         </div>
       </div>
 

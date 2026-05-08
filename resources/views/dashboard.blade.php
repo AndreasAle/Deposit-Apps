@@ -2259,7 +2259,7 @@ border:2px solid rgba(0,223,130,.45);
 
       <div class="rb-modal-actions">
         <button class="rb-modal-btn" type="button" id="tgLaterBtn">Nanti saja</button>
-        <a class="rb-modal-btn is-primary" id="tgJoinBtn" href="https://t.me/crowdnikchannel" target="_blank" rel="noopener">
+        <a class="rb-modal-btn is-primary" id="tgJoinBtn" href="https://t.me/rubikcompany" target="_blank" rel="noopener">
           Bergabung
         </a>
       </div>
@@ -2754,6 +2754,7 @@ border:2px solid rgba(0,223,130,.45);
   </main>
 
   @include('partials.bottom-nav')
+   @include('partials.anti-inspect')
 
 
 

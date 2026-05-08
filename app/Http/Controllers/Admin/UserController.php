@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -115,4 +116,32 @@ class UserController extends Controller
 
         return back()->with('success', 'Saldo penarikan berhasil diperbarui');
     }
+
+
+    // UPDATE PASSWORD USER
+public function updatePassword(Request $request, $id)
+{
+    $request->validate([
+        'password' => 'required|string|min:6|confirmed',
+    ], [
+        'password.required' => 'Password baru wajib diisi.',
+        'password.min' => 'Password minimal 6 karakter.',
+        'password.confirmed' => 'Konfirmasi password tidak sama.',
+    ]);
+
+    $user = User::findOrFail($id);
+
+    $user->password = Hash::make($request->password);
+    $user->save();
+
+    if (function_exists('activity_log')) {
+        activity_log(
+            Auth::id(),
+            'ADMIN_UPDATE_USER_PASSWORD',
+            "Admin mengubah password User #{$user->id} ({$user->name})"
+        );
+    }
+
+    return back()->with('success', "Password user {$user->name} berhasil diubah.");
+}
 }

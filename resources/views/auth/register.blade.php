@@ -777,7 +777,7 @@
         </div>
 
         <h1 class="title">Buat Akun</h1>
-        <p class="subtitle">Daftar untuk mulai memakai akun Crowdnik.</p>
+        <p class="subtitle">Daftar untuk mulai memakai akun Rubik.</p>
 
         {{-- ERROR VALIDATION --}}
         @if ($errors->any())
@@ -905,7 +905,7 @@
           <input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none">
 
           <div class="helperRow">
-            <div class="helperText">Dengan daftar, kamu menyetujui ketentuan Crowdnik.</div>
+            <div class="helperText">Dengan daftar, kamu menyetujui ketentuan Rubik.</div>
             <a class="helperLink" href="/login">Masuk</a>
           </div>
 

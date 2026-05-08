@@ -1,3 +1,4 @@
+ @include('partials.anti-inspect')
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -1063,7 +1064,7 @@
                 <path d="M15 6h5v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               Minimal Rp 50.000
-              <span>Pajak 10%</span>
+             <span>Biaya Gateway</span>
             </div>
           </div>
 
@@ -1152,7 +1153,6 @@
 
             <div class="wd-received-right">
               <span class="wd-received-amount" id="receivedAmount">Rp 0</span>
-              <span class="wd-tax">Pengurangan Pajak 10%</span>
             </div>
           </div>
 
@@ -1192,7 +1192,7 @@
 
  const MIN = 50000;
 const MAX = 50000000;
-const TAX = 0.10;
+const ESTIMATED_GATEWAY_FEE = 0;
 const AVAILABLE_WITHDRAW = {{ (int) $saldoPenarikan }};
 
     function csrfToken(){
@@ -1491,12 +1491,18 @@ async function loadWithdrawals(){
       validate(false);
     }
 
-    function updateReceived(){
-      const n = Number(amountHidden.value || 0);
-      const received = Math.max(n - (n * TAX), 0);
+function updateReceived(){
+  const n = Number(amountHidden.value || 0);
 
-      receivedEl.textContent = rupiah(received);
-    }
+  receivedEl.textContent = rupiah(n);
+
+  const taxEl = document.querySelector('.wd-tax');
+  if(taxEl){
+    taxEl.textContent = n > 0
+      ? 'Biaya gateway akan dihitung setelah diproses'
+      : 'Biaya gateway mengikuti response JayaPay';
+  }
+}
 
 function validate(show = true){
   const n = Number(amountHidden.value || 0);

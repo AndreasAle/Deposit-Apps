@@ -1040,6 +1040,129 @@
                 width: 100%;
             }
         }
+
+        .gateway-box {
+    margin-top: 12px;
+    border: 1px solid rgba(49, 87, 248, .12);
+    background:
+        radial-gradient(220px 120px at 100% 0%, rgba(49, 87, 248, .08), transparent 60%),
+        linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+    border-radius: 18px;
+    padding: 12px;
+}
+
+.gateway-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.gateway-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #101828;
+    font-size: 12.5px;
+    font-weight: 950;
+    letter-spacing: -.01em;
+}
+
+.gateway-title::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 99px;
+    background: var(--blue);
+    box-shadow: 0 0 0 4px rgba(49, 87, 248, .10);
+}
+
+.gateway-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    color: var(--blue);
+    background: var(--blue-soft);
+    border: 1px solid rgba(49, 87, 248, .14);
+    font-size: 10.5px;
+    font-weight: 950;
+    white-space: nowrap;
+}
+
+.gateway-pill.is-success {
+    color: #027a48;
+    background: var(--green-soft);
+    border-color: rgba(18, 183, 106, .16);
+}
+
+.gateway-pill.is-failed {
+    color: #b42318;
+    background: var(--red-soft);
+    border-color: rgba(240, 68, 56, .18);
+}
+
+.gateway-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.gateway-item {
+    min-width: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 14px;
+    padding: 9px 10px;
+}
+
+.gateway-item span {
+    display: block;
+    color: var(--muted);
+    font-size: 10.5px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.gateway-item b {
+    display: block;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 900;
+    word-break: break-word;
+}
+
+.gateway-item.is-wide {
+    grid-column: 1 / -1;
+}
+
+.gateway-message {
+    margin-top: 8px;
+    border-radius: 14px;
+    padding: 9px 10px;
+    background: var(--yellow-soft);
+    border: 1px solid rgba(247, 144, 9, .18);
+    color: #b54708;
+    font-size: 11.5px;
+    line-height: 1.45;
+    font-weight: 800;
+}
+
+.gateway-message.is-error {
+    background: var(--red-soft);
+    border-color: rgba(240, 68, 56, .18);
+    color: #b42318;
+}
+
+@media (max-width: 620px) {
+    .gateway-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
     </style>
 </head>
 
@@ -1371,31 +1494,239 @@ function toast(message, type = 'success') {
             .replaceAll("'", '&#039;');
     }
 
+    function parseGatewayResponse(value) {
+    if (!value) return null;
+
+    if (typeof value === 'object') {
+        return value;
+    }
+
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        return null;
+    }
+}
+
+function firstFilled(...values) {
+    for (const value of values) {
+        if (value !== null && value !== undefined && String(value).trim() !== '') {
+            return value;
+        }
+    }
+
+    return '-';
+}
+
+function gatewayPillClass(code, status, failedReason) {
+    const raw = [
+        code,
+        status,
+        failedReason
+    ].map(v => String(v || '').toUpperCase()).join(' ');
+
+    if (raw.includes('SUCCESS') || raw.includes('PAID') || raw.includes('APPLY')) {
+        return 'is-success';
+    }
+
+    if (
+        raw.includes('FAILED') ||
+        raw.includes('FAIL') ||
+        raw.includes('ERROR') ||
+        raw.includes('INSUFFICIENT') ||
+        raw.includes('REJECT')
+    ) {
+        return 'is-failed';
+    }
+
+    return '';
+}
+
+function gatewayInfoHtml(r) {
+    const g = parseGatewayResponse(r.gateway_response);
+
+    const orderNum = firstFilled(
+        r.order_id,
+        r.order_num,
+        g?.orderNum
+    );
+
+    const platOrderNum = firstFilled(
+        r.plat_order_num,
+        g?.platOrderNum
+    );
+
+    const gatewayCode = firstFilled(
+        r.gateway_status,
+        g?.platRespCode
+    );
+
+    const gatewayMessage = firstFilled(
+        r.gateway_message,
+        g?.platRespMessage,
+        g?.statusMsg
+    );
+
+    const bankCode = firstFilled(
+        r.bank_code,
+        g?.bankCode
+    );
+
+    const accountNo = firstFilled(
+        r.account_no,
+        g?.number
+    );
+
+    const accountName = firstFilled(
+        r.account_name,
+        g?.name
+    );
+
+    const gatewayMoney = Number(firstFilled(
+        g?.money,
+        r.net_amount,
+        r.amount,
+        0
+    ));
+
+    const gatewayFee = Number(firstFilled(
+        g?.fee,
+        r.fee,
+        0
+    ));
+
+    const failedReason = firstFilled(
+        r.failed_reason,
+        r.gateway_message
+    );
+
+    const processedAt = firstFilled(
+        r.processed_at,
+        '-'
+    );
+
+    const callbackUrl = firstFilled(
+        r.gateway_callback,
+        '-'
+    );
+
+    const hasGatewayData =
+        r.gateway_response ||
+        r.gateway_status ||
+        r.gateway_message ||
+        r.plat_order_num ||
+        r.order_id ||
+        r.failed_reason ||
+        r.processed_at;
+
+    if (!hasGatewayData) {
+        return '';
+    }
+
+    const pillClass = gatewayPillClass(gatewayCode, r.status, r.failed_reason);
+
+    const failedHtml = r.failed_reason
+        ? `<div class="gateway-message is-error"><b>Failed Reason:</b> ${escapeHtml(r.failed_reason)}</div>`
+        : '';
+
+    const messageHtml = gatewayMessage !== '-'
+        ? `<div class="gateway-message"><b>Gateway Message:</b> ${escapeHtml(gatewayMessage)}</div>`
+        : '';
+
+    return `
+        <div class="gateway-box">
+            <div class="gateway-head">
+                <div class="gateway-title">Gateway Response</div>
+                <div class="gateway-pill ${pillClass}">
+                    ${escapeHtml(gatewayCode)}
+                </div>
+            </div>
+
+            <div class="gateway-grid">
+                <div class="gateway-item">
+                    <span>Order WD</span>
+                    <b>${escapeHtml(orderNum)}</b>
+                </div>
+
+                <div class="gateway-item">
+                    <span>Plat Order</span>
+                    <b>${escapeHtml(platOrderNum)}</b>
+                </div>
+
+                <div class="gateway-item">
+                    <span>Bank Code</span>
+                    <b>${escapeHtml(bankCode)}</b>
+                </div>
+
+                <div class="gateway-item">
+                    <span>Tujuan</span>
+                    <b>${escapeHtml(accountNo)}</b>
+                </div>
+
+                <div class="gateway-item">
+                    <span>Nama Tujuan</span>
+                    <b>${escapeHtml(accountName)}</b>
+                </div>
+
+                <div class="gateway-item">
+                    <span>Nominal Gateway</span>
+                    <b>Rp ${rupiah(gatewayMoney)}</b>
+                </div>
+
+                <div class="gateway-item">
+                    <span>Fee Gateway</span>
+                    <b>Rp ${rupiah(gatewayFee)}</b>
+                </div>
+
+                <div class="gateway-item">
+                    <span>Processed At</span>
+                    <b>${escapeHtml(processedAt)}</b>
+                </div>
+
+                ${callbackUrl !== '-' ? `
+                    <div class="gateway-item is-wide">
+                        <span>Callback URL</span>
+                        <b>${escapeHtml(callbackUrl)}</b>
+                    </div>
+                ` : ''}
+            </div>
+
+            ${messageHtml}
+            ${failedHtml}
+        </div>
+    `;
+}
+
     function statusKey(status) {
         return String(status || '').toUpperCase();
     }
 
-    function statusBarClass(status) {
-        const s = statusKey(status);
-        if (s === 'PENDING') return 'bar-pending';
-        if (s === 'APPROVED') return 'bar-approved';
-        if (s === 'PAID') return 'bar-paid';
-        if (s === 'REJECTED') return 'bar-rejected';
-        if (s === 'CANCELLED') return 'bar-cancelled';
-        return 'bar-pending';
-    }
+function statusBarClass(status) {
+    const s = statusKey(status);
 
-    function statusBadge(status) {
-        const s = statusKey(status);
-        let cls = 'status-pending';
+    if (s === 'PENDING') return 'bar-pending';
+    if (s === 'PROCESSING') return 'bar-approved';
+    if (s === 'APPROVED') return 'bar-approved';
+    if (s === 'PAID') return 'bar-paid';
+    if (s === 'FAILED') return 'bar-rejected';
+    if (s === 'REJECTED') return 'bar-rejected';
+    if (s === 'CANCELLED') return 'bar-cancelled';
 
-        if (s === 'APPROVED') cls = 'status-approved';
-        if (s === 'PAID') cls = 'status-paid';
-        if (s === 'REJECTED') cls = 'status-rejected';
-        if (s === 'CANCELLED') cls = 'status-cancelled';
+    return 'bar-pending';
+}
+function statusBadge(status) {
+    const s = statusKey(status);
+    let cls = 'status-pending';
 
-        return `<span class="status-badge ${cls}">${escapeHtml(s || '-')}</span>`;
-    }
+    if (s === 'PROCESSING') cls = 'status-approved';
+    if (s === 'APPROVED') cls = 'status-approved';
+    if (s === 'PAID') cls = 'status-paid';
+    if (s === 'FAILED') cls = 'status-rejected';
+    if (s === 'REJECTED') cls = 'status-rejected';
+    if (s === 'CANCELLED') cls = 'status-cancelled';
+
+    return `<span class="status-badge ${cls}">${escapeHtml(s || '-')}</span>`;
+}
 
     async function loadAdmin() {
         rowsEl.innerHTML = `<div class="loading">Loading data withdraw...</div>`;
@@ -1424,6 +1755,8 @@ function toast(message, type = 'success') {
             const reasonHtml = r.reject_reason
                 ? `<div class="reject-reason">Reject: ${escapeHtml(String(r.reject_reason))}</div>`
                 : '';
+
+                const gatewayHtml = gatewayInfoHtml(r);
 
             const actions = (() => {
                 const s = statusKey(r.status);
@@ -1465,7 +1798,8 @@ function toast(message, type = 'success') {
                                 <div><b>Payout:</b> ${escapeHtml(payoutLine)}</div>
                             </div>
 
-                            ${reasonHtml}
+                           ${gatewayHtml}
+${reasonHtml}
                         </div>
 
                         <div class="row-right">

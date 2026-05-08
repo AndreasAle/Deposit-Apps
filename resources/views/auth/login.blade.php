@@ -834,7 +834,7 @@ body::after{
         </div>
 
         <h1 class="title">Get Started</h1>
-        <p class="subtitle">Masuk untuk melanjutkan ke akun Crowdnik.</p>
+        <p class="subtitle">Masuk untuk melanjutkan ke akun Rubik.</p>
 
         {{-- ERROR LOGIN --}}
         @if ($errors->any())

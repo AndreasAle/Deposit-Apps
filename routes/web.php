@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\WithdrawalAdminController;
 use App\Http\Controllers\Admin\ReferralAdminController;
 use App\Http\Controllers\Admin\AdminForumController;
+use App\Http\Controllers\Admin\DepositAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -204,6 +205,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/team/comments/{comment}', [ForumController::class, 'destroyComment'])
         ->name('team.comments.destroy');
 
+
+        Route::middleware(['auth'])->group(function () {
+    Route::view('/tentang', 'pages.tentang-rubik')->name('tentang.rubik');
+});
+
     /*
     |--------------------------------------------------------------------------
     | UI Direct View Routes
@@ -250,6 +256,9 @@ Route::get('/users', [UserController::class, 'index'])
 Route::get('/users/{id}', [UserController::class, 'show'])
     ->name('admin.users.show');
 
+    Route::post('/admin/users/{id}/password', [\App\Http\Controllers\Admin\UserController::class, 'updatePassword'])
+    ->name('admin.users.update-password');
+
 Route::post('/users/{id}/vip', [UserController::class, 'updateVip'])
     ->name('admin.users.updateVip');
 
@@ -259,6 +268,24 @@ Route::post('/users/{id}/saldo', [UserController::class, 'updateSaldo'])
 Route::post('/users/{id}/saldo-penarikan', [UserController::class, 'updateSaldoPenarikan'])
     ->name('admin.users.updateSaldoPenarikan');
 
+
+/*
+|--------------------------------------------------------------------------
+| Admin Deposits
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/deposits', [DepositAdminController::class, 'page'])
+    ->name('admin.deposits.page');
+
+Route::get('/deposits/data', [DepositAdminController::class, 'index'])
+    ->name('admin.deposits.data');
+
+Route::post('/deposits/{id}/paid', [DepositAdminController::class, 'markPaid'])
+    ->name('admin.deposits.paid');
+
+Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed'])
+    ->name('admin.deposits.failed');
         /*
         |--------------------------------------------------------------------------
         | Admin Products

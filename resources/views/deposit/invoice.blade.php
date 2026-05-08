@@ -1,3 +1,4 @@
+ @include('partials.anti-inspect')
 @php
     $qrImageSrc = $qrImageSrc ?? null;
 

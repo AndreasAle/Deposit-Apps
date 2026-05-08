@@ -1,4 +1,5 @@
 {{-- Rubik Premium — Investasi Saya (NO @extends) --}}
+ @include('partials.anti-inspect')
 @php
   $user = auth()->user();
 

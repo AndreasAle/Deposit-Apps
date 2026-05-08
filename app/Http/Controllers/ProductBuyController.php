@@ -71,13 +71,13 @@ class ProductBuyController extends Controller
                 'status'        => 'active',
             ]);
 
-            // Referral commission buy 3%
+            // Referral commission buy 33%
             (new ReferralService())->give(
                 $user,
                 'buy',
                 (int) $inv->id,
                 (float) $inv->price,
-                0.03
+                0.33
             );
 
             DB::commit();

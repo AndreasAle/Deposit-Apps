@@ -76,7 +76,7 @@ $request->validate([
 
             $response = $result['response'] ?? [];
 
-            $deposit->gateway_response = json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $deposit->gateway_response = $result;
 
             if (!$result['success']) {
                 $deposit->status = 'FAILED';
@@ -331,7 +331,7 @@ private function buildJayaPayV2Payload(string $displayPayUrl): array
             $deposit->status = 'PAID';
             $deposit->plat_order_num = $payload['platOrderNum'] ?? $deposit->plat_order_num;
             $deposit->pay_fee = isset($payload['payFee']) ? (float) $payload['payFee'] : $deposit->pay_fee;
-            $deposit->gateway_response = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+           $deposit->gateway_response = $payload;
             $deposit->paid_at = now();
             $deposit->save();
 

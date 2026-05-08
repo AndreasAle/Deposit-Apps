@@ -1337,6 +1337,51 @@
         Update Saldo Penarikan
     </button>
 </form>
+
+
+<form class="form-card" method="POST" action="/admin/users/{{ $user->id }}/password">
+    @csrf
+
+    <div class="form-card-head">
+        <b>Ubah Password User</b>
+        <span>
+            Gunakan fitur ini jika user lupa password atau admin perlu reset akses akun.
+        </span>
+    </div>
+
+    <label>Password Baru</label>
+    <input
+        type="password"
+        name="password"
+        placeholder="Masukkan password baru"
+        required
+        minlength="6"
+    />
+
+    <div style="height:10px"></div>
+
+    <label>Konfirmasi Password</label>
+    <input
+        type="password"
+        name="password_confirmation"
+        placeholder="Ulangi password baru"
+        required
+        minlength="6"
+    />
+
+    <div class="hint">
+        Minimal password <b>6 karakter</b>. Setelah diubah, user harus login memakai password baru.
+    </div>
+
+    <button
+        class="submit"
+        type="submit"
+        style="background:#7a5af8; box-shadow:0 14px 24px rgba(122,90,248,.20);"
+        onclick="return confirm('Yakin ingin mengubah password user ini?')"
+    >
+        Update Password User
+    </button>
+</form>
                         </div>
                     </div>
                 </div>

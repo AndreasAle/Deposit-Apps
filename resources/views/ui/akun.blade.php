@@ -1,3 +1,4 @@
+ @include('partials.anti-inspect')
 @php
   $user = auth()->user();
 
@@ -772,6 +773,162 @@
         border-radius:15px;
       }
     }
+
+    /* =========================
+   COMING SOON POPUP - RUBIK THEME
+========================= */
+.ac-coming-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(2,8,8,.68);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+.ac-coming-overlay.show{
+  display:flex;
+}
+
+.ac-coming-modal{
+  width:100%;
+  max-width:360px;
+  position:relative;
+  overflow:hidden;
+  border-radius:26px;
+  background:
+    radial-gradient(260px 150px at 100% 0%, rgba(0,223,130,.18), transparent 62%),
+    radial-gradient(220px 130px at 0% 100%, rgba(90,140,255,.15), transparent 60%),
+    linear-gradient(180deg, rgba(13,35,34,.98), rgba(3,15,15,.98));
+  border:1px solid rgba(255,255,255,.11);
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.52),
+    0 0 0 1px rgba(0,223,130,.08) inset,
+    0 0 42px rgba(0,223,130,.10);
+  padding:20px;
+  animation:acComingIn .24s ease both;
+}
+
+.ac-coming-modal::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.10), transparent 34%),
+    radial-gradient(circle at 20% 0%, rgba(255,255,255,.08), transparent 34%);
+  pointer-events:none;
+}
+
+.ac-coming-icon{
+  position:relative;
+  z-index:1;
+  width:58px;
+  height:58px;
+  margin:0 auto 14px;
+  border-radius:21px;
+  display:grid;
+  place-items:center;
+  color:#06110e;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255,255,255,.62), transparent 34%),
+    linear-gradient(135deg, #00DF82, #72ffab);
+  box-shadow:
+    0 18px 34px rgba(0,223,130,.22),
+    inset 0 1px 0 rgba(255,255,255,.32);
+}
+
+.ac-coming-icon svg{
+  width:28px;
+  height:28px;
+}
+
+.ac-coming-title{
+  position:relative;
+  z-index:1;
+  margin:0;
+  color:#ffffff;
+  font-size:20px;
+  line-height:1.15;
+  font-weight:900;
+  text-align:center;
+  letter-spacing:-.04em;
+}
+
+.ac-coming-text{
+  position:relative;
+  z-index:1;
+  margin:9px auto 18px;
+  max-width:280px;
+  color:rgba(214,255,240,.68);
+  font-size:13px;
+  line-height:1.5;
+  font-weight:650;
+  text-align:center;
+}
+
+.ac-coming-actions{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+
+.ac-coming-btn{
+  width:100%;
+  min-height:46px;
+  border:0;
+  border-radius:999px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#06110e;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255,255,255,.55), transparent 34%),
+    linear-gradient(135deg, #00DF82, #72ffab);
+  box-shadow:
+    0 16px 32px rgba(0,223,130,.20),
+    inset 0 1px 0 rgba(255,255,255,.28);
+  font-size:13px;
+  font-weight:900;
+}
+
+.ac-coming-close{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:2;
+  width:34px;
+  height:34px;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  color:#ffffff;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+}
+
+.ac-coming-close svg{
+  width:18px;
+  height:18px;
+}
+
+@keyframes acComingIn{
+  from{
+    opacity:0;
+    transform:translateY(12px) scale(.96);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
   </style>
 </head>
 
@@ -880,7 +1037,7 @@
           <div class="ac-quick-label">Saldo</div>
         </a>
 
-        <a href="https://t.me/crowdnikchannel" target="_blank" rel="noopener" class="ac-quick-item">
+        <a href="https://t.me/rubikcompany" target="_blank" rel="noopener" class="ac-quick-item">
           <div class="ac-quick-icon">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M22 2 11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -962,7 +1119,7 @@
             </div>
           </a>
 
-          <a href="/cs" class="ac-menu-item">
+          <a href="https://t.me/rubikcompany" target="_blank" rel="noopener" class="ac-menu-item">
             <div class="ac-menu-left">
               <div class="ac-menu-icon">
                 <svg viewBox="0 0 24 24" fill="none">
@@ -1004,7 +1161,7 @@
             </div>
           </a>
 
-          <a href="/download" class="ac-menu-item">
+          <a href="javascript:void(0)" class="ac-menu-item" id="comingSoonBtn">
             <div class="ac-menu-left">
               <div class="ac-menu-icon">
                 <svg viewBox="0 0 24 24" fill="none">
@@ -1045,7 +1202,36 @@
       <div class="rb-bottom-spacer"></div>
     </div>
   </main>
+<div class="ac-coming-overlay" id="comingSoonOverlay" role="dialog" aria-modal="true">
+  <div class="ac-coming-modal">
+    <button type="button" class="ac-coming-close" id="comingSoonClose" aria-label="Tutup">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M6 6 18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+    </button>
 
+    <div class="ac-coming-icon">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 21h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <h3 class="ac-coming-title">Fitur Mendatang</h3>
+
+    <p class="ac-coming-text">
+      Fitur unduh aplikasi Rubik sedang kami siapkan dan akan segera tersedia.
+    </p>
+
+    <div class="ac-coming-actions">
+      <button type="button" class="ac-coming-btn" id="comingSoonOk">
+        Oke, Mengerti
+      </button>
+    </div>
+  </div>
+</div>
   @include('partials.bottom-nav')
 
   <script>
@@ -1082,5 +1268,43 @@
       });
     })();
   </script>
+<script>
+  (function(){
+    const btn = document.getElementById('comingSoonBtn');
+    const overlay = document.getElementById('comingSoonOverlay');
+    const closeBtn = document.getElementById('comingSoonClose');
+    const okBtn = document.getElementById('comingSoonOk');
+
+    if(!btn || !overlay) return;
+
+    function openPopup(e){
+      if(e) e.preventDefault();
+      overlay.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePopup(){
+      overlay.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    btn.addEventListener('click', openPopup);
+
+    if(closeBtn) closeBtn.addEventListener('click', closePopup);
+    if(okBtn) okBtn.addEventListener('click', closePopup);
+
+    overlay.addEventListener('click', function(e){
+      if(e.target === overlay){
+        closePopup();
+      }
+    });
+
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && overlay.classList.contains('show')){
+        closePopup();
+      }
+    });
+  })();
+</script>
 </body>
 </html>

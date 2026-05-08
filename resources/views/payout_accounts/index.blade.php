@@ -1,3 +1,4 @@
+ @include('partials.anti-inspect')
 <!DOCTYPE html>
 <html lang="id">
 <head>

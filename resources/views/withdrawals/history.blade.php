@@ -1,3 +1,4 @@
+ @include('partials.anti-inspect')
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -968,30 +969,37 @@ function statusClass(status){
       return row.payout_account || row.payoutAccount || row.payout_account_data || null;
     }
 
-    function getAmount(row){
-      return Number(row.amount || 0);
-    }
+function parseGatewayResponse(row){
+  try {
+    if(!row.gateway_response) return {};
 
-    function getFee(row){
-      const amount = Number(row.amount || 0);
-      const net = Number(row.net_amount || 0);
-      const fee = Number(row.fee || 0);
+    return typeof row.gateway_response === 'string'
+      ? JSON.parse(row.gateway_response)
+      : row.gateway_response;
+  } catch (error) {
+    return {};
+  }
+}
 
-      if(fee > 0) return fee;
-      if(amount > 0 && net > 0 && amount > net) return amount - net;
+function getFee(row){
+  const gateway = parseGatewayResponse(row);
+  const gatewayFee = Number(gateway.fee || 0);
 
-      return 0;
-    }
+  if(gatewayFee > 0) return gatewayFee;
 
-    function getNet(row){
-      const amount = Number(row.amount || 0);
-      const net = Number(row.net_amount || 0);
-      const fee = getFee(row);
+  return Number(row.fee || 0);
+}
 
-      if(net > 0) return net;
-      return Math.max(amount - fee, 0);
-    }
+function getAmount(row){
+  return Number(row.amount || 0);
+}
 
+function getNet(row){
+  const amount = getAmount(row);
+  const fee = getFee(row);
+
+  return Math.max(amount - fee, 0);
+}
     function buildMonthOptions(rows){
       const months = [...new Set(rows.map(monthKey).filter(Boolean))]
         .sort()
@@ -1126,11 +1134,7 @@ const number = account?.account_number || row.account_no || '-';
     });
 
 function goBack(){
-  if (window.history.length > 1) {
-    window.history.back();
-  } else {
-    window.location.href = '/ui/withdrawals';
-  }
+  window.location.href = '/ui/withdrawals';
 }
   </script>
 </body>
