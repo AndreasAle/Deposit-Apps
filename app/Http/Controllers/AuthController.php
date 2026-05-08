@@ -10,20 +10,53 @@ use App\Support\ReferralCode;
 
 class AuthController extends Controller
 {
-    // FORM REGISTER
+    /*
+    |--------------------------------------------------------------------------
+    | Clean Referral Entry
+    |--------------------------------------------------------------------------
+    | Link publik yang dibagikan:
+    | /r/KODEREFERRAL
+    |
+    | Tidak langsung membuka form register.
+    | Kode disimpan ke session, lalu user diarahkan ke halaman undangan/informasi.
+    */
+    public function referralEntry(Request $request, string $code)
+    {
+        $code = strtoupper(trim($code));
+
+        if (!preg_match('/^[A-Z0-9]{4,20}$/', $code)) {
+            return redirect()->route('home');
+        }
+
+        session([
+            'referral_code' => $code,
+        ]);
+
+        return redirect()->route('invite.preview');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Legacy Register URL
+    |--------------------------------------------------------------------------
+    | Kalau link lama /register?ref=KODE masih tersebar, jangan tampilkan form.
+    | Simpan referral ke session lalu arahkan ke halaman undangan.
+    */
     public function showRegister(Request $request)
     {
         if ($request->filled('ref')) {
             $ref = strtoupper(trim($request->query('ref')));
 
-            session([
-                'referral_code' => $ref,
-            ]);
+            if (preg_match('/^[A-Z0-9]{4,20}$/', $ref)) {
+                session([
+                    'referral_code' => $ref,
+                ]);
+            }
 
             return redirect()->route('invite.preview');
         }
 
-        return view('auth.register');
+        return redirect()->route('invite.preview');
     }
 
     public function showInvite(Request $request)
@@ -36,7 +69,6 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    // PROSES REGISTER
     public function register(Request $request)
     {
         // Honeypot anti bot
@@ -44,24 +76,23 @@ class AuthController extends Controller
             return back();
         }
 
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'phone' => 'required|string|unique:users,phone',
-            'password' => 'required|min:6',
-            'referral_code' => 'nullable|string|max:20',
-        ]);
+$request->validate([
+    'name' => 'required|string|max:100',
+    'phone' => 'required|string|unique:users,phone',
+    'password' => 'required|min:6',
+    'referral_code' => 'nullable|string|max:20',
+    'security_confirm' => 'accepted',
+    'puzzle_verified' => 'accepted',
+]);
 
         /*
         |--------------------------------------------------------------------------
         | Referral Code Lock
         |--------------------------------------------------------------------------
-        | Kalau user datang dari /register?ref=XXXXX,
-        | kode referral disimpan di session.
-        | Jadi walaupun input referral dihapus/diubah dari frontend,
-        | backend tetap pakai kode dari session.
+        | Prioritas utama tetap session.
+        | Input referral dari form hanya fallback kalau session kosong.
         */
-        $refCode = session('referral_code')
-            ?: $request->input('referral_code');
+        $refCode = session('referral_code') ?: $request->input('referral_code');
 
         $refCode = $refCode
             ? strtoupper(trim($refCode))
@@ -70,6 +101,12 @@ class AuthController extends Controller
         $referrer = null;
 
         if ($refCode) {
+            if (!preg_match('/^[A-Z0-9]{4,20}$/', $refCode)) {
+                return back()
+                    ->withErrors(['referral_code' => 'Kode referral tidak valid'])
+                    ->withInput();
+            }
+
             $referrer = User::where('referral_code', $refCode)->first();
 
             if (!$referrer) {
@@ -78,7 +115,6 @@ class AuthController extends Controller
                     ->withInput();
             }
 
-            // Blok admin jadi referrer
             if ($referrer->role === 'admin') {
                 return back()
                     ->withErrors(['referral_code' => 'Kode referral tidak valid'])
@@ -103,12 +139,6 @@ class AuthController extends Controller
             'referred_by_user_id' => $referrer?->id,
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Hapus session referral setelah berhasil daftar
-        |--------------------------------------------------------------------------
-        | Biar kode referral tidak kebawa ke register berikutnya.
-        */
         session()->forget('referral_code');
 
         Auth::login($user);
@@ -116,13 +146,11 @@ class AuthController extends Controller
         return redirect('/dashboard');
     }
 
-    // FORM LOGIN
     public function showLogin()
     {
         return view('auth.login');
     }
 
-    // PROSES LOGIN
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -147,7 +175,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // LOGOUT
     public function logout(Request $request)
     {
         Auth::logout();

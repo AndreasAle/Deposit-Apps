@@ -1,6 +1,6 @@
 
 @php
-    $lockedReferralCode = request('ref') ?: session('referral_code');
+    $lockedReferralCode = session('referral_code');
     $referralInputValue = old('referral_code', $lockedReferralCode);
     $isReferralLocked = !empty($lockedReferralCode);
 @endphp
@@ -8,13 +8,13 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Daftar Akun | Crowdnik</title>
+  <title>Daftar Akun | Rubik Company</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <meta name="robots" content="noindex, nofollow">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
@@ -27,14 +27,14 @@
       --dark-2:#05231f;
       --dark-3:#010f0d;
 
+      --gold:#d6aa35;
+      --gold-2:#f5d879;
+
       --white:#ffffff;
       --text:#10322c;
       --muted:#6c8b82;
       --line:#e2eee9;
       --danger:#ef4444;
-
-      --shadow-page:0 28px 70px rgba(0,0,0,.30);
-      --shadow-card:0 18px 38px rgba(6,34,29,.16);
     }
 
     *{
@@ -51,17 +51,12 @@
       min-height:100vh;
       font-family:'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color:var(--text);
-      display:block;
-      padding:0;
+      background:
+        radial-gradient(760px 420px at 10% -6%, rgba(0,223,130,.16), transparent 58%),
+        radial-gradient(640px 360px at 100% 0%, rgba(13,127,103,.18), transparent 62%),
+        linear-gradient(180deg, #f7fffb 0%, #e9fbf2 48%, #d8f3e5 100%);
       overflow-x:hidden;
-      position:relative;
-      background:#ffffff;
       -webkit-tap-highlight-color:transparent;
-    }
-
-    body::before,
-    body::after{
-      content:none !important;
     }
 
     a{
@@ -75,10 +70,11 @@
 
     .page{
       width:100%;
-      max-width:none;
       min-height:100vh;
       position:relative;
       z-index:1;
+      display:flex;
+      justify-content:center;
       animation:pageEnter .45s ease both;
     }
 
@@ -88,20 +84,14 @@
       width:100%;
       max-width:none;
       min-height:100vh;
-      border-radius:0;
       background:#ffffff;
-      border:none;
       box-shadow:none;
-    }
-
-    .shell::before{
-      content:none !important;
     }
 
     .hero{
       position:relative;
       width:100%;
-      height:176px;
+      padding:18px 22px 42px;
       overflow:hidden;
       background:
         linear-gradient(152deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.04) 28%, transparent 29%),
@@ -144,95 +134,235 @@
       animation:blobFloat2 7s ease-in-out infinite;
     }
 
-    .heroShape{
+    .topbar{
+      position:relative;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brandMini{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .brandMiniLogo{
+      width:44px;
+      height:44px;
+      border-radius:16px;
+      background:#ffffff;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      box-shadow:
+        0 12px 28px rgba(0,0,0,.22),
+        0 0 0 1px rgba(255,255,255,.70) inset;
+      flex:0 0 auto;
+    }
+
+    .brandMiniLogo img{
+      width:34px;
+      height:34px;
+      object-fit:contain;
+      display:block;
+    }
+
+    .brandMiniText span{
+      display:block;
+      color:rgba(223,252,241,.68);
+      font-size:11px;
+      font-weight:700;
+      line-height:1;
+      margin-bottom:4px;
+    }
+
+    .brandMiniText strong{
+      display:block;
+      color:#ffffff;
+      font-size:15px;
+      font-weight:900;
+      line-height:1;
+      white-space:nowrap;
+    }
+
+    .topPill{
+      min-height:34px;
+      padding:0 13px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      color:#fff5d6;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.13);
+      font-size:11px;
+      font-weight:900;
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      white-space:nowrap;
+    }
+
+    .topPill::before{
+      content:"";
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:linear-gradient(135deg, var(--gold-2), var(--gold));
+      box-shadow:0 0 14px rgba(245,216,121,.35);
+    }
+
+    .heroMain{
+      position:relative;
+      z-index:2;
+      margin-top:24px;
+      text-align:center;
+    }
+
+    .heroLogoCard{
+      width:126px;
+      min-height:126px;
+      margin:0 auto 13px;
+      border-radius:28px;
+      padding:13px;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.85), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(238,255,248,.92));
+      border:1px dashed rgba(13,127,103,.20);
+      box-shadow:
+        0 24px 46px rgba(0,0,0,.28),
+        0 0 0 8px rgba(255,255,255,.04),
+        inset 0 1px 0 rgba(255,255,255,.85);
+      display:grid;
+      place-items:center;
+      position:relative;
+    }
+
+    .heroLogoCard::after{
+      content:"";
       position:absolute;
+      inset:10px;
+      border-radius:22px;
+      border:1px solid rgba(13,127,103,.10);
       pointer-events:none;
     }
 
-    .shapeOne{
-      width:170px;
-      height:130px;
-      right:-28px;
-      top:26px;
-      border-radius:48% 52% 58% 42% / 42% 48% 52% 58%;
-      background:
-        radial-gradient(circle at 26% 22%, rgba(255,255,255,.10), transparent 34%),
-        linear-gradient(135deg, rgba(0,223,130,.16), rgba(3,98,76,.40));
-      box-shadow:0 0 40px rgba(0,223,130,.10);
-      animation:shapeMoveOne 6.2s ease-in-out infinite;
+    .heroLogoCard img{
+      width:88px;
+      height:88px;
+      object-fit:contain;
+      display:block;
+      position:relative;
+      z-index:1;
     }
 
-    .shapeTwo{
-      width:86px;
-      height:86px;
-      right:56px;
-      top:82px;
+    .heroBadge{
+      width:max-content;
+      max-width:100%;
+      margin:0 auto 10px;
+      min-height:30px;
+      padding:0 13px;
       border-radius:999px;
-      background:
-        radial-gradient(circle at 32% 24%, rgba(255,255,255,.50), rgba(204,255,240,.20) 34%, rgba(0,223,130,.12) 100%);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:
-        0 18px 30px rgba(0,0,0,.18),
-        0 0 30px rgba(0,223,130,.12);
-      animation:shapeMoveTwo 5.6s ease-in-out infinite;
-    }
-
-    .shapeThree{
-      width:126px;
-      height:104px;
-      left:90px;
-      top:-44px;
-      border-radius:38% 62% 64% 36% / 40% 44% 56% 60%;
-      background:
-        linear-gradient(145deg, rgba(214,255,240,.22), rgba(0,223,130,.08));
-      border:1px solid rgba(255,255,255,.07);
-      animation:shapeMoveThree 7s ease-in-out infinite;
-    }
-
-    .backBubble{
-      position:absolute;
-      top:20px;
-      left:20px;
-      z-index:5;
-      width:auto;
-      height:auto;
-      padding:0;
-      border-radius:0;
-      background:transparent;
-      box-shadow:none;
-      border:none;
       display:inline-flex;
       align-items:center;
-      justify-content:flex-start;
-      gap:5px;
-      color:#ffffff;
-      font-size:12px;
-      font-weight:800;
-      text-decoration:none;
+      justify-content:center;
+      gap:7px;
+      color:#6f5000;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.62), transparent 38%),
+        linear-gradient(180deg, #fff1bd, #d9ae36);
+      border:1px solid rgba(139,101,0,.12);
+      box-shadow:
+        0 10px 18px rgba(139,101,0,.12),
+        inset 0 1px 0 rgba(255,255,255,.52);
+      font-size:11px;
+      font-weight:900;
     }
 
-    .backBubble span{
-      font-size:22px;
-      line-height:1;
+    .heroTitle{
+      margin:0;
+      font-family:'Playfair Display', serif;
+      color:#ffffff;
+      font-size:30px;
+      line-height:1.05;
+      font-weight:800;
+      letter-spacing:-.035em;
+      text-shadow:0 10px 24px rgba(0,0,0,.22);
+    }
+
+    .heroTitle span{
+      color:#f0cc62;
+    }
+
+    .heroSub{
+      width:min(340px, 100%);
+      margin:10px auto 0;
+      color:rgba(223,252,241,.74);
+      font-size:12px;
+      line-height:1.6;
+      font-weight:650;
+    }
+
+    .heroStats{
+      position:relative;
+      z-index:2;
+      margin:16px auto -22px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:8px;
+    }
+
+    .heroStat{
+      min-height:56px;
+      border-radius:16px;
+      padding:10px 8px;
+      background:rgba(255,255,255,.95);
+      border:1px solid rgba(13,127,103,.10);
+      box-shadow:
+        0 16px 28px rgba(0,0,0,.15),
+        inset 0 1px 0 rgba(255,255,255,.82);
+      text-align:center;
+    }
+
+    .heroStatIcon{
+      width:18px;
+      height:18px;
+      margin:0 auto 5px;
+      color:#d3a12a;
+    }
+
+    .heroStat strong{
+      display:block;
+      color:#14382f;
+      font-size:10.5px;
+      font-weight:900;
+      line-height:1.15;
+    }
+
+    .heroStat span{
+      display:block;
+      margin-top:2px;
+      color:#819890;
+      font-size:9px;
       font-weight:700;
-      margin-top:-2px;
+      line-height:1.15;
     }
 
     .card{
       position:relative;
       z-index:5;
       width:100%;
-      margin:-30px 0 0;
       min-height:calc(100vh - 146px);
+      margin:0;
+      padding:36px 24px 24px;
       background:
         radial-gradient(220px 140px at 100% 100%, rgba(98,221,177,.22), transparent 60%),
         radial-gradient(180px 120px at 78% 18%, rgba(255,255,255,.16), transparent 58%),
         linear-gradient(135deg, #e8fbf2 0%, #d7f5e7 52%, #c8efd9 100%);
-      border:none;
-      border-radius:28px 28px 0 0;
-      padding:22px 24px 24px;
       box-shadow:0 -12px 32px rgba(6,34,29,.10);
-      animation:cardFloat .55s ease both;
       overflow:hidden;
     }
 
@@ -252,49 +382,73 @@
       z-index:1;
     }
 
-    .brandInside{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      text-align:center;
-      margin:0 0 16px;
-    }
-
-    .logoBox{
-      width:70px;
-      height:70px;
-      border-radius:24px;
-      background:#ffffff;
-      border:1px solid rgba(24,199,155,.16);
-      box-shadow:
-        0 16px 34px rgba(10,47,39,.10),
-        0 0 0 1px rgba(255,255,255,.75) inset;
+    .switchTabs{
       display:grid;
-      place-items:center;
-      overflow:hidden;
-      margin-bottom:10px;
+      grid-template-columns:1fr 1fr;
+      gap:0;
+      padding:5px;
+      border-radius:18px;
+      background:rgba(255,255,255,.82);
+      box-shadow:
+        0 16px 30px rgba(6,34,29,.09),
+        inset 0 1px 0 rgba(255,255,255,.70);
+      border:1px solid rgba(13,127,103,.10);
+      margin-bottom:16px;
     }
 
-    .logoBox img{
-      width:50px;
-      height:50px;
-      object-fit:contain;
-      display:block;
+    .switchTab{
+      min-height:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:900;
+      color:#6c8b82;
+      transition:.18s ease;
     }
 
-    .brandTitle{
-      margin:0;
-      font-size:15px;
-      line-height:1.15;
-      font-weight:800;
-      color:#0d7f67;
-      letter-spacing:-.01em;
+    .switchTab svg{
+      width:16px;
+      height:16px;
+    }
+
+    .switchTab.active{
+      color:#ffffff;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.16), transparent 34%),
+        linear-gradient(135deg, #031816 0%, #0a2f27 35%, #0d5c46 68%, #00c97a 100%);
+      box-shadow:
+        0 12px 24px rgba(6,34,29,.14),
+        inset 0 1px 0 rgba(255,255,255,.14);
+    }
+
+    .formPanel{
+      padding:18px 16px 16px;
+      border-radius:24px;
+      background:rgba(255,255,255,.82);
+      border:1px solid rgba(13,127,103,.12);
+      box-shadow:
+        0 18px 36px rgba(6,34,29,.08),
+        inset 0 1px 0 rgba(255,255,255,.75);
+      margin-bottom:14px;
+    }
+
+    .panelDecor{
+      width:74px;
+      height:4px;
+      border-radius:999px;
+      margin:0 auto 12px;
+      background:linear-gradient(90deg, #0d5c46, #00c97a, #d6aa35);
     }
 
     .title{
       text-align:center;
       margin:0;
-      font-size:25px;
+      font-family:'Playfair Display', serif;
+      font-size:27px;
       line-height:1.08;
       font-weight:800;
       color:#173d35;
@@ -302,24 +456,25 @@
     }
 
     .subtitle{
+      width:min(330px, 100%);
       text-align:center;
-      margin:9px 0 18px;
+      margin:9px auto 18px;
       color:#6c8b82;
-      font-size:13px;
-      line-height:1.5;
-      font-weight:500;
+      font-size:12.5px;
+      line-height:1.55;
+      font-weight:600;
     }
 
     .error{
       margin-bottom:14px;
-      padding:11px 12px;
-      border-radius:14px;
+      padding:12px 13px;
+      border-radius:16px;
       background:rgba(239,68,68,.08);
       border:1px solid rgba(239,68,68,.18);
       color:#b42318;
       font-size:12.5px;
       line-height:1.45;
-      font-weight:500;
+      font-weight:650;
     }
 
     .error ul{
@@ -332,16 +487,24 @@
     }
 
     .field{
-      margin-bottom:12px;
+      margin-bottom:13px;
     }
 
     .label{
-      display:block;
+      display:flex;
+      align-items:center;
+      gap:6px;
       margin:0 0 7px;
       font-size:11.5px;
       line-height:1.2;
       color:#668078;
-      font-weight:700;
+      font-weight:800;
+    }
+
+    .label svg{
+      width:14px;
+      height:14px;
+      color:#d3a12a;
     }
 
     .inputWrap{
@@ -350,8 +513,8 @@
 
     .input{
       width:100%;
-      height:50px;
-      border-radius:15px;
+      height:52px;
+      border-radius:16px;
       border:1px solid rgba(13,127,103,.14);
       background:
         radial-gradient(circle at 90% 0%, rgba(255,255,255,.72), transparent 42%),
@@ -360,7 +523,7 @@
       padding:0 14px;
       font-size:13.5px;
       color:#10322c;
-      font-weight:700;
+      font-weight:750;
       transition:
         border-color .18s ease,
         box-shadow .18s ease,
@@ -378,7 +541,7 @@
     }
 
     .input.input-phone{
-      padding-left:74px;
+      padding-left:76px;
     }
 
     .input.input-password{
@@ -399,21 +562,35 @@
 
     .input::placeholder{
       color:#8fa79f;
-      font-weight:500;
+      font-weight:550;
+    }
+
+    .input.is-referral-locked{
+      color:#0d7f67;
+      font-weight:900;
+      letter-spacing:.04em;
+      cursor:not-allowed;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(255,255,255,.82), transparent 42%),
+        linear-gradient(135deg, rgba(232,255,246,.98), rgba(200,246,226,.92));
+      border-color:rgba(13,127,103,.22);
+      box-shadow:
+        0 0 0 3px rgba(0,201,122,.08),
+        0 10px 22px rgba(6,34,29,.045),
+        inset 0 1px 0 rgba(255,255,255,.68);
     }
 
     .prefixIcon{
       position:absolute;
       top:50%;
-      left:14px;
+      left:13px;
       transform:translateY(-50%);
       z-index:3;
       width:28px;
       height:28px;
       border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
+      display:grid;
+      place-items:center;
       color:#0d7f67;
       background:
         radial-gradient(circle at 30% 0%, rgba(255,255,255,.78), transparent 40%),
@@ -437,8 +614,8 @@
       left:14px;
       transform:translateY(-50%);
       z-index:3;
-      min-width:46px;
-      height:28px;
+      min-width:48px;
+      height:30px;
       padding:0 9px;
       display:inline-flex;
       align-items:center;
@@ -451,7 +628,7 @@
       color:#0d7f67;
       font-size:12.5px;
       line-height:1;
-      font-weight:850;
+      font-weight:900;
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.68),
         0 6px 12px rgba(6,34,29,.045);
@@ -463,8 +640,8 @@
       top:50%;
       right:9px;
       transform:translateY(-50%);
-      width:34px;
-      height:34px;
+      width:36px;
+      height:36px;
       border:none;
       border-radius:12px;
       background:
@@ -477,19 +654,11 @@
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.62),
         0 6px 14px rgba(6,34,29,.05);
-      transition:
-        transform .18s ease,
-        background .18s ease,
-        color .18s ease,
-        box-shadow .18s ease;
+      transition:.18s ease;
     }
 
     .togglePass:hover{
-      transform:translateY(-50%) translateY(-1px);
       color:#03624C;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.82), transparent 40%),
-        linear-gradient(135deg, rgba(241,255,250,.98), rgba(184,236,212,.90));
       box-shadow:
         0 8px 16px rgba(6,34,29,.075),
         0 0 0 3px rgba(0,201,122,.08),
@@ -500,7 +669,6 @@
       width:18px;
       height:18px;
       display:block;
-      stroke-width:2.1;
     }
 
     .hint{
@@ -508,7 +676,7 @@
       font-size:11.5px;
       line-height:1.45;
       color:#6e877f;
-      font-weight:500;
+      font-weight:600;
     }
 
     .helperRow{
@@ -516,22 +684,22 @@
       align-items:center;
       justify-content:space-between;
       gap:10px;
-      margin:9px 0 15px;
+      margin:8px 0 16px;
       flex-wrap:wrap;
     }
 
     .helperText{
       font-size:11.5px;
-      line-height:1.4;
+      line-height:1.45;
       color:#6e877f;
-      font-weight:500;
+      font-weight:600;
     }
 
     .helperLink{
       font-size:11.5px;
       line-height:1.4;
       color:#0d7f67;
-      font-weight:800;
+      font-weight:900;
       text-decoration:none;
     }
 
@@ -543,11 +711,11 @@
       width:100%;
       height:52px;
       border:none;
-      border-radius:14px;
+      border-radius:15px;
       cursor:pointer;
       color:#ffffff;
       font-size:14px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:.01em;
       background:
         radial-gradient(circle at 30% 0%, rgba(255,255,255,.16), transparent 34%),
@@ -556,21 +724,20 @@
         0 14px 28px rgba(0,0,0,.18),
         0 10px 26px rgba(0,223,130,.18),
         inset 0 1px 0 rgba(255,255,255,.12);
-      transition:
-        transform .2s ease,
-        box-shadow .2s ease,
-        filter .2s ease,
-        background .2s ease;
+      transition:.2s ease;
       position:relative;
       overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
     }
 
     .btn::before{
       content:"";
       position:absolute;
       inset:0;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%);
+      background:linear-gradient(180deg, rgba(255,255,255,.08), transparent 40%);
       pointer-events:none;
     }
 
@@ -581,15 +748,21 @@
       left:-120%;
       width:55%;
       height:100%;
-      background:linear-gradient(
-        to right,
-        transparent,
-        rgba(255,255,255,.22),
-        transparent
-      );
+      background:linear-gradient(to right, transparent, rgba(255,255,255,.22), transparent);
       transform:skewX(-18deg);
       animation:btnShine 3.2s infinite;
       pointer-events:none;
+    }
+
+    .btn span,
+    .btn svg{
+      position:relative;
+      z-index:1;
+    }
+
+    .btn svg{
+      width:17px;
+      height:17px;
     }
 
     .btn:hover{
@@ -601,9 +774,515 @@
         inset 0 1px 0 rgba(255,255,255,.14);
     }
 
-    .btn:active{
-      transform:translateY(0);
-      filter:brightness(.99);
+    .btn.is-disabled,
+    .btn:disabled{
+      opacity:.58;
+      filter:saturate(.72);
+      cursor:not-allowed;
+    }
+
+    .security-box{
+      margin:18px 0 14px;
+      display:grid;
+      gap:12px;
+    }
+
+    .security-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:0 0 10px;
+      color:#173d35;
+      font-size:13.5px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+
+    .security-title span{
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      color:#0d7f67;
+      background:linear-gradient(135deg, rgba(232,255,246,.98), rgba(198,239,222,.84));
+      border:1px solid rgba(13,127,103,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+    }
+
+    .puzzle-card{
+      border:1px solid rgba(13,127,103,.14);
+      border-radius:22px;
+      background:
+        radial-gradient(240px 130px at 100% 0%, rgba(0,201,122,.11), transparent 62%),
+        linear-gradient(135deg, rgba(248,255,252,.92), rgba(226,248,238,.82));
+      box-shadow:
+        0 14px 28px rgba(6,34,29,.055),
+        inset 0 1px 0 rgba(255,255,255,.75);
+      padding:14px;
+      overflow:hidden;
+    }
+
+    .puzzle-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
+    }
+
+    .puzzle-head h3{
+      margin:0;
+      color:#173d35;
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:-.02em;
+    }
+
+    .puzzle-head p{
+      margin:5px 0 0;
+      color:#6e877f;
+      font-size:11.5px;
+      font-weight:700;
+      line-height:1.35;
+    }
+
+    .puzzle-badge{
+      min-height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#0d7f67;
+      background:rgba(255,255,255,.62);
+      border:1px solid rgba(13,127,103,.16);
+      font-size:11px;
+      font-weight:900;
+      white-space:nowrap;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+    }
+
+    .puzzle-badge.is-ok{
+      color:#064e3b;
+      background:linear-gradient(135deg, #dffff0, #bdf7da);
+      border-color:rgba(0,201,122,.26);
+    }
+
+    .puzzle-stage{
+      position:relative;
+      height:136px;
+      border-radius:20px;
+      overflow:hidden;
+      background:
+        radial-gradient(74px 74px at 14% 45%, rgba(255,255,255,.70), transparent 42%),
+        radial-gradient(90px 90px at 82% 56%, rgba(255,255,255,.18), transparent 46%),
+        linear-gradient(135deg, #031816 0%, #0a2f27 42%, #0d5c46 68%, #00c97a 100%);
+      border:1px solid rgba(13,127,103,.12);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.18),
+        0 12px 22px rgba(6,34,29,.08);
+      margin-bottom:12px;
+    }
+
+    .puzzle-chip{
+      position:absolute;
+      z-index:2;
+      min-height:31px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#eafff4;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.20);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      font-size:11.5px;
+      font-weight:900;
+    }
+
+    .puzzle-chip.is-left{
+      top:16px;
+      left:16px;
+    }
+
+    .puzzle-chip.is-right{
+      top:16px;
+      right:16px;
+    }
+
+    .puzzle-piece{
+      position:absolute;
+      left:20px;
+      top:50px;
+      width:66px;
+      height:60px;
+      border-radius:20px;
+      background:#f4fff9;
+      box-shadow:
+        0 14px 26px rgba(0,0,0,.18),
+        inset 0 1px 0 rgba(255,255,255,.75);
+      transition:.18s ease;
+    }
+
+    .puzzle-piece::before{
+      content:"";
+      position:absolute;
+      top:-11px;
+      left:26px;
+      width:20px;
+      height:20px;
+      border-radius:999px;
+      background:#f4fff9;
+    }
+
+    .puzzle-piece::after{
+      content:"";
+      position:absolute;
+      right:-10px;
+      top:24px;
+      width:20px;
+      height:20px;
+      border-radius:999px;
+      background:#f4fff9;
+    }
+
+    .puzzle-slot{
+      position:absolute;
+      right:34px;
+      top:46px;
+      width:78px;
+      height:70px;
+      border-radius:21px;
+      border:2px dashed rgba(234,255,244,.78);
+      background:rgba(255,255,255,.10);
+      display:grid;
+      place-items:center;
+    }
+
+    .puzzle-slot::before{
+      content:"";
+      width:38px;
+      height:38px;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255,255,255,.58), transparent 24%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.62), rgba(255,255,255,.18));
+      box-shadow:
+        0 -18px 0 -9px rgba(255,255,255,.38),
+        0 18px 0 -9px rgba(255,255,255,.38),
+        -18px 0 0 -9px rgba(255,255,255,.38),
+        18px 0 0 -9px rgba(255,255,255,.38);
+    }
+
+    .puzzle-slider{
+      position:relative;
+      height:54px;
+      border-radius:17px;
+      background:
+        linear-gradient(135deg, rgba(232,255,246,.96), rgba(206,244,226,.88));
+      border:1px solid rgba(13,127,103,.16);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.75),
+        0 10px 22px rgba(6,34,29,.045);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+    }
+
+    .puzzle-track-text{
+      width:100%;
+      text-align:center;
+      color:#6e877f;
+      font-size:12.5px;
+      font-weight:850;
+      padding-left:68px;
+      padding-right:14px;
+      line-height:1.25;
+    }
+
+    .puzzle-handle{
+      position:absolute;
+      left:0;
+      top:0;
+      width:66px;
+      height:54px;
+      border:0;
+      border-radius:17px;
+      cursor:grab;
+      color:#ffffff;
+      background:
+        radial-gradient(circle at 30% 0%, rgba(255,255,255,.22), transparent 34%),
+        linear-gradient(135deg, #05241d 0%, #0b4d3d 38%, #0d7f67 70%, #27d88f 100%);
+      box-shadow:
+        0 10px 20px rgba(6,34,29,.14),
+        inset 0 1px 0 rgba(255,255,255,.14);
+      font-size:26px;
+      font-weight:900;
+      touch-action:none;
+      user-select:none;
+    }
+
+    .puzzle-handle:active{
+      cursor:grabbing;
+    }
+
+    .puzzle-note{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      margin:11px 0 0;
+      color:#6e877f;
+      font-size:11.5px;
+      font-weight:750;
+      line-height:1.45;
+    }
+
+    .puzzle-reset{
+      margin-top:11px;
+      min-height:34px;
+      padding:0 14px;
+      border:1px solid rgba(13,127,103,.12);
+      border-radius:999px;
+      background:rgba(255,255,255,.74);
+      color:#0d5c46;
+      font-size:11.5px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+    }
+
+    .account-confirm{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px;
+      border-radius:20px;
+      border:1px solid rgba(13,127,103,.14);
+      background:
+        radial-gradient(circle at 95% 0%, rgba(255,255,255,.70), transparent 44%),
+        linear-gradient(135deg, rgba(248,255,252,.92), rgba(226,248,238,.82));
+      box-shadow:
+        0 12px 22px rgba(6,34,29,.045),
+        inset 0 1px 0 rgba(255,255,255,.70);
+      cursor:pointer;
+    }
+
+    .account-confirm input{
+      appearance:none;
+      -webkit-appearance:none;
+      width:24px;
+      height:24px;
+      margin:1px 0 0;
+      border-radius:7px;
+      border:2px solid rgba(13,127,103,.22);
+      background:#ffffff;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+    }
+
+    .account-confirm input:checked{
+      border-color:#0d7f67;
+      background:linear-gradient(135deg, #0d5c46, #00c97a);
+    }
+
+    .account-confirm input:checked::before{
+      content:"✓";
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+      line-height:1;
+    }
+
+    .account-confirm strong{
+      display:block;
+      color:#173d35;
+      font-size:13.5px;
+      font-weight:900;
+      margin-bottom:5px;
+    }
+
+    .account-confirm span{
+      display:block;
+      color:#6e877f;
+      font-size:11.8px;
+      line-height:1.55;
+      font-weight:700;
+    }
+
+    .legality-section{
+      margin-top:14px;
+    }
+
+    .legality-shell{
+      position:relative;
+      border-radius:24px;
+      padding:14px 12px 12px;
+      background:
+        radial-gradient(220px 140px at 100% 0%, rgba(0,201,122,.10), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.96), rgba(239,252,245,.90));
+      border:1px solid rgba(13,127,103,.10);
+      box-shadow:
+        0 18px 36px rgba(6,34,29,.06),
+        inset 0 1px 0 rgba(255,255,255,.78);
+    }
+
+    .legality-title{
+      margin:0 0 12px;
+      text-align:center;
+      font-size:15px;
+      line-height:1.2;
+      font-weight:900;
+      letter-spacing:.02em;
+      color:#173d35;
+      text-transform:uppercase;
+    }
+
+    .legality-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+    }
+
+    .legality-card{
+      position:relative;
+      min-width:0;
+      border-radius:20px;
+      padding:10px 10px 14px;
+      background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(245,255,250,.92));
+      border:1px solid rgba(206,176,83,.42);
+      box-shadow:
+        0 10px 22px rgba(6,34,29,.05),
+        inset 0 1px 0 rgba(255,255,255,.86);
+      overflow:hidden;
+    }
+
+    .legality-card-top{
+      position:absolute;
+      top:0;
+      left:50%;
+      width:44%;
+      height:18px;
+      transform:translateX(-50%);
+      background:linear-gradient(180deg, rgba(235,224,188,.85), rgba(232,248,241,0));
+      border-bottom-left-radius:14px;
+      border-bottom-right-radius:14px;
+    }
+
+    .legality-logo-box{
+      height:78px;
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(247,250,248,.98), rgba(241,246,244,.94));
+      border:1px solid rgba(179,196,189,.55);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.82);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 12px;
+    }
+
+    .legality-logo{
+      display:block;
+      max-width:100%;
+      max-height:42px;
+      object-fit:contain;
+    }
+
+    .legality-logo-ojk{
+      max-height:46px;
+    }
+
+    .legality-logo-bappebti{
+      max-height:46px;
+    }
+
+    .legality-name{
+      margin-top:10px;
+      text-align:center;
+      font-size:11px;
+      line-height:1.3;
+      font-weight:900;
+      color:#173d35;
+    }
+
+    .legality-badge{
+      width:max-content;
+      max-width:100%;
+      margin:10px auto 0;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      font-size:10px;
+      line-height:1.2;
+      font-weight:900;
+      color:#8b6500;
+      background:linear-gradient(180deg, #f7e6ab, #d8aa2d);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.45),
+        0 6px 14px rgba(177,130,0,.14);
+    }
+
+    .legality-footer{
+      margin-top:12px;
+      border-radius:18px;
+      padding:12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:
+        radial-gradient(180px 100px at 100% 0%, rgba(255,255,255,.10), transparent 60%),
+        linear-gradient(135deg, #031816 0%, #0b4d3d 38%, #0d7f67 72%, #1fe08e 100%);
+      color:#fff;
+      box-shadow:0 14px 28px rgba(6,34,29,.16);
+    }
+
+    .legality-footer-icon{
+      width:36px;
+      height:36px;
+      flex:0 0 36px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      color:#f6d97a;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .legality-footer-icon svg{
+      width:20px;
+      height:20px;
+    }
+
+    .legality-footer-content{
+      display:grid;
+      gap:3px;
+      min-width:0;
+    }
+
+    .legality-footer-content strong{
+      display:block;
+      font-size:13px;
+      line-height:1.25;
+      font-weight:900;
+      color:#ffffff;
+    }
+
+    .legality-footer-content span{
+      display:block;
+      font-size:11px;
+      line-height:1.4;
+      font-weight:700;
+      color:rgba(240,255,248,.86);
     }
 
     .footer{
@@ -612,12 +1291,12 @@
       font-size:12.5px;
       line-height:1.5;
       color:#6c8b82;
-      font-weight:500;
+      font-weight:600;
     }
 
     .footer a{
       color:#0d7f67;
-      font-weight:800;
+      font-weight:900;
       text-decoration:none;
     }
 
@@ -625,104 +1304,58 @@
       text-decoration:underline;
     }
 
-    @keyframes pageEnter{
-      from{
-        opacity:0;
-        transform:translateY(12px);
-      }
-      to{
-        opacity:1;
-        transform:translateY(0);
-      }
+    .copyright{
+      margin:16px 0 0;
+      text-align:center;
+      color:#6c8b82;
+      font-size:10.5px;
+      font-weight:700;
+      line-height:1.5;
     }
 
-    @keyframes cardFloat{
-      from{
-        opacity:0;
-        transform:translateY(14px);
-      }
-      to{
-        opacity:1;
-        transform:translateY(0);
-      }
+    @keyframes pageEnter{
+      from{ opacity:0; transform:translateY(12px); }
+      to{ opacity:1; transform:translateY(0); }
     }
 
     @keyframes blobFloat{
-      0%,100%{
-        transform:translate3d(0,0,0) rotate(0deg);
-      }
-      50%{
-        transform:translate3d(-8px,8px,0) rotate(5deg);
-      }
+      0%,100%{ transform:translate3d(0,0,0) rotate(0deg); }
+      50%{ transform:translate3d(-8px,8px,0) rotate(5deg); }
     }
 
     @keyframes blobFloat2{
-      0%,100%{
-        transform:translate3d(0,0,0);
-      }
-      50%{
-        transform:translate3d(7px,-7px,0);
-      }
-    }
-
-    @keyframes shapeMoveOne{
-      0%,100%{
-        transform:translate3d(0,0,0) rotate(0deg);
-      }
-      50%{
-        transform:translate3d(-8px,6px,0) rotate(4deg);
-      }
-    }
-
-    @keyframes shapeMoveTwo{
-      0%,100%{
-        transform:translate3d(0,0,0) scale(1);
-      }
-      50%{
-        transform:translate3d(-4px,-8px,0) scale(1.04);
-      }
-    }
-
-    @keyframes shapeMoveThree{
-      0%,100%{
-        transform:translate3d(0,0,0) rotate(0deg);
-      }
-      50%{
-        transform:translate3d(7px,5px,0) rotate(-4deg);
-      }
+      0%,100%{ transform:translate3d(0,0,0); }
+      50%{ transform:translate3d(7px,-7px,0); }
     }
 
     @keyframes btnShine{
-      0%{
-        left:-120%;
-      }
-      20%{
-        left:180%;
-      }
-      100%{
-        left:180%;
-      }
+      0%{ left:-120%; }
+      20%{ left:180%; }
+      100%{ left:180%; }
     }
 
     @media (max-width:380px){
-      body{
-        padding:0;
-      }
-
-      .page{
-        max-width:none;
-      }
-
       .hero{
-        height:168px;
+        padding-left:18px;
+        padding-right:18px;
       }
 
       .card{
-        padding:22px 20px 22px;
+        padding-left:18px;
+        padding-right:18px;
       }
 
-      .title{
-        font-size:24px;
+      .heroTitle{
+        font-size:28px;
+      }
+
+      .heroStats{
+        gap:6px;
+      }
+
+      .formPanel{
+        padding-left:14px;
+        padding-right:14px;
       }
     }
 
@@ -734,187 +1367,363 @@
         transition:none !important;
       }
     }
-
-    .input.is-referral-locked{
-  color:#0d7f67;
-  font-weight:900;
-  letter-spacing:.04em;
-  cursor:not-allowed;
-  background:
-    radial-gradient(circle at 90% 0%, rgba(255,255,255,.82), transparent 42%),
-    linear-gradient(135deg, rgba(232,255,246,.98), rgba(200,246,226,.92));
-  border-color:rgba(13,127,103,.22);
-  box-shadow:
-    0 0 0 3px rgba(0,201,122,.08),
-    0 10px 22px rgba(6,34,29,.045),
-    inset 0 1px 0 rgba(255,255,255,.68);
-}
-
-.input.is-referral-locked::selection{
-  background:rgba(13,127,103,.16);
-}
   </style>
 </head>
 <body>
   <main class="page">
-    <section class="shell" role="region" aria-label="Daftar Crowdnik">
+    <section class="shell" role="region" aria-label="Daftar Akun Rubik Company">
 
-      <div class="hero">
-        <a href="/login" class="backBubble" aria-label="Kembali ke login">
-          <span>‹</span>
-          Back
-        </a>
+      <header class="hero">
+        <div class="topbar">
+          <div class="brandMini">
+            <div class="brandMiniLogo">
+              <img src="{{ asset('logo.png') }}" alt="Rubik Company">
+            </div>
 
-        <div class="heroShape shapeOne"></div>
-        <div class="heroShape shapeTwo"></div>
-        <div class="heroShape shapeThree"></div>
-      </div>
-
-      <div class="card">
-        <div class="brandInside">
-          <div class="logoBox">
-            <img src="/logo.png" alt="Crowdnik">
+            <div class="brandMiniText">
+              <span>Platform Akun</span>
+              <strong>Rubik Company</strong>
+            </div>
           </div>
+
+          <div class="topPill">AKB</div>
         </div>
 
-        <h1 class="title">Buat Akun</h1>
-        <p class="subtitle">Daftar untuk mulai memakai akun Rubik.</p>
-
-        {{-- ERROR VALIDATION --}}
-        @if ($errors->any())
-          <div class="error">
-            <ul>
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
+        <div class="heroMain">
+          <div class="heroLogoCard">
+            <img src="{{ asset('logo.png') }}" alt="Rubik Company">
           </div>
-        @endif
 
-        <form method="POST" action="{{ route('register.store') }}" autocomplete="off" novalidate>
-          @csrf
+          <div class="heroBadge">
+            ✦ Pendaftaran resmi Rubik
+          </div>
 
-          <div class="field">
-            <label class="label" for="name">Nama Panggilan</label>
-            <div class="inputWrap">
-              <span class="prefixIcon" aria-hidden="true">
+          <h1 class="heroTitle">
+            Mulai Akses Akun <span>Rubik</span>
+          </h1>
+
+          <p class="heroSub">
+            Buat akun untuk mengakses dashboard, memantau aktivitas, dan mengelola layanan melalui halaman resmi Rubik.
+          </p>
+        </div>
+
+        <div class="heroStats">
+          <div class="heroStat">
+            <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
+              <path d="M4 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M16 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M22 19H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <strong>Investasi</strong>
+            <span>Terarah</span>
+          </div>
+
+          <div class="heroStat">
+            <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
+              <path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <strong>Pertumbuhan</strong>
+            <span>Berkelanjutan</span>
+          </div>
+
+          <div class="heroStat">
+            <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <strong>Akun Aman</strong>
+            <span>Privasi</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="card">
+
+        <div class="switchTabs">
+          <a href="{{ route('register.form') }}" class="switchTab active">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M19 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Daftar
+          </a>
+
+          <a href="{{ route('login') }}" class="switchTab">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Masuk
+          </a>
+        </div>
+
+        <section class="formPanel">
+          <div class="panelDecor"></div>
+
+          <h1 class="title">Pendaftaran Akun</h1>
+          <p class="subtitle">
+            Lengkapi data akun untuk melanjutkan pendaftaran melalui halaman resmi Rubik.
+          </p>
+
+          @if ($errors->any())
+            <div class="error">
+              <ul>
+                @foreach ($errors->all() as $error)
+                  <li>{{ $error }}</li>
+                @endforeach
+              </ul>
+            </div>
+          @endif
+
+          <form method="POST" action="{{ route('register.store') }}" autocomplete="off" novalidate>
+            @csrf
+
+            <div class="field">
+              <label class="label" for="name">
                 <svg viewBox="0 0 24 24" fill="none">
                   <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
                 </svg>
-              </span>
+                Username
+              </label>
 
-<input
-  class="input with-icon"
-  id="name"
-  type="text"
-  name="name"
-  value="{{ old('name') }}"
-  placeholder="Masukkan nama panggilan"
-  required
-/>
+              <div class="inputWrap">
+                <span class="prefixIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </span>
+
+                <input
+                  class="input with-icon"
+                  id="name"
+                  type="text"
+                  name="name"
+                  value="{{ old('name') }}"
+                  placeholder="Masukkan nama panggilan"
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <div class="field">
-            <label class="label" for="phone">Nomor Telepon</label>
-            <div class="inputWrap">
-              <span class="prefix62">+62</span>
-
-              <input
-                class="input input-phone"
-                id="phone"
-                type="tel"
-                name="phone"
-                value="{{ old('phone') }}"
-                placeholder="08123456789"
-                inputmode="numeric"
-                pattern="08[0-9]{8,12}"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label" for="referral_code">Kode Referral <span style="font-weight:500;">(Opsional)</span></label>
-            <div class="inputWrap">
-              <span class="prefixIcon" aria-hidden="true">
+            <div class="field">
+              <label class="label" for="phone">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 22V7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.91.32 1.8.59 2.65a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6.27 6.27l1.25-1.25a2 2 0 0 1 2.11-.45c.85.27 1.74.47 2.65.59A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-              </span>
+                Nomor WhatsApp
+              </label>
 
-       <input
-  class="input with-icon {{ $isReferralLocked ? 'is-referral-locked' : '' }}"
-  id="referral_code"
-  type="text"
-  name="referral_code"
-  value="{{ $referralInputValue }}"
-  placeholder="Masukkan kode referral"
-  autocomplete="off"
-  {{ $isReferralLocked ? 'readonly' : '' }}
-  data-locked-referral="{{ $isReferralLocked ? $lockedReferralCode : '' }}"
-/>
+              <div class="inputWrap">
+                <span class="prefix62">+62</span>
+
+                <input
+                  class="input input-phone"
+                  id="phone"
+                  type="tel"
+                  name="phone"
+                  value="{{ old('phone') }}"
+                  placeholder="08123456789"
+                  inputmode="numeric"
+                  pattern="08[0-9]{8,12}"
+                  required
+                />
+              </div>
             </div>
 
-           <div class="hint">
-  @if($isReferralLocked)
-    Kode referral dari link undangan sudah terkunci dan tidak bisa dihapus.
-  @else
-    Jika kamu punya link referral, kode biasanya sudah terisi otomatis.
-  @endif
-</div>
-          </div>
-
-          <div class="field">
-            <label class="label" for="password">Password</label>
-            <div class="inputWrap">
-              <span class="prefixIcon" aria-hidden="true">
+            <div class="field">
+              <label class="label" for="referral_code">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
-                  <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2"/>
+                  <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 22V7" stroke="currentColor" stroke-width="2"/>
                 </svg>
-              </span>
+                Kode Undangan
+              </label>
 
-              <input
-                class="input with-icon input-password"
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Buat password"
-                required
-              />
+              <div class="inputWrap">
+                <span class="prefixIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2"/>
+                    <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 22V7" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </span>
 
-              <button class="togglePass" type="button" onclick="togglePassword()" aria-label="Tampilkan password">
-                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
-                  <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </button>
+                <input
+                  class="input with-icon {{ $isReferralLocked ? 'is-referral-locked' : '' }}"
+                  id="referral_code"
+                  type="text"
+                  name="referral_code"
+                  value="{{ $referralInputValue }}"
+                  placeholder="Masukkan kode undangan"
+                  autocomplete="off"
+                  {{ $isReferralLocked ? 'readonly' : '' }}
+                  data-locked-referral="{{ $isReferralLocked ? $lockedReferralCode : '' }}"
+                />
+              </div>
             </div>
 
-            <div class="hint">
-              Gunakan kombinasi huruf dan angka agar lebih aman.
+            <div class="field">
+              <label class="label" for="password">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+                  <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                Kata Sandi
+              </label>
+
+              <div class="inputWrap">
+                <span class="prefixIcon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+                    <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </span>
+
+                <input
+                  class="input with-icon input-password"
+                  id="password"
+                  type="password"
+                  name="password"
+                  placeholder="Buat kata sandi"
+                  required
+                />
+
+                <button class="togglePass" type="button" onclick="togglePassword()" aria-label="Tampilkan password">
+                  <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
+                    <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="hint">
+                Gunakan kombinasi huruf dan angka agar akun lebih aman.
+              </div>
+            </div>
+
+            <input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none">
+
+            <div class="security-box">
+              <div>
+                <h3 class="security-title">
+                  <span>✦</span>
+                  Verifikasi keamanan
+                </h3>
+
+                <div class="puzzle-card" id="puzzleCard">
+                  <div class="puzzle-head">
+                    <div>
+                      <h3>Geser untuk melengkapi puzzle</h3>
+                      <p>Geser ke kanan sampai potongan masuk ke slot.</p>
+                    </div>
+
+                    <div class="puzzle-badge" id="puzzleBadge">AMAN</div>
+                  </div>
+
+                  <div class="puzzle-stage" id="puzzleStage">
+                    <div class="puzzle-chip is-left">Akun</div>
+                    <div class="puzzle-chip is-right">Aman</div>
+
+                    <div class="puzzle-piece" id="puzzlePiece"></div>
+                    <div class="puzzle-slot" id="puzzleSlot"></div>
+                  </div>
+
+                  <div class="puzzle-slider" id="puzzleSlider">
+                    <button type="button" class="puzzle-handle" id="puzzleHandle" aria-label="Geser verifikasi">»</button>
+                    <div class="puzzle-track-text" id="puzzleTrackText">
+                      Geser untuk menyelesaikan verifikasi
+                    </div>
+                  </div>
+
+                  <div class="puzzle-note">
+                    ✨ Verifikasi cepat untuk membantu menjaga keamanan pendaftaran.
+                  </div>
+
+                  <button type="button" class="puzzle-reset" id="puzzleReset">Ulangi</button>
+                </div>
+              </div>
+
+              <label class="account-confirm" for="security_confirm">
+                <input id="security_confirm" type="checkbox" name="security_confirm" value="1">
+                <span>
+                  <strong>Konfirmasi keamanan akun</strong>
+                  Saya memahami kata sandi bersifat pribadi dan keamanan akun menjadi tanggung jawab saya.
+                </span>
+              </label>
+
+              <input type="hidden" name="puzzle_verified" id="puzzleVerified" value="0">
+            </div>
+
+            <button class="btn is-disabled" type="submit" id="registerSubmit" disabled>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M19 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>Daftar Sekarang</span>
+            </button>
+          </form>
+        </section>
+
+        <section class="legality-section">
+          <div class="legality-shell">
+            <h3 class="legality-title">LEGALITAS PERUSAHAAN</h3>
+
+            <div class="legality-grid">
+              <div class="legality-card">
+                <div class="legality-card-top"></div>
+
+                <div class="legality-logo-box">
+                  <img src="{{ asset('assets/logos/ojk.png') }}" alt="Otoritas Jasa Keuangan" class="legality-logo legality-logo-ojk">
+                </div>
+
+                <div class="legality-name">Otoritas Jasa Keuangan</div>
+                <div class="legality-badge">TERDAFTAR DI OJK</div>
+              </div>
+
+              <div class="legality-card">
+                <div class="legality-card-top"></div>
+
+                <div class="legality-logo-box">
+                  <img src="{{ asset('assets/logos/bappebti.png') }}" alt="BAPPEBTI" class="legality-logo legality-logo-bappebti">
+                </div>
+
+                <div class="legality-name">BAPPEBTI</div>
+                <div class="legality-badge">DIAWASI BAPPEBTI</div>
+              </div>
+            </div>
+
+            <div class="legality-footer">
+              <div class="legality-footer-icon">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+
+              <div class="legality-footer-content">
+                <strong>Akses resmi perusahaan</strong>
+                <span>Pastikan pendaftaran hanya melalui halaman resmi Rubik.</span>
+              </div>
             </div>
           </div>
-
-          {{-- Honeypot anti bot --}}
-          <input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none">
-
-          <div class="helperRow">
-            <div class="helperText">Dengan daftar, kamu menyetujui ketentuan Rubik.</div>
-            <a class="helperLink" href="/login">Masuk</a>
-          </div>
-
-          <button class="btn" type="submit">Daftar</button>
-        </form>
+        </section>
 
         <div class="footer">
-          Sudah punya akun? <a href="/login">Masuk sekarang</a>
+          Sudah punya akun? <a href="{{ route('login') }}">Masuk sekarang</a>
+        </div>
+
+        <div class="copyright">
+          © {{ date('Y') }} Rubik Company. Tumbuh bersama, melalui akses resmi.
         </div>
       </div>
     </section>
@@ -933,39 +1742,208 @@
       if(icon){
         icon.innerHTML = isHidden
           ? '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.88 5.09A9.77 9.77 0 0 1 12 4.86C18.5 4.86 22.5 12 22.5 12a17.56 17.56 0 0 1-3.09 4.08" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.61 6.61C3.32 8.78 1.5 12 1.5 12s4 7.14 10.5 7.14a9.9 9.9 0 0 0 4.1-.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-          : '<path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+          : '<path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>';
       }
     }
   </script>
 
   <script>
-  (function lockReferralInput(){
-    const input = document.getElementById('referral_code');
-    if(!input) return;
+    (function lockReferralInput(){
+      const input = document.getElementById('referral_code');
+      if(!input) return;
 
-    const lockedValue = input.dataset.lockedReferral || '';
+      const lockedValue = input.dataset.lockedReferral || '';
 
-    if(!lockedValue) return;
+      if(!lockedValue) return;
 
-    input.value = lockedValue;
-    input.readOnly = true;
+      input.value = lockedValue;
+      input.readOnly = true;
 
-    input.addEventListener('input', function(){
-      this.value = lockedValue;
-    });
+      input.addEventListener('input', function(){
+        this.value = lockedValue;
+      });
 
-    input.addEventListener('paste', function(e){
-      e.preventDefault();
-      this.value = lockedValue;
-    });
+      input.addEventListener('paste', function(e){
+        e.preventDefault();
+        this.value = lockedValue;
+      });
 
-    input.addEventListener('keydown', function(e){
-      const allowedKeys = ['Tab', 'Shift', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-      if(!allowedKeys.includes(e.key)){
+      input.addEventListener('keydown', function(e){
+        const allowedKeys = ['Tab', 'Shift', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+        if(!allowedKeys.includes(e.key)){
+          e.preventDefault();
+        }
+      });
+    })();
+  </script>
+
+  <script>
+    (function registerSecurityCheck(){
+      const form = document.querySelector('form[action="{{ route('register.store') }}"]');
+      const submitBtn = document.getElementById('registerSubmit');
+      const confirmCheck = document.getElementById('security_confirm');
+      const puzzleVerified = document.getElementById('puzzleVerified');
+
+      const slider = document.getElementById('puzzleSlider');
+      const handle = document.getElementById('puzzleHandle');
+      const piece = document.getElementById('puzzlePiece');
+      const badge = document.getElementById('puzzleBadge');
+      const trackText = document.getElementById('puzzleTrackText');
+      const resetBtn = document.getElementById('puzzleReset');
+
+      if(!form || !submitBtn || !confirmCheck || !puzzleVerified || !slider || !handle || !piece){
+        return;
+      }
+
+      let dragging = false;
+      let startX = 0;
+      let currentX = 0;
+      let maxX = 0;
+      let verified = false;
+
+      function calcMax(){
+        maxX = Math.max(0, slider.clientWidth - handle.clientWidth);
+        return maxX;
+      }
+
+      function setX(x){
+        const max = calcMax();
+        currentX = Math.max(0, Math.min(x, max));
+
+        handle.style.transform = `translateX(${currentX}px)`;
+
+        const stage = document.getElementById('puzzleStage');
+        const slot = document.getElementById('puzzleSlot');
+
+        let pieceTarget = 235;
+
+        if(stage && slot && piece){
+          const pieceLeft = 20;
+          const slotLeft = slot.offsetLeft;
+          pieceTarget = Math.max(0, slotLeft - pieceLeft + 6);
+        }
+
+        const ratio = max > 0 ? currentX / max : 0;
+        piece.style.transform = `translateX(${ratio * pieceTarget}px)`;
+      }
+
+      function updateSubmit(){
+        const ok = verified && confirmCheck.checked;
+
+        submitBtn.disabled = !ok;
+        submitBtn.classList.toggle('is-disabled', !ok);
+      }
+
+      function markVerified(){
+        verified = true;
+        puzzleVerified.value = '1';
+
+        const max = calcMax();
+        setX(max);
+
+        badge.textContent = 'AMAN';
+        badge.classList.add('is-ok');
+        trackText.textContent = 'Verifikasi berhasil';
+        handle.textContent = '✓';
+        handle.style.cursor = 'default';
+
+        updateSubmit();
+      }
+
+      function resetPuzzle(){
+        verified = false;
+        puzzleVerified.value = '0';
+
+        badge.textContent = 'AMAN';
+        badge.classList.remove('is-ok');
+        trackText.textContent = 'Geser untuk menyelesaikan verifikasi';
+        handle.textContent = '»';
+        handle.style.cursor = 'grab';
+
+        setX(0);
+        updateSubmit();
+      }
+
+      function pointerX(e){
+        if(e.touches && e.touches[0]) return e.touches[0].clientX;
+        return e.clientX;
+      }
+
+      function startDrag(e){
+        if(verified) return;
+
+        dragging = true;
+        startX = pointerX(e) - currentX;
+        handle.setPointerCapture?.(e.pointerId);
+
         e.preventDefault();
       }
-    });
-  })();
-</script>
+
+      function moveDrag(e){
+        if(!dragging || verified) return;
+
+        const x = pointerX(e) - startX;
+        setX(x);
+
+        const max = calcMax();
+        if(max > 0 && currentX >= max * 0.92){
+          dragging = false;
+          markVerified();
+        }
+
+        e.preventDefault();
+      }
+
+      function endDrag(){
+        if(!dragging || verified) return;
+
+        dragging = false;
+
+        const max = calcMax();
+        if(max > 0 && currentX >= max * 0.82){
+          markVerified();
+          return;
+        }
+
+        setX(0);
+      }
+
+      handle.addEventListener('pointerdown', startDrag);
+      window.addEventListener('pointermove', moveDrag);
+      window.addEventListener('pointerup', endDrag);
+
+      handle.addEventListener('touchstart', startDrag, { passive:false });
+      window.addEventListener('touchmove', moveDrag, { passive:false });
+      window.addEventListener('touchend', endDrag);
+
+      confirmCheck.addEventListener('change', updateSubmit);
+      resetBtn?.addEventListener('click', resetPuzzle);
+
+      form.addEventListener('submit', function(e){
+        if(!verified || !confirmCheck.checked){
+          e.preventDefault();
+
+          if(!verified){
+            alert('Selesaikan verifikasi puzzle terlebih dahulu.');
+            return;
+          }
+
+          if(!confirmCheck.checked){
+            alert('Centang konfirmasi keamanan akun terlebih dahulu.');
+          }
+        }
+      });
+
+      window.addEventListener('resize', function(){
+        if(verified){
+          setX(calcMax());
+        }else{
+          setX(0);
+        }
+      });
+
+      resetPuzzle();
+    })();
+  </script>
 </body>
 </html>

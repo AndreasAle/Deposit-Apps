@@ -1005,6 +1005,19 @@
 .wd-available-item.is-main strong{
   color:#00DF82;
 }
+
+.wd-received-left{
+  display:grid;
+  gap:4px;
+}
+
+.wd-received-note{
+  display:block;
+  color:rgba(214,255,240,.46);
+  font-size:10.5px;
+  font-weight:700;
+  line-height:1.35;
+}
   </style>
 </head>
 
@@ -1148,13 +1161,17 @@
             </div>
           </div>
 
-          <div class="wd-received">
-            <span class="wd-received-label">Jumlah yang Diterima</span>
+<div class="wd-received">
+  <div class="wd-received-left">
+    <span class="wd-received-label">Jumlah yang Diterima</span>
+    <span class="wd-received-note">Estimasi setelah biaya gateway</span>
+  </div>
 
-            <div class="wd-received-right">
-              <span class="wd-received-amount" id="receivedAmount">Rp 0</span>
-            </div>
-          </div>
+  <div class="wd-received-right">
+    <span class="wd-received-amount" id="receivedAmount">Rp 0</span>
+    <span class="wd-tax" id="gatewayFeeText">Biaya gateway Rp 0</span>
+  </div>
+</div>
 
           <div class="wd-error" id="amountError"></div>
         </form>
@@ -1185,6 +1202,7 @@
     const clearBtn = document.getElementById('clearAmount');
     const errorEl = document.getElementById('amountError');
     const receivedEl = document.getElementById('receivedAmount');
+    const gatewayFeeText = document.getElementById('gatewayFeeText');
     const btnSubmit = document.getElementById('btnSubmitWd');
     const presets = Array.from(document.querySelectorAll('.wd-preset'));
     const toastEl = document.getElementById('wdToast');

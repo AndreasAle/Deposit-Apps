@@ -1032,7 +1032,7 @@
         </p>
 
         <div class="ab-cta">
-          <a href="https://t.me/rubikcompany" target="_blank" rel="noopener" class="ab-btn">
+          <a href="https://t.me/rubikcompanycs" target="_blank" rel="noopener" class="ab-btn">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M22 2 11 13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M22 2 15 22 11 13 2 9 22 2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>

@@ -1119,7 +1119,7 @@
             </div>
           </a>
 
-          <a href="https://t.me/rubikcompany" target="_blank" rel="noopener" class="ac-menu-item">
+         <a href="https://t.me/rubikcompanycs" target="_blank" rel="noopener noreferrer" class="ac-menu-item">
             <div class="ac-menu-left">
               <div class="ac-menu-icon">
                 <svg viewBox="0 0 24 24" fill="none">

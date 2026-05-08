@@ -12,10 +12,9 @@
 
   $referralCode = data_get($user, 'referral_code', '-');
 
-  $referralBaseUrl = url('/register');
   $referralLink = $referralCode && $referralCode !== '-'
-      ? $referralBaseUrl . '?ref=' . urlencode($referralCode)
-      : $referralBaseUrl;
+      ? url('/r/' . urlencode($referralCode))
+      : route('home');
 
   $qrImage = 'https://quickchart.io/qr'
       . '?text=' . urlencode($referralLink)

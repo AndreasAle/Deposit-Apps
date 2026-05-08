@@ -29,8 +29,8 @@ use App\Http\Controllers\Admin\DepositAdminController;
 */
 
 Route::get('/', function () {
-    return redirect('/login');
-});
+    return view('pages.tentang-rubik');
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +39,24 @@ Route::get('/', function () {
 */
 
 Route::middleware('guest')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Referral Entry Clean URL
+    |--------------------------------------------------------------------------
+    | Link yang boleh dibagikan:
+    | /r/KODEREFERRAL
+    */
+    Route::get('/r/{code}', [AuthController::class, 'referralEntry'])
+        ->where('code', '[A-Za-z0-9]+')
+        ->name('referral.entry');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Legacy Register URL
+    |--------------------------------------------------------------------------
+    | Kalau link lama /register?ref=KODE masih tersebar,
+    | jangan tampilkan form. Simpan session lalu lempar ke /undangan.
+    */
     Route::get('/register', [AuthController::class, 'showRegister'])
         ->name('register');
 
