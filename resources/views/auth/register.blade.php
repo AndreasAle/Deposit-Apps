@@ -1,7 +1,8 @@
 
 @php
-    $referralInputValue = old('referral_code');
-    $isReferralLocked = false;
+    $lockedReferralCode = request('ref') ?: session('referral_code');
+    $referralInputValue = old('referral_code', $lockedReferralCode);
+    $isReferralLocked = !empty($lockedReferralCode);
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -9,6 +10,7 @@
   <meta charset="UTF-8" />
   <title>Daftar Akun | Crowdnik</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -859,7 +861,13 @@
 />
             </div>
 
-
+           <div class="hint">
+  @if($isReferralLocked)
+    Kode referral dari link undangan sudah terkunci dan tidak bisa dihapus.
+  @else
+    Jika kamu punya link referral, kode biasanya sudah terisi otomatis.
+  @endif
+</div>
           </div>
 
           <div class="field">
@@ -930,7 +938,7 @@
     }
   </script>
 
-  <!-- <script>
+  <script>
   (function lockReferralInput(){
     const input = document.getElementById('referral_code');
     if(!input) return;
@@ -958,6 +966,6 @@
       }
     });
   })();
-</script> -->
+</script>
 </body>
 </html>

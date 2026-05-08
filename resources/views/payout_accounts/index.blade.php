@@ -837,20 +837,13 @@
         <input type="hidden" id="type" value="EWALLET" />
 
         <div class="bank-form-group">
-          <label class="bank-label" for="provider">Pilih Bank / E-Wallet</label>
-          <select id="provider" class="bank-select" required>
-            <option value="OVO">OVO</option>
-            <option value="DANA">DANA</option>
-            <option value="GOPAY">GOPAY</option>
-            <option value="SHOPEEPAY">SHOPEEPAY</option>
-            <option value="BCA">BCA</option>
-            <option value="BRI">BRI</option>
-            <option value="BNI">BNI</option>
-            <option value="MANDIRI">MANDIRI</option>
-            <option value="BSI">BSI</option>
-            <option value="CIMB">CIMB</option>
-            <option value="PERMATA">PERMATA</option>
-          </select>
+          <label class="bank-label" for="provider">Pilih Penarikan</label>
+            <select id="provider" class="bank-select" required>
+              <option value="OVO">OVO</option>
+              <option value="DANA">DANA</option>
+              <option value="GOPAY">GOPAY</option>
+              <option value="SHOPEEPAY">SHOPEEPAY</option>
+            </select>
         </div>
 
         <div class="bank-form-group">

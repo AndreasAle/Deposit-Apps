@@ -42,6 +42,12 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])
         ->name('register');
 
+    Route::get('/undangan', [AuthController::class, 'showInvite'])
+        ->name('invite.preview');
+
+    Route::get('/register/form', [AuthController::class, 'showRegisterForm'])
+        ->name('register.form');
+
     Route::post('/register', [AuthController::class, 'register'])
         ->middleware('throttle:3,1')
         ->name('register.store');
