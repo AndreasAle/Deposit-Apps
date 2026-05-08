@@ -1,8 +1,7 @@
 
 @php
-    $lockedReferralCode = request('ref') ?: session('referral_code');
-    $referralInputValue = old('referral_code', $lockedReferralCode);
-    $isReferralLocked = !empty($lockedReferralCode);
+    $referralInputValue = old('referral_code');
+    $isReferralLocked = false;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -860,13 +859,7 @@
 />
             </div>
 
-           <div class="hint">
-  @if($isReferralLocked)
-    Kode referral dari link undangan sudah terkunci dan tidak bisa dihapus.
-  @else
-    Jika kamu punya link referral, kode biasanya sudah terisi otomatis.
-  @endif
-</div>
+
           </div>
 
           <div class="field">
@@ -937,7 +930,7 @@
     }
   </script>
 
-  <script>
+  <!-- <script>
   (function lockReferralInput(){
     const input = document.getElementById('referral_code');
     if(!input) return;
@@ -965,6 +958,6 @@
       }
     });
   })();
-</script>
+</script> -->
 </body>
 </html>

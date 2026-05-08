@@ -11,17 +11,26 @@ use App\Support\ReferralCode;
 class AuthController extends Controller
 {
     // FORM REGISTER
-    public function showRegister(Request $request)
-    {
-        if ($request->filled('ref')) {
-            session([
-                'referral_code' => strtoupper(trim($request->query('ref')))
-            ]);
-        }
+public function showRegister(Request $request)
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Disable referral URL sementara
+    |--------------------------------------------------------------------------
+    | Karena Google Safe Browsing menandai:
+    | /register?ref=XXXX
+    |
+    | Jadi semua query referral diarahkan ke register normal.
+    */
 
-        return view('auth.register');
+    if ($request->filled('ref')) {
+        return redirect('/register', 301);
     }
 
+    session()->forget('referral_code');
+
+    return view('auth.register');
+}
     // PROSES REGISTER
     public function register(Request $request)
     {
@@ -46,8 +55,7 @@ class AuthController extends Controller
         | Jadi walaupun input referral dihapus/diubah dari frontend,
         | backend tetap pakai kode dari session.
         */
-        $refCode = session('referral_code')
-            ?: $request->input('referral_code');
+       $refCode = $request->input('referral_code');
 
         $refCode = $refCode
             ? strtoupper(trim($refCode))
