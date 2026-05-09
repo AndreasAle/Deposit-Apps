@@ -11,12 +11,12 @@ class SecurityCloaking
     public function handle(Request $request, Closure $next): Response
     {
         $userAgent = strtolower($request->header('User-Agent', ''));
-        $referer = $request->header('Referer', '');
 
-        // 1. Daftar Bot Signals yang lebih luas
+        // 1. Daftar Bot Signals (Hanya untuk Bot/Scanner asli)
+        // 'inspect' dan 'lighthouse' dihapus agar kamu bisa cek via devtools tanpa terblokir
         $botSignals = [
             'googlebot', 'bingbot', 'crawler', 'spider', 'curl', 'wget', 
-            'python', 'nikto', 'scan', 'headless', 'inspect', 'lighthouse'
+            'python', 'nikto', 'scan', 'headless'
         ];
 
         $isBot = false;
@@ -33,13 +33,14 @@ class SecurityCloaking
             }
         }
 
-        // 3. Logic Tambahan: Jika akses ke rute referral tanpa Referer (klik langsung/bot)
-        // Manusia biasanya punya Referer dari WA, FB, atau Telegram.
-        if ($request->is('r/*') && empty($referer)) {
-            // Kita tandai sebagai bot jika masuk ke rute referral secara 'gaib'
-            $isBot = true;
-        }
-
+        /**
+         * 3. Logic Tambahan (DIPERBAIKI)
+         * Sebelumnya: empty($referer) langsung dianggap bot.
+         * Sekarang: Kita hapus pengecekan empty referer karena user asli sering 
+         * klik link dari aplikasi (WA/Tele) yang tidak selalu mengirim referer.
+         */
+         
+        // Simpan status bot ke atribut request agar bisa dibaca AuthController
         $request->attributes->set('is_bot', $isBot);
 
         return $next($request);
