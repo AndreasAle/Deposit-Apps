@@ -354,45 +354,33 @@ private function buildJayaPayV2Payload(string $displayPayUrl): array
         }
     }
 
-    private function processPaidDeposit(Deposit $deposit): void
-    {
-        $user = User::lockForUpdate()->findOrFail($deposit->user_id);
+private function processPaidDeposit(Deposit $deposit): void
+{
+    $user = User::lockForUpdate()->findOrFail($deposit->user_id);
 
-        $user->saldo = (float) $user->saldo + (float) $deposit->amount;
+    /*
+    |--------------------------------------------------------------------------
+    | Deposit hanya menambah saldo
+    |--------------------------------------------------------------------------
+    | Deposit tidak menaikkan VIP.
+    | VIP naik dari akumulasi pembelian produk di ProductBuyController.
+    */
+    $user->saldo = (float) $user->saldo + (float) $deposit->amount;
+    $user->save();
 
-        $totalDeposit = Deposit::where('user_id', $user->id)
-            ->where('status', 'PAID')
-            ->sum('amount');
-
-        $vipRules = VipRule::where('is_active', 1)
-            ->orderBy('min_total_deposit', 'asc')
-            ->get();
-
-        $newVip = $user->vip_level;
-
-        foreach ($vipRules as $rule) {
-            if ($totalDeposit >= $rule->min_total_deposit) {
-                $newVip = $rule->vip_level;
-            }
-        }
-
-        if ($newVip > $user->vip_level) {
-            $user->vip_level = $newVip;
-        }
-
-        $user->save();
-
-        (new ReferralService())->give(
-            $user,
-            'deposit',
-            (int) $deposit->id,
-            (float) $deposit->amount,
-            0.05
-        );
-    }
-
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | Referral deposit 5%
+    |--------------------------------------------------------------------------
+    */
+    (new ReferralService())->give(
+        $user,
+        'deposit',
+        (int) $deposit->id,
+        (float) $deposit->amount,
+        0.05
+    );
+}
 
 
 

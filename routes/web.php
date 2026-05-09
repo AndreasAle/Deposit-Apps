@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request; // PASTIKAN IMPORT INI ADA DI PALING ATAS
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
@@ -13,6 +14,8 @@ use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\ForumController;
 use App\Http\Controllers\SaldoController;
+
+
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
@@ -28,9 +31,23 @@ use App\Http\Controllers\Admin\DepositAdminController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
+Route::get('/', function (Request $request) {
+    // Gunakan method attributes() atau get() yang aman
+    // Kita cek apakah atribut 'is_bot' ada dan bernilai true
+    if ($request->get('is_bot') === true || $request->attributes->get('is_bot') === true) {
+        return view('landing'); // Halaman Edukasi Bersih
+    }
+    
+    // Jika Manusia
     return view('pages.tentang-rubik');
 })->name('home');
+
+
+// Rute ini adalah "Pintu Umpan" untuk Bot
+Route::get('/tentang-kami', function () {
+    return view('pages.tentang-rubik');
+})->name('tentang.rubik');
+
 
 /*
 |--------------------------------------------------------------------------
