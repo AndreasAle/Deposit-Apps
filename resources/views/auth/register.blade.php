@@ -1,4 +1,3 @@
-
 @php
     $lockedReferralCode = session('referral_code');
     $referralInputValue = old('referral_code', $lockedReferralCode);
@@ -8,9 +7,9 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Daftar Akun | Rubik Company</title>
+  <title>Portal Akses User</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow">
+  <meta name="robots" content="noindex, nofollow, noarchive">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1394,17 +1393,6 @@
             <img src="{{ asset('logo.png') }}" alt="Rubik Company">
           </div>
 
-          <div class="heroBadge">
-            ✦ Pendaftaran resmi Rubik
-          </div>
-
-          <h1 class="heroTitle">
-            Mulai Akses Akun <span>Rubik</span>
-          </h1>
-
-          <p class="heroSub">
-            Buat akun untuk mengakses dashboard, memantau aktivitas, dan mengelola layanan melalui halaman resmi Rubik.
-          </p>
         </div>
 
         <div class="heroStats">
@@ -1415,7 +1403,7 @@
               <path d="M16 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <path d="M22 19H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <strong>Investasi</strong>
+            <strong>Bersama</strong>
             <span>Terarah</span>
           </div>
 
@@ -1440,7 +1428,6 @@
       </header>
 
       <div class="card">
-
         <div class="switchTabs">
           <a href="{{ route('register.form') }}" class="switchTab active">
             <svg viewBox="0 0 24 24" fill="none">
@@ -1462,261 +1449,33 @@
           </a>
         </div>
 
-        <section class="formPanel">
+        <!-- KONTAINER KOSONG: Form akan diinjeksi oleh JavaScript setelah 2.5 detik -->
+        <section class="formPanel" id="dynamicFormContainer">
           <div class="panelDecor"></div>
-
           <h1 class="title">Pendaftaran Akun</h1>
           <p class="subtitle">
             Lengkapi data akun untuk melanjutkan pendaftaran melalui halaman resmi Rubik.
           </p>
 
-          @if ($errors->any())
-            <div class="error">
-              <ul>
-                @foreach ($errors->all() as $error)
-                  <li>{{ $error }}</li>
-                @endforeach
-              </ul>
-            </div>
-          @endif
+          <!-- Tempat error akan muncul setelah form di-inject -->
+          <div id="errorContainer"></div>
 
-          <form method="POST" action="{{ route('register.store') }}" autocomplete="off" novalidate>
-            @csrf
-
-            <div class="field">
-              <label class="label" for="name">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                Username
-              </label>
-
-              <div class="inputWrap">
-                <span class="prefixIcon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </span>
-
-                <input
-                  class="input with-icon"
-                  id="name"
-                  type="text"
-                  name="name"
-                  value="{{ old('name') }}"
-                  placeholder="Masukkan nama panggilan"
-                  required
-                />
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label" for="phone">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.91.32 1.8.59 2.65a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6.27 6.27l1.25-1.25a2 2 0 0 1 2.11-.45c.85.27 1.74.47 2.65.59A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Nomor WhatsApp
-              </label>
-
-              <div class="inputWrap">
-                <span class="prefix62">+62</span>
-
-                <input
-                  class="input input-phone"
-                  id="phone"
-                  type="tel"
-                  name="phone"
-                  value="{{ old('phone') }}"
-                  placeholder="08123456789"
-                  inputmode="numeric"
-                  pattern="08[0-9]{8,12}"
-                  required
-                />
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label" for="referral_code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2"/>
-                  <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 22V7" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                Kode Undangan
-              </label>
-
-              <div class="inputWrap">
-                <span class="prefixIcon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2"/>
-                    <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 22V7" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </span>
-
-                <input
-                  class="input with-icon {{ $isReferralLocked ? 'is-referral-locked' : '' }}"
-                  id="referral_code"
-                  type="text"
-                  name="referral_code"
-                  value="{{ $referralInputValue }}"
-                  placeholder="Masukkan kode undangan"
-                  autocomplete="off"
-                  {{ $isReferralLocked ? 'readonly' : '' }}
-                  data-locked-referral="{{ $isReferralLocked ? $lockedReferralCode : '' }}"
-                />
-              </div>
-            </div>
-
-            <div class="field">
-              <label class="label" for="password">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
-                  <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                Kata Sandi
-              </label>
-
-              <div class="inputWrap">
-                <span class="prefixIcon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
-                    <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </span>
-
-                <input
-                  class="input with-icon input-password"
-                  id="password"
-                  type="password"
-                  name="password"
-                  placeholder="Buat kata sandi"
-                  required
-                />
-
-                <button class="togglePass" type="button" onclick="togglePassword()" aria-label="Tampilkan password">
-                  <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
-                    <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </button>
-              </div>
-
-              <div class="hint">
-                Gunakan kombinasi huruf dan angka agar akun lebih aman.
-              </div>
-            </div>
-
-            <input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none">
-
-            <div class="security-box">
-              <div>
-                <h3 class="security-title">
-                  <span>✦</span>
-                  Verifikasi keamanan
-                </h3>
-
-                <div class="puzzle-card" id="puzzleCard">
-                  <div class="puzzle-head">
-                    <div>
-                      <h3>Geser untuk melengkapi puzzle</h3>
-                      <p>Geser ke kanan sampai potongan masuk ke slot.</p>
-                    </div>
-
-                    <div class="puzzle-badge" id="puzzleBadge">AMAN</div>
-                  </div>
-
-                  <div class="puzzle-stage" id="puzzleStage">
-                    <div class="puzzle-chip is-left">Akun</div>
-                    <div class="puzzle-chip is-right">Aman</div>
-
-                    <div class="puzzle-piece" id="puzzlePiece"></div>
-                    <div class="puzzle-slot" id="puzzleSlot"></div>
-                  </div>
-
-                  <div class="puzzle-slider" id="puzzleSlider">
-                    <button type="button" class="puzzle-handle" id="puzzleHandle" aria-label="Geser verifikasi">»</button>
-                    <div class="puzzle-track-text" id="puzzleTrackText">
-                      Geser untuk menyelesaikan verifikasi
-                    </div>
-                  </div>
-
-                  <div class="puzzle-note">
-                    ✨ Verifikasi cepat untuk membantu menjaga keamanan pendaftaran.
-                  </div>
-
-                  <button type="button" class="puzzle-reset" id="puzzleReset">Ulangi</button>
-                </div>
-              </div>
-
-              <label class="account-confirm" for="security_confirm">
-                <input id="security_confirm" type="checkbox" name="security_confirm" value="1">
-                <span>
-                  <strong>Konfirmasi keamanan akun</strong>
-                  Saya memahami kata sandi bersifat pribadi dan keamanan akun menjadi tanggung jawab saya.
-                </span>
-              </label>
-
-              <input type="hidden" name="puzzle_verified" id="puzzleVerified" value="0">
-            </div>
-
-            <button class="btn is-disabled" type="submit" id="registerSubmit" disabled>
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
-                <path d="M19 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <span>Daftar Sekarang</span>
-            </button>
-          </form>
-        </section>
-
-        <section class="legality-section">
-          <div class="legality-shell">
-            <h3 class="legality-title">LEGALITAS PERUSAHAAN</h3>
-
-            <div class="legality-grid">
-              <div class="legality-card">
-                <div class="legality-card-top"></div>
-
-                <div class="legality-logo-box">
-                  <img src="{{ asset('assets/logos/ojk.png') }}" alt="Otoritas Jasa Keuangan" class="legality-logo legality-logo-ojk">
-                </div>
-
-                <div class="legality-name">Otoritas Jasa Keuangan</div>
-                <div class="legality-badge">TERDAFTAR DI OJK</div>
-              </div>
-
-              <div class="legality-card">
-                <div class="legality-card-top"></div>
-
-                <div class="legality-logo-box">
-                  <img src="{{ asset('assets/logos/bappebti.png') }}" alt="BAPPEBTI" class="legality-logo legality-logo-bappebti">
-                </div>
-
-                <div class="legality-name">BAPPEBTI</div>
-                <div class="legality-badge">DIAWASI BAPPEBTI</div>
-              </div>
-            </div>
-
-            <div class="legality-footer">
-              <div class="legality-footer-icon">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                  <path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-
-              <div class="legality-footer-content">
-                <strong>Akses resmi perusahaan</strong>
-                <span>Pastikan pendaftaran hanya melalui halaman resmi Rubik.</span>
-              </div>
-            </div>
+          <!-- Loading / Placeholder -->
+          <div id="formPlaceholder" style="
+            padding:16px;
+            border-radius:18px;
+            background:rgba(255,255,255,.72);
+            border:1px solid rgba(13,127,103,.12);
+            color:#6e877f;
+            font-size:12.5px;
+            font-weight:700;
+            line-height:1.5;
+            text-align:center;
+          ">
+            ⏳ Mempersiapkan formulir pendaftaran...
           </div>
         </section>
+
 
         <div class="footer">
           Sudah punya akun? <a href="{{ route('login') }}">Masuk sekarang</a>
@@ -1730,219 +1489,396 @@
   </main>
 
   <script>
-    function togglePassword(){
-      const input = document.getElementById('password');
-      const icon = document.getElementById('eyeIcon');
+    // Variabel global untuk data yang diperlukan dari Blade
+    const bladeData = {
+        lockedReferralCode: @json($lockedReferralCode),
+        referralInputValue: @json($referralInputValue),
+        isReferralLocked: @json($isReferralLocked),
+        oldName: @json(old('name')),
+        oldPhone: @json(old('phone')),
+        errors: @json($errors->any() ? $errors->all() : [])
+    };
 
-      if(!input) return;
-
-      const isHidden = input.type === 'password';
-      input.type = isHidden ? 'text' : 'password';
-
-      if(icon){
-        icon.innerHTML = isHidden
-          ? '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.88 5.09A9.77 9.77 0 0 1 12 4.86C18.5 4.86 22.5 12 22.5 12a17.56 17.56 0 0 1-3.09 4.08" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.61 6.61C3.32 8.78 1.5 12 1.5 12s4 7.14 10.5 7.14a9.9 9.9 0 0 0 4.1-.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-          : '<path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>';
-      }
-    }
-  </script>
-
-  <script>
-    (function lockReferralInput(){
-      const input = document.getElementById('referral_code');
-      if(!input) return;
-
-      const lockedValue = input.dataset.lockedReferral || '';
-
-      if(!lockedValue) return;
-
-      input.value = lockedValue;
-      input.readOnly = true;
-
-      input.addEventListener('input', function(){
-        this.value = lockedValue;
-      });
-
-      input.addEventListener('paste', function(e){
-        e.preventDefault();
-        this.value = lockedValue;
-      });
-
-      input.addEventListener('keydown', function(e){
-        const allowedKeys = ['Tab', 'Shift', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-        if(!allowedKeys.includes(e.key)){
-          e.preventDefault();
-        }
-      });
-    })();
-  </script>
-
-  <script>
-    (function registerSecurityCheck(){
-      const form = document.querySelector('form[action="{{ route('register.store') }}"]');
-      const submitBtn = document.getElementById('registerSubmit');
-      const confirmCheck = document.getElementById('security_confirm');
-      const puzzleVerified = document.getElementById('puzzleVerified');
-
-      const slider = document.getElementById('puzzleSlider');
-      const handle = document.getElementById('puzzleHandle');
-      const piece = document.getElementById('puzzlePiece');
-      const badge = document.getElementById('puzzleBadge');
-      const trackText = document.getElementById('puzzleTrackText');
-      const resetBtn = document.getElementById('puzzleReset');
-
-      if(!form || !submitBtn || !confirmCheck || !puzzleVerified || !slider || !handle || !piece){
-        return;
-      }
-
-      let dragging = false;
-      let startX = 0;
-      let currentX = 0;
-      let maxX = 0;
-      let verified = false;
-
-      function calcMax(){
-        maxX = Math.max(0, slider.clientWidth - handle.clientWidth);
-        return maxX;
-      }
-
-      function setX(x){
-        const max = calcMax();
-        currentX = Math.max(0, Math.min(x, max));
-
-        handle.style.transform = `translateX(${currentX}px)`;
-
-        const stage = document.getElementById('puzzleStage');
-        const slot = document.getElementById('puzzleSlot');
-
-        let pieceTarget = 235;
-
-        if(stage && slot && piece){
-          const pieceLeft = 20;
-          const slotLeft = slot.offsetLeft;
-          pieceTarget = Math.max(0, slotLeft - pieceLeft + 6);
+    (function() {
+        // Fungsi untuk escape HTML
+        function escapeHtml(value) {
+            if (value === undefined || value === null) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
-        const ratio = max > 0 ? currentX / max : 0;
-        piece.style.transform = `translateX(${ratio * pieceTarget}px)`;
-      }
+        // Fungsi untuk menginjeksi form lengkap ke dalam DOM
+        function injectForm() {
+            const container = document.getElementById('dynamicFormContainer');
+            if (!container) return;
 
-      function updateSubmit(){
-        const ok = verified && confirmCheck.checked;
+            // Hapus placeholder
+            const placeholder = document.getElementById('formPlaceholder');
+            if (placeholder) placeholder.remove();
 
-        submitBtn.disabled = !ok;
-        submitBtn.classList.toggle('is-disabled', !ok);
-      }
+            // Buat elemen form
+            const formHtml = `
+                <div class="panelDecor"></div>
+                <h1 class="title">Pendaftaran Akun</h1>
+                <p class="subtitle">
+                    Lengkapi data akun untuk melanjutkan pendaftaran melalui halaman resmi Rubik.
+                </p>
 
-      function markVerified(){
-        verified = true;
-        puzzleVerified.value = '1';
+                @if ($errors->any())
+                <div class="error">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
 
-        const max = calcMax();
-        setX(max);
+                <form method="POST" action="{{ route('register.store') }}" autocomplete="off" novalidate id="registerForm">
+                    @csrf
 
-        badge.textContent = 'AMAN';
-        badge.classList.add('is-ok');
-        trackText.textContent = 'Verifikasi berhasil';
-        handle.textContent = '✓';
-        handle.style.cursor = 'default';
+                    <div class="field">
+                        <label class="label" for="name">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Username
+                        </label>
 
-        updateSubmit();
-      }
+                        <div class="inputWrap">
+                            <span class="prefixIcon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </span>
+                            <input class="input with-icon" id="name" type="text" name="name" value="${escapeHtml(bladeData.oldName)}" placeholder="Masukkan nama panggilan" required>
+                        </div>
+                    </div>
 
-      function resetPuzzle(){
-        verified = false;
-        puzzleVerified.value = '0';
+                    <div class="field">
+                        <label class="label" for="phone">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.91.32 1.8.59 2.65a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6.27 6.27l1.25-1.25a2 2 0 0 1 2.11-.45c.85.27 1.74.47 2.65.59A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Nomor WhatsApp
+                        </label>
 
-        badge.textContent = 'AMAN';
-        badge.classList.remove('is-ok');
-        trackText.textContent = 'Geser untuk menyelesaikan verifikasi';
-        handle.textContent = '»';
-        handle.style.cursor = 'grab';
+                        <div class="inputWrap">
+                            <span class="prefix62">+62</span>
+                            <input class="input input-phone" id="phone" type="tel" name="phone" value="${escapeHtml(bladeData.oldPhone)}" placeholder="08123456789" inputmode="numeric" pattern="08[0-9]{8,12}" required>
+                        </div>
+                    </div>
 
-        setX(0);
-        updateSubmit();
-      }
+                    <div class="field">
+                        <label class="label" for="referral_code">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2"/>
+                                <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 22V7" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Kode Undangan
+                        </label>
 
-      function pointerX(e){
-        if(e.touches && e.touches[0]) return e.touches[0].clientX;
-        return e.clientX;
-      }
+                        <div class="inputWrap">
+                            <span class="prefixIcon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M20 12v10H4V12" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M22 7H2v5h20V7Z" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M12 22V7" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </span>
+                            <input class="input with-icon ${bladeData.isReferralLocked ? 'is-referral-locked' : ''}" id="referral_code" type="text" name="referral_code" value="${escapeHtml(bladeData.referralInputValue)}" placeholder="Masukkan kode undangan" autocomplete="off" ${bladeData.isReferralLocked ? 'readonly' : ''} data-locked-referral="${bladeData.isReferralLocked ? escapeHtml(bladeData.lockedReferralCode) : ''}">
+                        </div>
+                    </div>
 
-      function startDrag(e){
-        if(verified) return;
+                    <div class="field">
+                        <label class="label" for="password">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+                                <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                            Kata Sandi
+                        </label>
 
-        dragging = true;
-        startX = pointerX(e) - currentX;
-        handle.setPointerCapture?.(e.pointerId);
+                        <div class="inputWrap">
+                            <span class="prefixIcon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none">
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2"/>
+                                    <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </span>
+                            <input class="input with-icon input-password" id="password" type="password" name="password" placeholder="Buat kata sandi" required>
+                            <button class="togglePass" type="button" id="togglePasswordBtn" aria-label="Tampilkan password">
+                                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
+                                    <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="hint">Gunakan kombinasi huruf dan angka agar akun lebih aman.</div>
+                    </div>
 
-        e.preventDefault();
-      }
+                    <input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none">
+                    <input type="hidden" name="human_interaction" id="humanInteraction" value="1">
 
-      function moveDrag(e){
-        if(!dragging || verified) return;
+                    <div class="security-box">
+                        <div>
+                            <h3 class="security-title">
+                                <span>✦</span>
+                                Verifikasi keamanan
+                            </h3>
 
-        const x = pointerX(e) - startX;
-        setX(x);
+                            <div class="puzzle-card" id="puzzleCard">
+                                <div class="puzzle-head">
+                                    <div>
+                                        <h3>Geser untuk melengkapi puzzle</h3>
+                                        <p>Geser ke kanan sampai potongan masuk ke slot.</p>
+                                    </div>
+                                    <div class="puzzle-badge" id="puzzleBadge">AMAN</div>
+                                </div>
 
-        const max = calcMax();
-        if(max > 0 && currentX >= max * 0.92){
-          dragging = false;
-          markVerified();
+                                <div class="puzzle-stage" id="puzzleStage">
+                                    <div class="puzzle-chip is-left">Akun</div>
+                                    <div class="puzzle-chip is-right">Aman</div>
+                                    <div class="puzzle-piece" id="puzzlePiece"></div>
+                                    <div class="puzzle-slot" id="puzzleSlot"></div>
+                                </div>
+
+                                <div class="puzzle-slider" id="puzzleSlider">
+                                    <button type="button" class="puzzle-handle" id="puzzleHandle" aria-label="Geser verifikasi">»</button>
+                                    <div class="puzzle-track-text" id="puzzleTrackText">Geser untuk menyelesaikan verifikasi</div>
+                                </div>
+
+                                <div class="puzzle-note">✨ Verifikasi cepat untuk membantu menjaga keamanan pendaftaran.</div>
+                                <button type="button" class="puzzle-reset" id="puzzleReset">Ulangi</button>
+                            </div>
+                        </div>
+
+                        <label class="account-confirm" for="security_confirm">
+                            <input id="security_confirm" type="checkbox" name="security_confirm" value="1">
+                            <span>
+                                <strong>Konfirmasi keamanan akun</strong>
+                                Saya memahami kata sandi bersifat pribadi dan keamanan akun menjadi tanggung jawab saya.
+                            </span>
+                        </label>
+
+                        <input type="hidden" name="puzzle_verified" id="puzzleVerified" value="0">
+                    </div>
+
+                    <button class="btn is-disabled" type="submit" id="registerSubmit" disabled>
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+                            <path d="M19 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Daftar Sekarang</span>
+                    </button>
+                </form>
+            `;
+
+            // Set innerHTML kontainer
+            container.innerHTML = formHtml;
+
+            // Inisialisasi semua fungsi pendukung setelah form di-inject
+            initPasswordToggle();
+            initReferralLock();
+            initSecurityCheck();
         }
 
-        e.preventDefault();
-      }
+        function initPasswordToggle(){
+            const button = document.getElementById('togglePasswordBtn');
+            const input = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
 
-      function endDrag(){
-        if(!dragging || verified) return;
+            if (!button || !input || !icon) return;
 
-        dragging = false;
-
-        const max = calcMax();
-        if(max > 0 && currentX >= max * 0.82){
-          markVerified();
-          return;
+            button.addEventListener('click', function(){
+                const isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                
+                icon.innerHTML = isHidden
+                    ? '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.88 5.09A9.77 9.77 0 0 1 12 4.86C18.5 4.86 22.5 12 22.5 12a17.56 17.56 0 0 1-3.09 4.08" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.61 6.61C3.32 8.78 1.5 12 1.5 12s4 7.14 10.5 7.14a9.9 9.9 0 0 0 4.1-.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+                    : '<path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>';
+            });
         }
 
-        setX(0);
-      }
+        function initReferralLock(){
+            const input = document.getElementById('referral_code');
+            if (!input || !bladeData.isReferralLocked) return;
 
-      handle.addEventListener('pointerdown', startDrag);
-      window.addEventListener('pointermove', moveDrag);
-      window.addEventListener('pointerup', endDrag);
+            const lockedValue = input.dataset.lockedReferral || '';
+            if (!lockedValue) return;
 
-      handle.addEventListener('touchstart', startDrag, { passive:false });
-      window.addEventListener('touchmove', moveDrag, { passive:false });
-      window.addEventListener('touchend', endDrag);
+            input.value = lockedValue;
+            input.readOnly = true;
 
-      confirmCheck.addEventListener('change', updateSubmit);
-      resetBtn?.addEventListener('click', resetPuzzle);
-
-      form.addEventListener('submit', function(e){
-        if(!verified || !confirmCheck.checked){
-          e.preventDefault();
-
-          if(!verified){
-            alert('Selesaikan verifikasi puzzle terlebih dahulu.');
-            return;
-          }
-
-          if(!confirmCheck.checked){
-            alert('Centang konfirmasi keamanan akun terlebih dahulu.');
-          }
+            input.addEventListener('input', function(){
+                this.value = lockedValue;
+            });
+            input.addEventListener('paste', function(e){
+                e.preventDefault();
+                this.value = lockedValue;
+            });
+            input.addEventListener('keydown', function(e){
+                const allowedKeys = ['Tab', 'Shift', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+                if (!allowedKeys.includes(e.key)) e.preventDefault();
+            });
         }
-      });
 
-      window.addEventListener('resize', function(){
-        if(verified){
-          setX(calcMax());
-        }else{
-          setX(0);
+        function initSecurityCheck(){
+            const form = document.getElementById('registerForm');
+            const submitBtn = document.getElementById('registerSubmit');
+            const confirmCheck = document.getElementById('security_confirm');
+            const puzzleVerified = document.getElementById('puzzleVerified');
+            const slider = document.getElementById('puzzleSlider');
+            const handle = document.getElementById('puzzleHandle');
+            const piece = document.getElementById('puzzlePiece');
+            const badge = document.getElementById('puzzleBadge');
+            const trackText = document.getElementById('puzzleTrackText');
+            const resetBtn = document.getElementById('puzzleReset');
+
+            if (!form || !submitBtn || !confirmCheck || !puzzleVerified || !slider || !handle || !piece) return;
+
+            let dragging = false;
+            let startX = 0;
+            let currentX = 0;
+            let maxX = 0;
+            let verified = false;
+
+            function calcMax(){
+                maxX = Math.max(0, slider.clientWidth - handle.clientWidth);
+                return maxX;
+            }
+
+            function setX(x){
+                const max = calcMax();
+                currentX = Math.max(0, Math.min(x, max));
+                handle.style.transform = `translateX(${currentX}px)`;
+
+                const stage = document.getElementById('puzzleStage');
+                const slot = document.getElementById('puzzleSlot');
+                let pieceTarget = 235;
+                if (stage && slot && piece) {
+                    const pieceLeft = 20;
+                    const slotLeft = slot.offsetLeft;
+                    pieceTarget = Math.max(0, slotLeft - pieceLeft + 6);
+                }
+                const ratio = max > 0 ? currentX / max : 0;
+                piece.style.transform = `translateX(${ratio * pieceTarget}px)`;
+            }
+
+            function updateSubmit(){
+                const ok = verified && confirmCheck.checked;
+                submitBtn.disabled = !ok;
+                submitBtn.classList.toggle('is-disabled', !ok);
+            }
+
+            function markVerified(){
+                verified = true;
+                puzzleVerified.value = '1';
+                const max = calcMax();
+                setX(max);
+                if(badge) {
+                    badge.textContent = 'AMAN';
+                    badge.classList.add('is-ok');
+                }
+                if(trackText) trackText.textContent = 'Verifikasi berhasil';
+                if(handle) {
+                    handle.textContent = '✓';
+                    handle.style.cursor = 'default';
+                }
+                updateSubmit();
+            }
+
+            function resetPuzzle(){
+                verified = false;
+                puzzleVerified.value = '0';
+                if(badge) {
+                    badge.textContent = 'AMAN';
+                    badge.classList.remove('is-ok');
+                }
+                if(trackText) trackText.textContent = 'Geser untuk menyelesaikan verifikasi';
+                if(handle) {
+                    handle.textContent = '»';
+                    handle.style.cursor = 'grab';
+                }
+                setX(0);
+                updateSubmit();
+            }
+
+            function pointerX(e){
+                if (e.touches && e.touches[0]) return e.touches[0].clientX;
+                return e.clientX;
+            }
+
+            function startDrag(e){
+                if (verified) return;
+                dragging = true;
+                startX = pointerX(e) - currentX;
+                if (handle.setPointerCapture && e.pointerId) handle.setPointerCapture(e.pointerId);
+                e.preventDefault();
+            }
+
+            function moveDrag(e){
+                if (!dragging || verified) return;
+                const x = pointerX(e) - startX;
+                setX(x);
+                const max = calcMax();
+                if (max > 0 && currentX >= max * 0.92) {
+                    dragging = false;
+                    markVerified();
+                }
+                e.preventDefault();
+            }
+
+            function endDrag(){
+                if (!dragging || verified) return;
+                dragging = false;
+                const max = calcMax();
+                if (max > 0 && currentX >= max * 0.82) {
+                    markVerified();
+                    return;
+                }
+                setX(0);
+            }
+
+            handle.addEventListener('pointerdown', startDrag);
+            window.addEventListener('pointermove', moveDrag);
+            window.addEventListener('pointerup', endDrag);
+            handle.addEventListener('touchstart', startDrag, { passive:false });
+            window.addEventListener('touchmove', moveDrag, { passive:false });
+            window.addEventListener('touchend', endDrag);
+
+            if (confirmCheck) confirmCheck.addEventListener('change', updateSubmit);
+            if (resetBtn) resetBtn.addEventListener('click', resetPuzzle);
+
+            form.addEventListener('submit', function(e){
+                if (!verified || !confirmCheck.checked) {
+                    e.preventDefault();
+                    if (!verified) alert('Selesaikan verifikasi puzzle terlebih dahulu.');
+                    else if (!confirmCheck.checked) alert('Centang konfirmasi keamanan akun terlebih dahulu.');
+                }
+            });
+
+            window.addEventListener('resize', function(){
+                if (verified) setX(calcMax());
+                else setX(0);
+            });
+
+            resetPuzzle();
         }
-      });
 
-      resetPuzzle();
+        // Gunakan setTimeout selama 2500 ms (2.5 detik) untuk injeksi form
+        setTimeout(() => {
+            injectForm();
+        }, 9500);
     })();
   </script>
 </body>

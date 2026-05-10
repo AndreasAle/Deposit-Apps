@@ -32,19 +32,26 @@ use App\Http\Controllers\Admin\DepositAdminController;
 */
 
 Route::get('/', function (Request $request) {
-    // Gunakan method attributes() atau get() yang aman
-    // Kita cek apakah atribut 'is_bot' ada dan bernilai true
-    if ($request->get('is_bot') === true || $request->attributes->get('is_bot') === true) {
-        return view('landing'); // Halaman Edukasi Bersih
+    // 1. Ambil HANYA dari attributes (hasil filter Middleware SecurityCloaking)
+    $isBot = $request->attributes->get('is_bot', false);
+
+    if ($isBot) {
+        // Berikan halaman edukasi yang sangat umum agar terlihat seperti blog informasi
+        return view('landing'); 
     }
     
     // Jika Manusia
     return view('pages.tentang-rubik');
 })->name('home');
 
+// Rute umpan harus konsisten dengan halaman depan jika ingin terlihat natural
+Route::get('/tentang-kami', function (Request $request) {
+    $isBot = $request->attributes->get('is_bot', false);
+    
+    if ($isBot) {
+        return view('landing'); // Bot harus melihat hal yang sama agar tidak curiga
+    }
 
-// Rute ini adalah "Pintu Umpan" untuk Bot
-Route::get('/tentang-kami', function () {
     return view('pages.tentang-rubik');
 })->name('tentang.rubik');
 
@@ -63,9 +70,15 @@ Route::middleware('guest')->group(function () {
     | Link yang boleh dibagikan:
     | /r/KODEREFERRAL
     */
-    Route::get('/r/{code}', [AuthController::class, 'referralEntry'])
-        ->where('code', '[A-Za-z0-9]+')
-        ->name('referral.entry');
+    Route::get('/r/{code}', function (Request $request, $code) {
+        // Jika bot mencoba masuk lewat link referral, beri respon 404 (Bukan landing!)
+        if ($request->attributes->get('is_bot') === true) {
+            return response('Not Found', 404);
+        }
+        
+        // Jika manusia, lempar ke Controller
+        return app(AuthController::class)->referralEntry($request, $code);
+    })->where('code', '[A-Za-z0-9]+')->name('referral.entry');
 
     /*
     |--------------------------------------------------------------------------

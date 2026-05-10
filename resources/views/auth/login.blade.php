@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Masuk Akun | Rubik Company</title>
+  <title>Portal Akses User</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow">
+  <meta name="robots" content="noindex, nofollow, noarchive">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,8 +38,7 @@
       box-sizing:border-box;
     }
 
-    html,
-    body{
+    html, body{
       min-height:100%;
     }
 
@@ -64,41 +62,41 @@
       color:inherit;
     }
 
-    button,
-    input{
+    button, input{
       font-family:inherit;
     }
-.page{
-  width:100%;
-  max-width:none;
-  min-height:100vh;
-  position:relative;
-  z-index:1;
-  animation:pageEnter .45s ease both;
-  display:block;
-}
 
-.shell{
-  position:relative;
-  overflow:hidden;
-  width:100%;
-  max-width:none;
-  min-height:100vh;
-  background:#ffffff;
-  box-shadow:none;
-}
+    .page{
+      width:100%;
+      max-width:none;
+      min-height:100vh;
+      position:relative;
+      z-index:1;
+      animation:pageEnter .45s ease both;
+      display:block;
+    }
 
-.hero{
-  position:relative;
-  width:100%;
-  padding:18px 22px 54px;
-  overflow:hidden;
-  background:
-    linear-gradient(152deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.04) 28%, transparent 29%),
-    radial-gradient(260px 160px at 92% 105%, rgba(0,223,130,.22), transparent 62%),
-    radial-gradient(230px 160px at 16% 0%, rgba(3,98,76,.58), transparent 72%),
-    linear-gradient(180deg, #10251f 0%, #041311 58%, #020908 100%);
-}
+    .shell{
+      position:relative;
+      overflow:hidden;
+      width:100%;
+      max-width:none;
+      min-height:100vh;
+      background:#ffffff;
+      box-shadow:none;
+    }
+
+    .hero{
+      position:relative;
+      width:100%;
+      padding:18px 22px 54px;
+      overflow:hidden;
+      background:
+        linear-gradient(152deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.04) 28%, transparent 29%),
+        radial-gradient(260px 160px at 92% 105%, rgba(0,223,130,.22), transparent 62%),
+        radial-gradient(230px 160px at 16% 0%, rgba(3,98,76,.58), transparent 72%),
+        linear-gradient(180deg, #10251f 0%, #041311 58%, #020908 100%);
+    }
 
     .hero::before{
       content:"";
@@ -310,14 +308,14 @@
       font-weight:650;
     }
 
-.heroStats{
-  position:relative;
-  z-index:2;
-  margin:18px auto -26px;
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  gap:8px;
-}
+    .heroStats{
+      position:relative;
+      z-index:2;
+      margin:18px auto -26px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:8px;
+    }
 
     .heroStat{
       min-height:56px;
@@ -355,20 +353,20 @@
       line-height:1.15;
     }
 
-.card{
-  position:relative;
-  z-index:5;
-  width:100%;
-  margin:0;
-  padding:44px 22px 22px;
-  background:
-    radial-gradient(220px 140px at 100% 100%, rgba(98,221,177,.22), transparent 60%),
-    radial-gradient(180px 120px at 78% 18%, rgba(255,255,255,.16), transparent 58%),
-    linear-gradient(135deg, #e8fbf2 0%, #d7f5e7 52%, #c8efd9 100%);
-  border-radius:0;
-  box-shadow:0 -12px 32px rgba(6,34,29,.10);
-  overflow:hidden;
-}
+    .card{
+      position:relative;
+      z-index:5;
+      width:100%;
+      margin:0;
+      padding:44px 22px 22px;
+      background:
+        radial-gradient(220px 140px at 100% 100%, rgba(98,221,177,.22), transparent 60%),
+        radial-gradient(180px 120px at 78% 18%, rgba(255,255,255,.16), transparent 58%),
+        linear-gradient(135deg, #e8fbf2 0%, #d7f5e7 52%, #c8efd9 100%);
+      border-radius:0;
+      box-shadow:0 -12px 32px rgba(6,34,29,.10);
+      overflow:hidden;
+    }
 
     .card::before{
       content:"";
@@ -531,15 +529,6 @@
       -webkit-backdrop-filter:blur(8px);
     }
 
-    .input.input-phone{
-      padding-left:76px;
-    }
-
-    .input.input-password{
-      padding-right:48px;
-      padding-left:46px;
-    }
-
     .input:focus{
       border-color:rgba(0,201,122,.36);
       background:
@@ -555,60 +544,6 @@
     .input::placeholder{
       color:#8fa79f;
       font-weight:550;
-    }
-
-    .prefix62{
-      position:absolute;
-      top:50%;
-      left:14px;
-      transform:translateY(-50%);
-      z-index:3;
-      min-width:48px;
-      height:30px;
-      padding:0 9px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border-radius:999px;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.78), transparent 40%),
-        linear-gradient(135deg, rgba(232,255,246,.96), rgba(198,239,222,.84));
-      border:1px solid rgba(13,127,103,.12);
-      color:#0d7f67;
-      font-size:12.5px;
-      line-height:1;
-      font-weight:900;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.68),
-        0 6px 12px rgba(6,34,29,.045);
-      pointer-events:none;
-    }
-
-    .prefixIcon{
-      position:absolute;
-      top:50%;
-      left:13px;
-      transform:translateY(-50%);
-      z-index:3;
-      width:28px;
-      height:28px;
-      border-radius:999px;
-      display:grid;
-      place-items:center;
-      color:#0d7f67;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.78), transparent 40%),
-        linear-gradient(135deg, rgba(232,255,246,.96), rgba(198,239,222,.84));
-      border:1px solid rgba(13,127,103,.12);
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.68),
-        0 6px 12px rgba(6,34,29,.045);
-      pointer-events:none;
-    }
-
-    .prefixIcon svg{
-      width:15px;
-      height:15px;
     }
 
     .togglePass{
@@ -826,9 +761,6 @@
       text-decoration:underline;
     }
 
-    /* =========================
-       LEGALITAS SECTION
-    ========================= */
     .legality-section{
       margin-top:14px;
     }
@@ -1008,6 +940,24 @@
       line-height:1.5;
     }
 
+    .skeleton-loader{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(13,127,103,.12);
+      color:#6e877f;
+      font-size:12.5px;
+      font-weight:700;
+      line-height:1.5;
+      text-align:center;
+      animation:pulseLoader 1.2s infinite;
+    }
+
+    @keyframes pulseLoader{
+      0%,100%{ opacity:0.7; background:rgba(255,255,255,.72);}
+      50%{ opacity:1; background:rgba(255,255,255,.88);}
+    }
+
     @keyframes pageEnter{
       from{ opacity:0; transform:translateY(12px); }
       to{ opacity:1; transform:translateY(0); }
@@ -1029,46 +979,42 @@
       100%{ left:180%; }
     }
 
-@media (min-width:760px){
-  body{
-    padding:0;
-  }
-
-  .shell{
-    border-radius:0;
-    min-height:100vh;
-  }
-}
+    @media (min-width:760px){
+      body{
+        padding:0;
+      }
+      .shell{
+        border-radius:0;
+        min-height:100vh;
+      }
+    }
 
     @media (max-width:380px){
       .hero{
         padding-left:18px;
         padding-right:18px;
       }
-
       .card{
         padding-left:18px;
         padding-right:18px;
       }
-
       .heroTitle{
         font-size:28px;
       }
-
       .heroStats{
         gap:6px;
       }
-
       .loginPanel{
         padding-left:14px;
         padding-right:14px;
       }
-
       .trustTiles{
         gap:6px;
       }
     }
 
+
+    
     @media (prefers-reduced-motion: reduce){
       *,
       *::before,
@@ -1080,291 +1026,259 @@
   </style>
 </head>
 <body>
-  <main class="page">
-    <section class="shell" role="region" aria-label="Masuk Akun Rubik Company">
-
-      <header class="hero">
-        <div class="topbar">
-          <div class="brandMini">
-            <div class="brandMiniLogo">
-              <img src="{{ asset('logo.png') }}" alt="Rubik Company">
-            </div>
-
-            <div class="brandMiniText">
-              <span>Platform Akun</span>
-              <strong>Rubik Company</strong>
-            </div>
-          </div>
-
-          <div class="topPill">AKB</div>
-        </div>
-
-        <div class="heroMain">
-          <div class="heroLogoCard">
+<main class="page">
+  <section class="shell" role="region" aria-label="Masuk Akun Rubik Company">
+    <header class="hero">
+      <div class="topbar">
+        <div class="brandMini">
+          <div class="brandMiniLogo">
             <img src="{{ asset('logo.png') }}" alt="Rubik Company">
           </div>
-
-          <div class="heroBadge">
-            ✦ Akses resmi Rubik
+          <div class="brandMiniText">
+            <span>Platform Akun</span>
+            <strong>Rubik Company</strong>
           </div>
+        </div>
+        <div class="topPill">AKB</div>
+      </div>
+      <div class="heroMain">
+        <div class="heroLogoCard">
+          <img src="{{ asset('logo.png') }}" alt="Rubik Company">
+        </div>
+        <div class="heroBadge">✦ Akses resmi Rubik</div>
+      </div>
+      <div class="heroStats">
+        <div class="heroStat">
+          <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
+            <path d="M4 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M22 19H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <strong>Bersama</strong>
+          <span>Terarah</span>
+        </div>
+        <div class="heroStat">
+          <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
+            <path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong>Pertumbuhan</strong>
+          <span>Berkelanjutan</span>
+        </div>
+        <div class="heroStat">
+          <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <strong>Akun Aman</strong>
+          <span>Privasi</span>
+        </div>
+      </div>
+    </header>
 
-          <h1 class="heroTitle">
-            Akses Keuangan yang <span>Bertumbuh</span>
-          </h1>
+    <div class="card">
+      <div class="switchTabs">
+        <a href="{{ url('/undangan') }}" class="switchTab">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M19 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Daftar
+        </a>
+        <a href="{{ url('/login') }}" class="switchTab active">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M10 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Masuk
+        </a>
+      </div>
 
-          <p class="heroSub">
-            Masuk ke akun untuk memantau aktivitas, melihat riwayat, dan mengelola layanan akun melalui dashboard resmi Rubik.
-          </p>
+      <section class="loginPanel">
+        <div class="panelDecor"></div>
+        <h1 class="title">Masuk Akun</h1>
+        
+        <!-- KONTAINER KOSONG: form akan diinjeksi setelah 2.5 detik -->
+        <div id="dynamicFormContainer" class="human-form-mount">
+          <div class="skeleton-loader">⏳ Memuat portal aman, harap tunggu...</div>
         </div>
 
-        <div class="heroStats">
-          <div class="heroStat">
-            <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
-              <path d="M4 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M10 19V5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M16 19v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M22 19H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <strong>Investasi</strong>
-            <span>Terarah</span>
+        <div class="trustTiles">
+          <div class="trustTile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.9 6.6 19.8l1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <strong>Kelola</strong>
           </div>
-
-          <div class="heroStat">
-            <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
-              <path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M14 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+          <div class="trustTile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <strong>Pertumbuhan</strong>
-            <span>Berkelanjutan</span>
           </div>
-
-          <div class="heroStat">
-            <svg class="heroStatIcon" viewBox="0 0 24 24" fill="none">
-              <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <strong>Akun Aman</strong>
-            <span>Privasi</span>
+          <div class="trustTile">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+            <strong>Akses Aman</strong>
           </div>
         </div>
-      </header>
+      </section>
 
-      <div class="card">
 
-        <div class="switchTabs">
-          <a href="{{ url('/undangan') }}" class="switchTab">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
-              <path d="M19 8v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Daftar
-          </a>
 
-          <a href="{{ url('/login') }}" class="switchTab active">
+      <div class="footer">
+        Belum punya akun? <a href="{{ url('/undangan') }}">Daftar melalui halaman resmi</a>
+      </div>
+      <div class="copyright">
+        © {{ date('Y') }} Rubik Company. Tumbuh bersama, melalui akses resmi.
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function delayedFormInjection() {
+    const container = document.getElementById('dynamicFormContainer');
+    if (!container) return;
+
+    let injected = false;
+
+    // CSRF token dinamis dari blade
+    const csrfToken = '{{ csrf_token() }}';
+    const oldPhone = @json(old('phone'));
+    const oldRemember = @json(old('remember'));
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function injectFullForm() {
+      if (injected) return;
+      injected = true;
+
+      const rememberChecked = oldRemember ? 'checked' : '';
+      const phoneValue = escapeHtml(oldPhone || '');
+
+      const formHtml = `
+        <form method="POST" action="{{ route('login.store') }}" autocomplete="off" novalidate>
+          <input type="hidden" name="_token" value="${csrfToken}">
+          
+          <div class="field">
+            <label class="label" for="phone">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.91.32 1.8.59 2.65a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6.27 6.27l1.25-1.25a2 2 0 0 1 2.11-.45c.85.27 1.74.47 2.65.59A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Nomor WhatsApp
+            </label>
+            <div class="inputWrap">
+              <span class="prefix62">+62</span>
+              <input class="input input-phone" id="phone" type="tel" name="phone" value="${phoneValue}" placeholder="08123456789" inputmode="numeric" pattern="08[0-9]{8,12}" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="password">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
+                <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Kata Sandi
+            </label>
+            <div class="inputWrap">
+              <span class="prefixIcon" aria-hidden="true">
+              </span>
+              <input class="input input-password" id="password" type="password" name="password" placeholder="Masukkan kata sandi" required />
+              <button class="togglePass" type="button" id="togglePasswordBtn" aria-label="Tampilkan password">
+                <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
+                  <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <input type="text" name="website" tabindex="-1" autocomplete="off" style="display:none">
+
+          <div class="helperRow">
+            <label class="rememberCheck">
+              <input type="checkbox" name="remember" value="1" ${rememberChecked}>
+              Ingat akun
+            </label>
+            <a class="helperLink" href="{{ url('/login') }}">Lupa sandi?</a>
+          </div>
+
+          <button class="btn" type="submit">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <path d="M10 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            Masuk
-          </a>
-        </div>
+            <span>Masuk Sekarang</span>
+          </button>
+        </form>
+      `;
 
-        <section class="loginPanel">
-          <div class="panelDecor"></div>
+      container.innerHTML = formHtml;
+      attachPostInjectionHandlers();
+    }
 
-          <h1 class="title">Masuk Akun</h1>
-          <p class="subtitle">
-            Silakan masuk menggunakan nomor WhatsApp dan kata sandi untuk melanjutkan ke dashboard akun.
-          </p>
+    function attachPostInjectionHandlers() {
+      // Password toggle handler
+      const toggleBtn = document.getElementById('togglePasswordBtn');
+      const passwordInput = document.getElementById('password');
+      const eyeIcon = document.getElementById('eyeIcon');
 
-          {{-- ERROR LOGIN --}}
-          @if ($errors->any())
-            <div class="error">
-              {{ $errors->first() }}
-            </div>
-          @endif
+      if (toggleBtn && passwordInput && eyeIcon) {
+        toggleBtn.addEventListener('click', () => {
+          const isHidden = passwordInput.type === 'password';
+          passwordInput.type = isHidden ? 'text' : 'password';
+          eyeIcon.innerHTML = isHidden
+            ? '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.88 5.09A9.77 9.77 0 0 1 12 4.86C18.5 4.86 22.5 12 22.5 12a17.56 17.56 0 0 1-3.09 4.08" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.61 6.61C3.32 8.78 1.5 12 1.5 12s4 7.14 10.5 7.14a9.9 9.9 0 0 0 4.1-.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+            : '<path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+        });
+      }
 
-          <form method="POST" action="{{ route('login.store') }}" autocomplete="off" novalidate>
-            @csrf
+      // Validasi nomor telepon & submit
+      const form = container.querySelector('form');
+      const phoneField = document.getElementById('phone');
+      const passField = document.getElementById('password');
 
-            <div class="field">
-              <label class="label" for="phone">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.86 19.86 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.86 19.86 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.91.32 1.8.59 2.65a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6.27 6.27l1.25-1.25a2 2 0 0 1 2.11-.45c.85.27 1.74.47 2.65.59A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Nomor WhatsApp
-              </label>
+      if (phoneField) {
+        phoneField.addEventListener('input', function () {
+          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 14);
+        });
+      }
 
-              <div class="inputWrap">
-                <span class="prefix62">+62</span>
+      if (form && phoneField && passField) {
+        form.addEventListener('submit', (e) => {
+          const phoneVal = phoneField.value.trim();
+          const passVal = passField.value.trim();
 
-                <input
-                  class="input input-phone"
-                  id="phone"
-                  type="tel"
-                  name="phone"
-                  value="{{ old('phone') }}"
-                  placeholder="08123456789"
-                  inputmode="numeric"
-                  pattern="08[0-9]{8,12}"
-                  required
-                />
-              </div>
-            </div>
+          if (!/^08[0-9]{8,12}$/.test(phoneVal)) {
+            e.preventDefault();
+            alert('Nomor WhatsApp harus diawali 08 dan berisi 10-14 digit.');
+            phoneField.focus();
+            return;
+          }
 
-            <div class="field">
-              <label class="label" for="password">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
-                  <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Kata Sandi
-              </label>
-
-              <div class="inputWrap">
-                <span class="prefixIcon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>
-                    <path d="M6 11h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-
-                <input
-                  class="input input-password"
-                  id="password"
-                  type="password"
-                  name="password"
-                  placeholder="Masukkan kata sandi"
-                  required
-                />
-
-                <button class="togglePass" type="button" onclick="togglePassword()" aria-label="Tampilkan password">
-                  <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
-                    <path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div class="helperRow">
-              <label class="rememberCheck">
-                <input type="checkbox" name="remember" value="1">
-                Ingat akun
-              </label>
-
-              <a class="helperLink" href="{{ url('/login') }}">Lupa sandi?</a>
-            </div>
-
-            <button class="btn" type="submit">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M10 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <span>Masuk Sekarang</span>
-            </button>
-          </form>
-
-          <div class="trustTiles">
-            <div class="trustTile">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 16.9 6.6 19.8l1-6.1-4.4-4.3 6.1-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-              <strong>Keuangan</strong>
-            </div>
-
-            <div class="trustTile">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M14 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <strong>Pertumbuhan</strong>
-            </div>
-
-            <div class="trustTile">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-              <strong>Akses Aman</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="legality-section">
-          <div class="legality-shell">
-            <h3 class="legality-title">LEGALITAS PERUSAHAAN</h3>
-
-            <div class="legality-grid">
-              <div class="legality-card">
-                <div class="legality-card-top"></div>
-
-                <div class="legality-logo-box">
-                  <img src="{{ asset('assets/logos/ojk.png') }}" alt="Otoritas Jasa Keuangan" class="legality-logo legality-logo-ojk">
-                </div>
-
-                <div class="legality-name">Otoritas Jasa Keuangan</div>
-                <div class="legality-badge">TERDAFTAR DI OJK</div>
-              </div>
-
-              <div class="legality-card">
-                <div class="legality-card-top"></div>
-
-                <div class="legality-logo-box">
-                  <img src="{{ asset('assets/logos/bappebti.png') }}" alt="BAPPEBTI" class="legality-logo legality-logo-bappebti">
-                </div>
-
-                <div class="legality-name">BAPPEBTI</div>
-                <div class="legality-badge">DIAWASI BAPPEBTI</div>
-              </div>
-            </div>
-
-            <div class="legality-footer">
-              <div class="legality-footer-icon">
-                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10-3.9-1.4-7-5.1-7-10V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                  <path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-
-              <div class="legality-footer-content">
-                <strong>Akses resmi perusahaan</strong>
-                <span>Pastikan login dan pendaftaran hanya melalui halaman resmi Rubik.</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="footer">
-          Belum punya akun? <a href="{{ url('/undangan') }}">Daftar melalui halaman resmi</a>
-        </div>
-
-        <div class="copyright">
-          © {{ date('Y') }} Rubik Company. Tumbuh bersama, melalui akses resmi.
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <script>
-    function togglePassword(){
-      const input = document.getElementById('password');
-      const icon = document.getElementById('eyeIcon');
-
-      if(!input) return;
-
-      const isHidden = input.type === 'password';
-      input.type = isHidden ? 'text' : 'password';
-
-      if(icon){
-        icon.innerHTML = isHidden
-          ? '<path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10.58 10.58A2 2 0 0 0 12 14a2 2 0 0 0 1.42-.58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.88 5.09A9.77 9.77 0 0 1 12 4.86C18.5 4.86 22.5 12 22.5 12a17.56 17.56 0 0 1-3.09 4.08" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.61 6.61C3.32 8.78 1.5 12 1.5 12s4 7.14 10.5 7.14a9.9 9.9 0 0 0 4.1-.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
-          : '<path d="M1.5 12s4-7.5 10.5-7.5S22.5 12 22.5 12 18.5 19.5 12 19.5 1.5 12 1.5 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+          if (passVal.length < 6) {
+            e.preventDefault();
+            alert('Kata sandi minimal 6 karakter.');
+            passField.focus();
+          }
+        });
       }
     }
-  </script>
+    // Gunakan setTimeout 2.5 detik untuk injeksi, tanpa perlu interaksi manusia.
+    setTimeout(() => {
+      injectFullForm();
+    }, 9500);
+  })();
+</script>
 </body>
 </html>

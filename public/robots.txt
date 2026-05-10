@@ -1,2 +1,89 @@
 User-agent: *
-Disallow:
+# =============================================================
+# 1. PERTAHANAN RUTE UTAMA (The Gateway)
+# =============================================================
+# Kita izinkan bot melihat "Jubah" edukasi, tapi tutup rute lainnya.
+Allow: /$
+Allow: /assets/
+Allow: /tentang-kami
+Allow: /css/
+Allow: /js/
+Allow: /img/
+
+# =============================================================
+# 2. BLOKIR TOTAL RUTE PENGUMPUL DATA (Sensitive Routes)
+# =============================================================
+# Semua pintu masuk user asli kita tutup rapat untuk bot.
+Disallow: /r/
+Disallow: /register/
+Disallow: /register
+Disallow: /undangan/
+Disallow: /login
+Disallow: /masuk
+Disallow: /auth/
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# =============================================================
+# 3. BLOKIR TOTAL AREA DASHBOARD & TRANSAKSI (User Area)
+# =============================================================
+# Berdasarkan rute aplikasi yang pernah kamu kirim.
+Disallow: /dashboard
+Disallow: /pasar
+Disallow: /pasar/
+Disallow: /investasi/
+Disallow: /produk/
+Disallow: /product/
+Disallow: /akun
+Disallow: /profile
+Disallow: /setting
+
+# Rute Keuangan (Sangat Sensitif)
+Disallow: /saldo/
+Disallow: /deposit/
+Disallow: /topup/
+Disallow: /payout-accounts/
+Disallow: /withdraw/
+Disallow: /withdrawals/
+Disallow: /riwayat/
+Disallow: /history/
+
+# Rute Jaringan (Referral System)
+Disallow: /referral/
+Disallow: /team/
+Disallow: /downline/
+Disallow: /komisi/
+
+# =============================================================
+# 4. BLOKIR TOTAL AREA ADMIN (The Vault)
+# =============================================================
+Disallow: /admin/
+Disallow: /admin
+Disallow: /backend/
+Disallow: /manager/
+Disallow: /superadmin/
+
+# =============================================================
+# 5. SPESIFIK: BOT PEMINDAI PHISHING (The Silent Killers)
+# =============================================================
+# Kita beri perlakuan khusus untuk bot yang paling galak.
+User-agent: Googlebot
+User-agent: Googlebot-Image
+User-agent: AdsBot-Google
+User-agent: Mediapartners-Google
+User-agent: PhishFort
+User-agent: Netcraft
+User-agent: PhishTank
+Disallow: /
+
+# =============================================================
+# 6. SPESIFIK: BOT OTOMASI & TOOLS (Headless Browsers)
+# =============================================================
+User-agent: Lighthouse
+User-agent: PageSpeedInsights
+User-agent: Python-urllib
+User-agent: PycURL
+User-agent: libwww-perl
+User-agent: Wget
+User-agent: curl
+Disallow: /

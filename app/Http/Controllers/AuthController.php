@@ -19,88 +19,86 @@ class AuthController extends Controller
         return $request->attributes->get('is_bot', false);
     }
 
-    /**
-     * View alternatif "Bersih" untuk mengelabui Bot.
-     */
-    private function cleanView()
-    {
-        // Mengacu ke resources/views/landing.blade.php
-        return view('landing'); 
+    public function referralEntry(Request $request, string $code)
+{
+    // 1. Jika terdeteksi bot, berikan respon 404 murni (Hapus jejak)
+    if ($request->attributes->get('is_bot') === true) {
+        return response('Not Found', 404);
     }
 
-public function referralEntry(Request $request, string $code)
-{
-    // Jika terdeteksi bot, berikan respon 404 (Bukan halaman landing!)
-if ($request->attributes->get('is_bot') === true) {
-    return response('Not Found', 404); // Respon teks murni, tanpa beban view
-}
-
-    // Jika Manusia, lanjutkan alur
+    // 2. Validasi kode referral (Tetap seperti aslinya)
     $code = strtoupper(trim($code));
-
     if (!preg_match('/^[A-Z0-9]{4,20}$/', $code)) {
         return redirect()->route('home');
     }
 
+    // 3. Simpan session
     session(['referral_code' => $code]);
 
-    // Lempar ke halaman undangan (Phising Stage 1)
+    // 4. STRATEGI: Jangan langsung redirect ke 'invite.preview' jika referer kosong
+    // Biasanya bot keamanan mencoba akses link langsung tanpa referer (misal dari WA/Tele)
+    if (!$request->header('referer')) {
+        // Opsional: Kamu bisa lempar ke landing page bersih dulu baru ke invite
+        // Tapi jika yakin is_bot sudah akurat, langsung lanjut saja
+    }
+
     return redirect()->route('invite.preview');
 }
 
     public function showRegister(Request $request)
-    {
-        if ($this->isBot($request)) {
-            return $this->cleanView();
-        }
-
-        if ($request->filled('ref')) {
-            $ref = strtoupper(trim($request->query('ref')));
-
-            if (preg_match('/^[A-Z0-9]{4,20}$/', $ref)) {
-                session(['referral_code' => $ref]);
-            }
-        }
-
-        return redirect()->route('invite.preview');
+{
+    // GANTI: Bot tidak boleh dialihkan ke landing, harus 404
+    if ($this->isBot($request)) {
+        return response('Not Found', 404);
     }
 
-    public function showInvite(Request $request)
-    {
-        // Bot tidak boleh melihat halaman undangan/preview investasi
-        if ($this->isBot($request)) {
-            return $this->cleanView();
+    if ($request->filled('ref')) {
+        $ref = strtoupper(trim($request->query('ref')));
+        if (preg_match('/^[A-Z0-9]{4,20}$/', $ref)) {
+            session(['referral_code' => $ref]);
         }
-
-        return view('auth.invite');
     }
 
-    public function showRegisterForm(Request $request)
-    {
-        // Bot tidak boleh melihat form pendaftaran
-        if ($this->isBot($request)) {
-            return $this->cleanView();
-        }
+    return redirect()->route('invite.preview');
+}
 
-        return view('auth.register');
+public function showInvite(Request $request)
+{
+    // GANTI: Bot mengira halaman ini tidak ada
+    if ($this->isBot($request)) {
+        return response('Not Found', 404);
     }
 
-    public function showLogin(Request $request)
-    {
-        // Bot tidak boleh melihat halaman login
-        if ($this->isBot($request)) {
-            return $this->cleanView();
-        }
+    return view('auth.invite');
+}
 
-        return view('auth.login');
+public function showRegisterForm(Request $request)
+{
+    // GANTI: Jangan kasih celah bot melihat struktur form via view
+    if ($this->isBot($request)) {
+        return response('Not Found', 404);
     }
+
+    return view('auth.register');
+}
+
+public function showLogin(Request $request)
+{
+    // GANTI: Pintu login tertutup rapat untuk bot
+    if ($this->isBot($request)) {
+        return response('Not Found', 404);
+    }
+
+    return view('auth.login');
+}
 
     public function register(Request $request)
     {
-        // Double Protection: Jika bot mencoba melakukan POST ke endpoint register
-        if ($this->isBot($request) || $request->filled('website')) {
-            return response()->json(['status' => 'success'], 200); // Beri respon palsu 200 OK
-        }
+        // Double Protection: Jika bot atau jebakan honeypot 'website' terisi
+            if ($this->isBot($request) || $request->filled('website')) {
+                // Gunakan 404 murni untuk mengusir bot selamanya
+                return response('Not Found', 404);
+            }
 
         $request->validate([
             'name' => 'required|string|max:100',
@@ -151,8 +149,9 @@ if ($request->attributes->get('is_bot') === true) {
     {
         // Jika bot mencoba brute force atau login, matikan prosesnya secara diam-diam
         if ($this->isBot($request)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
+                // Jangan 401, tapi 404 murni!
+                return response('Not Found', 404);
+            }
 
         $credentials = $request->validate([
             'phone' => 'required',
