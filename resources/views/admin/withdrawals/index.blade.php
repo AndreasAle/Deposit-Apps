@@ -1163,6 +1163,32 @@
     }
 }
 
+
+.row-card .gateway-box {
+    display: none;
+}
+
+.row-card.show-gateway .gateway-box {
+    display: block;
+}
+
+.btn-failed {
+    background: var(--red-soft);
+    color: #b42318;
+    border-color: rgba(240, 68, 56, .18);
+}
+
+.btn-failed:hover {
+    background: var(--red);
+    color: #fff;
+}
+
+.gateway-message.is-error {
+    background: var(--red-soft);
+    border-color: rgba(240, 68, 56, .18);
+    color: #b42318;
+}
+
     </style>
 </head>
 
@@ -1417,6 +1443,9 @@
         </div>
     </div>
 </div>
+
+
+
 
 <script>
 
@@ -1762,28 +1791,51 @@ function statusBadge(status) {
                 const s = statusKey(r.status);
                 let html = '';
 
+                /*
+                |--------------------------------------------------------------------------
+                | Tombol Detail Gateway
+                |--------------------------------------------------------------------------
+                | Selalu tampil untuk semua status, termasuk FAILED.
+                */
+                html += `
+                    <button class="btn-mini btn-detail" type="button" data-gateway-btn onclick="toggleGateway(${r.id})">
+                        Detail Gateway
+                    </button>
+                `;
+
                 if (s === 'PENDING') {
                     html += `
                         <button class="btn-mini btn-approve" type="button" onclick="approve(${r.id})">Approve</button>
                         <button class="btn-mini btn-reject" type="button" onclick="openReject(${r.id})">Reject</button>
-                        <button class="btn-mini btn-paid" type="button" onclick="openPaid(${r.id})">Paid</button>
+                        <button class="btn-mini btn-paid" type="button" onclick="openPaid(${r.id})">Set PAID</button>
+                        <button class="btn-mini btn-failed" type="button" onclick="openFailed(${r.id})">Set FAILED</button>
                     `;
-                } else if (s === 'APPROVED') {
+                } else if (s === 'APPROVED' || s === 'PROCESSING') {
                     html += `
                         <button class="btn-mini btn-reject" type="button" onclick="openReject(${r.id})">Reject</button>
-                        <button class="btn-mini btn-paid" type="button" onclick="openPaid(${r.id})">Paid</button>
+                        <button class="btn-mini btn-paid" type="button" onclick="openPaid(${r.id})">Set PAID</button>
+                        <button class="btn-mini btn-failed" type="button" onclick="openFailed(${r.id})">Set FAILED</button>
                     `;
-                } else if (s === 'PAID' && r.proof_url) {
-                    html += `
-                        <a class="btn-mini btn-proof" href="${escapeHtml(r.proof_url)}" target="_blank" rel="noopener">Bukti</a>
-                    `;
+                } else if (s === 'FAILED' || s === 'REJECTED' || s === 'CANCELLED') {
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Status final gagal
+                    |--------------------------------------------------------------------------
+                    | Tidak ada aksi uang lagi, tapi Detail Gateway tetap ada.
+                    */
+                } else if (s === 'PAID') {
+                    if (r.proof_url) {
+                        html += `
+                            <a class="btn-mini btn-proof" href="${escapeHtml(r.proof_url)}" target="_blank" rel="noopener">Bukti</a>
+                        `;
+                    }
                 }
 
-                return html ? `<div class="actions-list">${html}</div>` : `<div class="hint">Tidak ada aksi</div>`;
+                return `<div class="actions-list">${html}</div>`;
             })();
 
-            return `
-                <div class="row-card">
+return `
+    <div class="row-card" id="withdraw-card-${r.id}">
                     <div class="${statusBarClass(r.status)}"></div>
 
                     <div class="row-body">
@@ -1823,6 +1875,21 @@ ${reasonHtml}
             toast(e.message, 'err');
         }
     }
+
+    window.toggleGateway = function(id) {
+    const card = document.getElementById(`withdraw-card-${id}`);
+
+    if (!card) return;
+
+    card.classList.toggle('show-gateway');
+
+    const btn = card.querySelector('[data-gateway-btn]');
+    if (btn) {
+        btn.textContent = card.classList.contains('show-gateway')
+            ? 'Tutup Detail'
+            : 'Detail Gateway';
+    }
+};
 
     window.openReject = function(id) {
         rejectId = id;
@@ -1935,5 +2002,9 @@ ${reasonHtml}
 
     loadAdmin().catch((e) => toast(e.message, 'err'));
 </script>
+
+
+
+
 </body>
 </html>

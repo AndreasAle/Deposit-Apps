@@ -801,6 +801,30 @@
                 width: 100%;
             }
         }
+
+        .btn-danger,
+            .action-danger {
+                height: 38px;
+                padding: 0 13px;
+                border-radius: 13px;
+                border: 1px solid rgba(240, 68, 56, .18);
+                background: var(--red-soft);
+                color: var(--red);
+                font-weight: 900;
+                font-size: 12px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: .18s ease;
+            }
+
+            .btn-danger:hover,
+            .action-danger:hover {
+                transform: translateY(-1px);
+                background: var(--red);
+                color: #fff;
+            }
     </style>
 </head>
 
@@ -970,7 +994,24 @@
 
                 <div class="hero-actions">
                     <a class="hero-link secondary" href="{{ route('admin.forum.index') }}">← Semua Post</a>
-                    <a class="hero-link" href="/admin">Dashboard →</a>
+
+                    <form
+                        action="{{ route('admin.forum.destroy', $post->id) }}"
+                        method="POST"
+                        style="margin:0"
+                        onsubmit="return confirm('Yakin hapus post forum ini? Semua komentar dan media akan ikut terhapus permanen.')"
+                    >
+                        @csrf
+                        @method('DELETE')
+
+                        <button
+                            type="submit"
+                            class="hero-link"
+                            style="border:0;background:#fff;color:var(--red);cursor:pointer"
+                        >
+                            Hapus Post
+                        </button>
+                    </form>
                 </div>
             </div>
         </section>

@@ -1483,7 +1483,13 @@
         $assetSymbol = 'A';
     }
 
-    $invActive   = $activeInvestments[$product->id] ?? null;
+    $invActive = $activeInvestments[$product->id] ?? null;
+
+    $isBasicProduct = (int) $cat->id === 1;
+    $isOneTimeProduct = in_array((int) $cat->id, [2, 3], true);
+
+    $shouldLockBuyButton = $isOneTimeProduct && $invActive;
+
     $vipKurang   = (int) $user->vip_level < (int) $product->min_vip_level;
     $saldoKurang = (int) $user->saldo < (int) $product->price;
 
@@ -1572,44 +1578,44 @@
                                 </div>
 
                                 <div class="mk-asset-action">
-    @if($invActive)
-        <a href="{{ route('investasi.index') }}" class="mk-buy-btn">
-            Sedang Aktif
-        </a>
-    @else
-        <form
-            method="POST"
-            action="{{ url('/product/buy/'.$product->id) }}"
-            class="js-invest-form"
-            style="margin:0;"
-            data-product-name="{{ $product->name }}"
-            data-product-price="Rp {{ number_format($product->price, 0, ',', '.') }}"
-            data-product-profit="Rp {{ number_format($product->daily_profit, 0, ',', '.') }}"
-            data-product-duration="{{ $product->duration_days }} Hari"
-            data-product-vip="{{ (int) $product->min_vip_level }}"
-            data-user-vip="{{ (int) ($user->vip_level ?? 0) }}"
-            data-product-raw-price="{{ (int) $product->price }}"
-            data-user-saldo="{{ (int) ($user->saldo ?? 0) }}"
-            data-vip-kurang="{{ $vipKurang ? '1' : '0' }}"
-            data-saldo-kurang="{{ $saldoKurang ? '1' : '0' }}"
-        >
-            @csrf
+@if($shouldLockBuyButton)
+    <a href="{{ route('investasi.index') }}" class="mk-buy-btn">
+        Sedang Aktif
+    </a>
+@else
+    <form
+        method="POST"
+        action="{{ url('/product/buy/'.$product->id) }}"
+        class="js-invest-form"
+        style="margin:0;"
+        data-product-name="{{ $product->name }}"
+        data-product-price="Rp {{ number_format($product->price, 0, ',', '.') }}"
+        data-product-profit="Rp {{ number_format($product->daily_profit, 0, ',', '.') }}"
+        data-product-duration="{{ $product->duration_days }} Hari"
+        data-product-vip="{{ (int) $product->min_vip_level }}"
+        data-user-vip="{{ (int) ($user->vip_level ?? 0) }}"
+        data-product-raw-price="{{ (int) $product->price }}"
+        data-user-saldo="{{ (int) ($user->saldo ?? 0) }}"
+        data-vip-kurang="{{ $vipKurang ? '1' : '0' }}"
+        data-saldo-kurang="{{ $saldoKurang ? '1' : '0' }}"
+    >
+        @csrf
 
-            <button class="mk-buy-btn" type="submit">
-                <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M3 6h18" stroke="currentColor" stroke-width="2"/>
-                    <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+        <button class="mk-buy-btn" type="submit">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M3 6h18" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
 
-                @if($vipKurang || $saldoKurang)
-                    Deposit Sekarang
-                @else
-                    Investasikan Sekarang
-                @endif
-            </button>
-        </form>
-    @endif
+            @if($vipKurang || $saldoKurang)
+                Deposit Sekarang
+            @else
+                Investasikan Sekarang
+            @endif
+        </button>
+    </form>
+@endif
 </div>
                             </article>
                         @empty

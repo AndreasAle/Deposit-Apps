@@ -796,6 +796,30 @@
                 max-width: none;
             }
         }
+
+        .btn-danger,
+            .action-danger {
+                height: 38px;
+                padding: 0 13px;
+                border-radius: 13px;
+                border: 1px solid rgba(240, 68, 56, .18);
+                background: var(--red-soft);
+                color: var(--red);
+                font-weight: 900;
+                font-size: 12px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: .18s ease;
+            }
+
+            .btn-danger:hover,
+            .action-danger:hover {
+                transform: translateY(-1px);
+                background: var(--red);
+                color: #fff;
+            }
     </style>
 </head>
 
@@ -962,6 +986,38 @@
             </div>
         </section>
 
+        @if(session('success'))
+            <div style="
+                margin-bottom:18px;
+                padding:14px 16px;
+                border-radius:18px;
+                background:var(--green-soft);
+                border:1px solid rgba(18,183,106,.16);
+                color:#027a48;
+                font-size:13px;
+                font-weight:800;
+                box-shadow:var(--shadow-soft);
+            ">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div style="
+                margin-bottom:18px;
+                padding:14px 16px;
+                border-radius:18px;
+                background:var(--red-soft);
+                border:1px solid rgba(240,68,56,.16);
+                color:var(--red);
+                font-size:13px;
+                font-weight:800;
+                box-shadow:var(--shadow-soft);
+            ">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <section class="panel">
             <div class="panel-head">
                 <div class="panel-title">
@@ -1035,9 +1091,25 @@
                             </td>
 
                             <td data-label="Aksi">
-                                <a class="action-link" href="{{ route('admin.forum.show', $post->id) }}">
-                                    Detail →
-                                </a>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                    <a class="action-link" href="{{ route('admin.forum.show', $post->id) }}">
+                                        Detail →
+                                    </a>
+
+                                    <form
+                                        action="{{ route('admin.forum.destroy', $post->id) }}"
+                                        method="POST"
+                                        style="margin:0"
+                                        onsubmit="return confirm('Yakin hapus post forum ini? Semua komentar dan media akan ikut terhapus permanen.')"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button class="action-danger" type="submit">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty

@@ -309,10 +309,8 @@ Route::get('/users', [UserController::class, 'index'])
 
 Route::get('/users/{id}', [UserController::class, 'show'])
     ->name('admin.users.show');
-
-    Route::post('/admin/users/{id}/password', [\App\Http\Controllers\Admin\UserController::class, 'updatePassword'])
+Route::post('/users/{id}/password', [UserController::class, 'updatePassword'])
     ->name('admin.users.update-password');
-
 Route::post('/users/{id}/vip', [UserController::class, 'updateVip'])
     ->name('admin.users.updateVip');
 
@@ -369,6 +367,7 @@ Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed
             ->name('admin.withdraw.page');
 
         Route::view('/ui/withdrawals', 'admin.withdrawals.index');
+        Route::post('/withdrawals/{id}/failed', [WithdrawalAdminController::class, 'markFailed']);
 
         /*
         |--------------------------------------------------------------------------
@@ -390,4 +389,6 @@ Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed
 
         Route::get('/forum/posts/{post}', [AdminForumController::class, 'show'])
             ->name('admin.forum.show');
+         Route::delete('/forum/posts/{post}', [AdminForumController::class, 'destroy'])
+    ->name('admin.forum.destroy');
     });

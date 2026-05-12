@@ -54,6 +54,11 @@ class UserInvestment extends Model
         return $query->where('status', 'active');
     }
 
+        public function user()
+        {
+            return $this->belongsTo(User::class, 'user_id');
+        }
+
     /**
      * Scope: milik user tertentu
      */
