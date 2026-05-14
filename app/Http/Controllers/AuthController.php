@@ -100,79 +100,102 @@ public function showLogin(Request $request)
                 return response('Not Found', 404);
             }
 
-        $request->validate([
-            'name' => 'required|string|max:100',
-            'phone' => 'required|string|unique:users,phone',
-            'password' => 'required|min:6',
-            'referral_code' => 'nullable|string|max:20',
-            'security_confirm' => 'accepted',
-            'puzzle_verified' => 'accepted',
-        ]);
+      $normalizedPhone = $this->normalizePhone($request->input('phone'));
 
-        $refCode = session('referral_code') ?: $request->input('referral_code');
-        $refCode = $refCode ? strtoupper(trim($refCode)) : null;
-        $referrer = null;
+$request->merge([
+    'phone' => $normalizedPhone,
+]);
 
-        if ($refCode) {
-            if (!preg_match('/^[A-Z0-9]{4,20}$/', $refCode)) {
-                return back()->withErrors(['referral_code' => 'Kode referral tidak valid'])->withInput();
-            }
+$request->validate([
+    'name' => 'required|string|max:100',
+    'phone' => [
+        'required',
+        'regex:/^08[0-9]{8,12}$/',
+        'unique:users,phone',
+    ],
+    'password' => 'required|min:6',
+    'referral_code' => 'nullable|string|max:20',
+    'security_confirm' => 'accepted',
+    'puzzle_verified' => 'accepted',
+], [
+    'phone.regex' => 'Nomor WhatsApp harus valid. Contoh: 08123456789.',
+    'phone.unique' => 'Nomor WhatsApp ini sudah terdaftar.',
+]);
 
-            $referrer = User::where('referral_code', $refCode)->first();
+$refCode = session('referral_code') ?: $request->input('referral_code');
+$refCode = $refCode ? strtoupper(trim($refCode)) : null;
+$referrer = null;
 
-            if (!$referrer || $referrer->role === 'admin') {
-                return back()->withErrors(['referral_code' => 'Kode referral tidak valid'])->withInput();
-            }
+if ($refCode) {
+    if (!preg_match('/^[A-Z0-9]{4,20}$/', $refCode)) {
+        return back()->withErrors(['referral_code' => 'Kode referral tidak valid'])->withInput();
+    }
+
+    $referrer = User::where('referral_code', $refCode)->first();
+
+    if (!$referrer || $referrer->role === 'admin') {
+        return back()->withErrors(['referral_code' => 'Kode referral tidak valid'])->withInput();
+    }
+}
+
+$user = User::create([
+    'name' => $request->name,
+    'phone' => $normalizedPhone,
+    'password' => Hash::make($request->password),
+    'saldo' => 0,
+    'saldo_penarikan' => 0,
+    'saldo_penarikan_total' => 0,
+    'saldo_hold' => 0,
+    'vip_level' => 0,
+    'role' => 'user',
+    'referral_code' => ReferralCode::generateUnique(10),
+    'referred_by_user_id' => $referrer?->id,
+]);
+
+session()->forget('referral_code');
+Auth::login($user);
+
+return redirect('/dashboard');
+    }
+
+public function login(Request $request)
+{
+    // Jika bot mencoba brute force atau login, matikan prosesnya secara diam-diam
+    if ($this->isBot($request)) {
+        return response('Not Found', 404);
+    }
+
+    $normalizedPhone = $this->normalizePhone($request->input('phone'));
+
+    $request->merge([
+        'phone' => $normalizedPhone,
+    ]);
+
+    $credentials = $request->validate([
+        'phone' => [
+            'required',
+            'regex:/^08[0-9]{8,12}$/',
+        ],
+        'password' => 'required',
+    ], [
+        'phone.regex' => 'Nomor WhatsApp harus valid. Contoh: 08123456789.',
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        $user = Auth::user();
+
+        if ($user && $user->role === 'admin') {
+            return redirect('/admin');
         }
-
-        $user = User::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'saldo' => 0,
-            'saldo_penarikan' => 0,
-            'saldo_penarikan_total' => 0,
-            'saldo_hold' => 0,
-            'vip_level' => 0,
-            'role' => 'user',
-            'referral_code' => ReferralCode::generateUnique(10),
-            'referred_by_user_id' => $referrer?->id,
-        ]);
-
-        session()->forget('referral_code');
-        Auth::login($user);
 
         return redirect('/dashboard');
     }
 
-    public function login(Request $request)
-    {
-        // Jika bot mencoba brute force atau login, matikan prosesnya secara diam-diam
-        if ($this->isBot($request)) {
-                // Jangan 401, tapi 404 murni!
-                return response('Not Found', 404);
-            }
-
-        $credentials = $request->validate([
-            'phone' => 'required',
-            'password' => 'required',
-        ]);
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            $user = Auth::user();
-
-            if ($user && $user->role === 'admin') {
-                return redirect('/admin');
-            }
-
-            return redirect('/dashboard');
-        }
-
-        return back()->withErrors([
-            'phone' => 'Nomor HP atau password salah',
-        ]);
-    }
+    return back()->withErrors([
+        'phone' => 'Nomor HP atau password salah',
+    ])->withInput();
+}
 
     public function logout(Request $request)
     {
@@ -182,4 +205,26 @@ public function showLogin(Request $request)
 
         return redirect('/login');
     }
+
+private function normalizePhone(?string $phone): ?string
+{
+    if (!$phone) {
+        return null;
+    }
+
+    // Ambil angka saja
+    $phone = preg_replace('/[^0-9]/', '', $phone);
+
+    // Ubah 62xxx menjadi 0xxx
+    if (substr($phone, 0, 2) === '62') {
+        $phone = '0' . substr($phone, 2);
+    }
+
+    // Ubah 8xxx menjadi 08xxx
+    if (substr($phone, 0, 1) === '8') {
+        $phone = '0' . $phone;
+    }
+
+    return $phone;
+}
 }
