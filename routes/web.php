@@ -378,17 +378,24 @@ Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed
         Route::get('/referral', [ReferralAdminController::class, 'index'])
             ->name('admin.referral');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Admin Forum
-        |--------------------------------------------------------------------------
-        */
+/*
+|--------------------------------------------------------------------------
+| Admin Forum
+|--------------------------------------------------------------------------
+*/
 
-        Route::get('/forum', [AdminForumController::class, 'index'])
-            ->name('admin.forum.index');
+Route::get('/forum', [AdminForumController::class, 'index'])
+    ->name('admin.forum.index');
 
-        Route::get('/forum/posts/{post}', [AdminForumController::class, 'show'])
-            ->name('admin.forum.show');
-         Route::delete('/forum/posts/{post}', [AdminForumController::class, 'destroy'])
+Route::get('/forum/posts/{post}', [AdminForumController::class, 'show'])
+    ->name('admin.forum.show');
+
+Route::patch('/forum/posts/{post}/approve', [AdminForumController::class, 'approve'])
+    ->name('admin.forum.approve');
+
+Route::patch('/forum/posts/{post}/reject', [AdminForumController::class, 'reject'])
+    ->name('admin.forum.reject');
+
+Route::delete('/forum/posts/{post}', [AdminForumController::class, 'destroy'])
     ->name('admin.forum.destroy');
     });

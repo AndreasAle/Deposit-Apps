@@ -820,6 +820,12 @@
                 background: var(--red);
                 color: #fff;
             }
+
+            .chip.red {
+    background: var(--red-soft);
+    color: var(--red);
+    border-color: rgba(240, 68, 56, .16);
+}
     </style>
 </head>
 
@@ -1025,18 +1031,25 @@
                     <span>Daftar postingan user yang masuk ke forum/team.</span>
                 </div>
 
-                <form method="GET" action="{{ route('admin.forum.index') }}" class="toolbar-form">
-                    <input
-                        class="search-input"
-                        type="text"
-                        name="q"
-                        value="{{ $q }}"
-                        placeholder="Cari nama user / isi post..."
-                    />
+                    <form method="GET" action="{{ route('admin.forum.index') }}" class="toolbar-form">
+                        <input
+                            class="search-input"
+                            type="text"
+                            name="q"
+                            value="{{ $q }}"
+                            placeholder="Cari nama user / isi post..."
+                        />
 
-                    <button class="btn btn-primary" type="submit">Cari</button>
-                    <a class="btn" href="{{ route('admin.forum.index') }}">Reset</a>
-                </form>
+                        <select class="search-input" name="status" style="min-width:180px">
+                            <option value="">Semua Status</option>
+                            <option value="pending" {{ ($status ?? '') === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="published" {{ ($status ?? '') === 'published' ? 'selected' : '' }}>Published</option>
+                            <option value="rejected" {{ ($status ?? '') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        </select>
+
+                        <button class="btn btn-primary" type="submit">Cari</button>
+                        <a class="btn" href="{{ route('admin.forum.index') }}">Reset</a>
+                    </form>
             </div>
 
             <div class="meta-row">
@@ -1054,7 +1067,7 @@
                         <th>Konten</th>
                         <th style="width:180px">Stats</th>
                         <th style="width:170px">Waktu</th>
-                        <th style="width:120px">Aksi</th>
+                        <th style="width:260px">Aksi</th>
                     </tr>
                     </thead>
 
@@ -1078,13 +1091,28 @@
                                     {{ \Illuminate\Support\Str::limit(strip_tags((string) $post->content), 140) }}
                                 </div>
                             </td>
+<td data-label="Stats">
+    @php
+        $statusLabel = [
+            'pending' => 'Menunggu Approval',
+            'published' => 'Published',
+            'rejected' => 'Ditolak',
+        ][$post->status] ?? $post->status;
 
-                            <td data-label="Stats">
-                                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start">
-                                    <span class="chip green">💬 {{ $post->comments_count }}</span>
-                                    <span class="chip">🖼️ {{ $post->media_count }}</span>
-                                </div>
-                            </td>
+        $statusClass = match($post->status) {
+            'published' => 'green',
+            'pending' => '',
+            'rejected' => 'red',
+            default => '',
+        };
+    @endphp
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start">
+        <span class="chip {{ $statusClass }}">{{ $statusLabel }}</span>
+        <span class="chip green">💬 {{ $post->comments_count }}</span>
+        <span class="chip">🖼️ {{ $post->media_count }}</span>
+    </div>
+</td>
 
                             <td data-label="Waktu">
                                 <span class="muted">{{ optional($post->created_at)->format('d M Y H:i') }}</span>
@@ -1096,19 +1124,35 @@
                                         Detail →
                                     </a>
 
+                                 @if($post->status === 'pending')
                                     <form
-                                        action="{{ route('admin.forum.destroy', $post->id) }}"
+                                        action="{{ route('admin.forum.approve', $post->id) }}"
                                         method="POST"
                                         style="margin:0"
-                                        onsubmit="return confirm('Yakin hapus post forum ini? Semua komentar dan media akan ikut terhapus permanen.')"
+                                        onsubmit="return confirm('Approve postingan ini agar tampil di forum?')"
                                     >
                                         @csrf
-                                        @method('DELETE')
+                                        @method('PATCH')
 
-                                        <button class="action-danger" type="submit">
-                                            Hapus
+                                        <button class="action-link" type="submit" style="background:var(--green-soft);color:#027a48;border-color:rgba(18,183,106,.18)">
+                                            Approve
                                         </button>
                                     </form>
+
+                                    <form
+                                        action="{{ route('admin.forum.reject', $post->id) }}"
+                                        method="POST"
+                                        style="margin:0"
+                                        onsubmit="return confirm('Tolak postingan ini? Postingan tidak akan tampil di forum.')"
+                                    >
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <button class="action-danger" type="submit">
+                                            Reject
+                                        </button>
+                                    </form>
+                                @endif
                                 </div>
                             </td>
                         </tr>

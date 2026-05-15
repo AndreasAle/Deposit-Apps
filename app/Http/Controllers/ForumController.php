@@ -58,7 +58,7 @@ class ForumController extends Controller
             $post = ForumPost::create([
                 'user_id' => $user->id,
                 'content' => $request->input('content'),
-                'status'  => 'published',
+                'status'  => 'pending',
             ]);
 
             if ($hasFile) {
@@ -83,7 +83,7 @@ class ForumController extends Controller
 
             return redirect()
                 ->route('team.index')
-                ->with('success', 'Postingan berhasil dibuat ✅');
+                ->with('success', 'Postingan berhasil dikirim dan menunggu approval admin ✅');
         } catch (\Throwable $e) {
             DB::rollBack();
             report($e);

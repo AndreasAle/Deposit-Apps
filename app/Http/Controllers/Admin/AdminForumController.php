@@ -10,27 +10,32 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminForumController extends Controller
 {
-    public function index(Request $request)
-    {
-        $q = trim((string) $request->get('q', ''));
+public function index(Request $request)
+{
+    $q = trim((string) $request->get('q', ''));
+    $status = trim((string) $request->get('status', ''));
 
-        $posts = ForumPost::query()
-            ->with(['user:id,name', 'media:id,post_id,type,path'])
-            ->withCount(['comments', 'media'])
-            ->when($q !== '', function ($query) use ($q) {
-                $query->where(function ($w) use ($q) {
-                    $w->where('content', 'like', "%{$q}%")
-                      ->orWhereHas('user', function ($u) use ($q) {
-                          $u->where('name', 'like', "%{$q}%");
-                      });
-                });
-            })
-            ->orderByDesc('id')
-            ->paginate(10)
-            ->withQueryString();
+    $posts = ForumPost::query()
+        ->with(['user:id,name', 'media:id,post_id,type,path'])
+        ->withCount(['comments', 'media'])
+        ->when($q !== '', function ($query) use ($q) {
+            $query->where(function ($w) use ($q) {
+                $w->where('content', 'like', "%{$q}%")
+                  ->orWhereHas('user', function ($u) use ($q) {
+                      $u->where('name', 'like', "%{$q}%");
+                  });
+            });
+        })
+        ->when(in_array($status, ['pending', 'published', 'rejected'], true), function ($query) use ($status) {
+            $query->where('status', $status);
+        })
+        ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+        ->orderByDesc('id')
+        ->paginate(10)
+        ->withQueryString();
 
-        return view('admin.forum.index', compact('posts', 'q'));
-    }
+    return view('admin.forum.index', compact('posts', 'q', 'status'));
+}
 
     public function show(ForumPost $post)
     {
@@ -86,4 +91,22 @@ class AdminForumController extends Controller
             ->route('admin.forum.index')
             ->with('success', 'Post forum berhasil dihapus total beserta komentar dan medianya.');
     }
+
+    public function approve(ForumPost $post)
+{
+    $post->update([
+        'status' => 'published',
+    ]);
+
+    return back()->with('success', 'Postingan berhasil di-approve dan sekarang tampil di forum.');
+}
+
+public function reject(ForumPost $post)
+{
+    $post->update([
+        'status' => 'rejected',
+    ]);
+
+    return back()->with('success', 'Postingan berhasil ditolak dan tidak akan tampil di forum.');
+}
 }
