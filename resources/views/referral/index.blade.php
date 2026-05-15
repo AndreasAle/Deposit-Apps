@@ -7,7 +7,7 @@
   $commissions = $commissions ?? collect();
 
   $totalCommission = (int) ($totalCommission ?? 0);
-  $totalReferral = method_exists($refUsers, 'count') ? $refUsers->count() : 0;
+  $totalReferral = (int) ($refCount ?? 0);
   $saldoKomisi = (int) data_get($user, 'referral_earned_total', 0);
 
   $referralCode = data_get($user, 'referral_code', '-');
@@ -1615,6 +1615,12 @@
                 @endforelse
               </tbody>
             </table>
+
+         @if(is_object($refUsers) && method_exists($refUsers, 'links'))
+            <div class="rf-pager">
+                {{ $refUsers->links() }}
+            </div>
+        @endif   
           </div>
         </div>
       </section>
