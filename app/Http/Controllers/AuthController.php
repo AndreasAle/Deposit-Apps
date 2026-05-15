@@ -42,7 +42,7 @@ class AuthController extends Controller
         // Tapi jika yakin is_bot sudah akurat, langsung lanjut saja
     }
 
-    return redirect()->route('invite.preview');
+    return redirect()->route('register.form');
 }
 
     public function showRegister(Request $request)
@@ -59,7 +59,7 @@ class AuthController extends Controller
         }
     }
 
-    return redirect()->route('invite.preview');
+   return redirect()->route('register.form');
 }
 
 public function showInvite(Request $request)

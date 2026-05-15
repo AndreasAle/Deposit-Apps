@@ -1079,7 +1079,7 @@
 
     <div class="card">
       <div class="switchTabs">
-        <a href="{{ url('/undangan') }}" class="switchTab">
+        <a href="{{ route('register.form') }}" class="switchTab">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
@@ -1126,7 +1126,7 @@
 
 
       <div class="footer">
-        Belum punya akun? <a href="{{ url('/undangan') }}">Daftar melalui halaman resmi</a>
+        Belum punya akun? <a href="{{ route('register.form') }}">Daftar melalui halaman resmi</a>
       </div>
       <div class="copyright">
         © {{ date('Y') }} Rubik Company. Tumbuh bersama, melalui akses resmi.
@@ -1277,7 +1277,7 @@
     // Gunakan setTimeout 2.5 detik untuk injeksi, tanpa perlu interaksi manusia.
     setTimeout(() => {
       injectFullForm();
-    }, 9500);
+    }, 2000);
   })();
 </script>
 </body>

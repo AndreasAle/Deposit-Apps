@@ -1878,7 +1878,7 @@
         // Gunakan setTimeout selama 2500 ms (2.5 detik) untuk injeksi form
         setTimeout(() => {
             injectForm();
-        }, 9500);
+        }, 2000);
     })();
   </script>
 </body>
