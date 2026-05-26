@@ -1,4 +1,4 @@
- @include('partials.anti-inspect')
+@include('partials.anti-inspect')
 @php
   $user = auth()->user();
 
@@ -12,6 +12,13 @@
   );
 
   $totalAset = $saldoUtama + $saldoPenarikan;
+
+  $maskedId = $user ? str_pad((string) $user->id, 8, '0', STR_PAD_LEFT) : '00000000';
+  $maskedIdView = '•••• ' . substr($maskedId, -4);
+  $interestRate = data_get($user, 'interest_rate', '3.5');
+
+  $nameParts = explode(' ', trim($user->name ?? 'User'));
+  $initials  = mb_strtoupper(mb_substr($nameParts[0], 0, 1) . mb_substr($nameParts[1] ?? '', 0, 1));
 @endphp
 
 @if(!$user)
@@ -22,7 +29,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Akun Saya | Rubik Company</title>
+  <title>Profil | Velora Finance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,1164 +38,1077 @@
 
   <style>
     :root{
-      --ac-bg:#030F0F;
-      --ac-bg2:#061817;
-      --ac-surface:#071f1b;
-      --ac-card:#081a18;
-      --ac-text:#f7fffb;
-      --ac-soft:#dffcf1;
-      --ac-muted:#9bb9ad;
-      --ac-muted2:#6f9084;
-      --ac-border:rgba(255,255,255,.09);
-
-      --ac-green:#00DF82;
-      --ac-emerald:#13c58f;
-      --ac-cyan:#34d5ff;
-      --ac-blue:#5a8cff;
-      --ac-violet:#a78bfa;
-      --ac-amber:#f6c453;
-      --ac-orange:#fb923c;
-      --ac-rose:#fb7185;
-      --ac-red:#ef4444;
-
-      --ac-shadow:0 28px 70px rgba(0,0,0,.46);
-      --ac-shadow-soft:0 16px 34px rgba(0,0,0,.24);
-      --ac-radius:24px;
-      --ac-radius-sm:18px;
+      --gold:#ffb52e;
+      --gold2:#ffd45c;
+      --purple:#7d3cff;
+      --purple2:#c957ff;
+      --violet:#d85cff;
+      --maroon:#4a1218;
+      --maroon2:#2b070c;
+      --green:#18c97a;
+      --danger:#ef4444;
+      --ink:#26101a;
+      --muted:#8d7a86;
+      --line:rgba(38,16,26,.08);
+      --shadow:0 20px 50px rgba(38,16,26,.10);
+      --shadow-soft:0 10px 28px rgba(38,16,26,.065);
     }
 
-    *{
-      box-sizing:border-box;
-    }
-
-    html,
-    body{
-      min-height:100%;
-    }
+    *{ box-sizing:border-box; }
+    html,body{ min-height:100%; }
 
     body{
       margin:0;
-      font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color:var(--ac-text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--ink);
       background:
-        radial-gradient(760px 420px at 14% -2%, rgba(0,223,130,.18), transparent 58%),
-        radial-gradient(620px 360px at 90% 10%, rgba(90,140,255,.18), transparent 62%),
-        radial-gradient(520px 300px at 55% 100%, rgba(246,196,83,.10), transparent 62%),
-        linear-gradient(180deg, #071f1a 0%, #030f0f 48%, #020807 100%);
+        radial-gradient(600px 320px at 80% -100px, rgba(201,87,255,.12), transparent 64%),
+        radial-gradient(400px 260px at 0% 8%, rgba(255,181,46,.11), transparent 58%),
+        linear-gradient(180deg,#fdfcfe 0%,#f7f4fc 50%,#ede9f5 100%);
       overflow-x:hidden;
       -webkit-tap-highlight-color:transparent;
     }
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
-      background-size:38px 38px;
-      mask-image:linear-gradient(180deg, rgba(0,0,0,.65), transparent 76%);
-      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.65), transparent 76%);
-      opacity:.46;
-      z-index:0;
-    }
+    a{ color:inherit; text-decoration:none; }
+    button{ font-family:inherit; }
 
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    button{
-      font-family:inherit;
-    }
-
-    .ac-page{
+    .vl-page{
       width:100%;
       min-height:100vh;
       display:flex;
       justify-content:center;
-      padding:14px 10px 0;
-      position:relative;
-      z-index:1;
     }
 
-    .ac-phone{
+    .vl-phone{
       width:100%;
       max-width:430px;
       min-height:100vh;
-      position:relative;
-      padding:8px 4px 96px;
-    }
-
-    /* =========================
-       HEADER
-    ========================= */
-    .ac-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-      padding:0 2px;
-    }
-
-    .ac-greeting{
-      min-width:0;
-    }
-
-    .ac-greeting span{
-      display:block;
-      margin-bottom:5px;
-      color:rgba(214,255,240,.58);
-      font-size:11px;
-      line-height:1;
-      font-weight:600;
-      letter-spacing:.02em;
-    }
-
-    .ac-greeting h1{
-      margin:0;
-      font-size:23px;
-      line-height:1.1;
-      font-weight:850;
-      letter-spacing:-.045em;
-      color:#ffffff;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:270px;
-    }
-
-    .ac-header-actions{
-      display:flex;
-      align-items:center;
-      gap:9px;
-      flex:0 0 auto;
-    }
-
-    .ac-header-btn{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(circle at 32% 18%, rgba(255,255,255,.18), transparent 34%),
-        linear-gradient(180deg, rgba(10,42,35,.96), rgba(4,18,16,.96));
-      color:#ffffff;
-      display:grid;
-      place-items:center;
-      box-shadow:
-        0 13px 28px rgba(0,0,0,.34),
-        0 0 0 1px rgba(0,223,130,.06) inset;
+      padding:0 0 110px;
       position:relative;
     }
 
-    .ac-header-btn svg{
-      width:20px;
-      height:20px;
-    }
-
-    .ac-avatar{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      display:grid;
-      place-items:center;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.60), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      box-shadow:
-        0 12px 24px rgba(0,223,130,.20),
-        inset 0 1px 0 rgba(255,255,255,.30);
-      font-size:15px;
-      font-weight:900;
-    }
-
-    /* =========================
-       WALLET CARD
-    ========================= */
-    .ac-wallet{
+    /* ── HERO CARD ── */
+    .vl-hero{
       position:relative;
       overflow:hidden;
-      border-radius:26px;
+      padding:52px 22px 28px;
       background:
-        radial-gradient(320px 180px at 95% 4%, rgba(90,140,255,.24), transparent 62%),
-        radial-gradient(260px 170px at 8% 0%, rgba(0,223,130,.28), transparent 62%),
-        radial-gradient(240px 150px at 90% 110%, rgba(246,196,83,.20), transparent 68%),
-        linear-gradient(135deg, rgba(236,255,248,.96), rgba(199,255,232,.92) 48%, rgba(185,236,255,.88));
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:
-        0 20px 44px rgba(0,0,0,.22),
-        0 0 0 1px rgba(0,223,130,.14) inset,
-        inset 0 1px 0 rgba(255,255,255,.72);
-      padding:16px;
+        radial-gradient(380px 220px at 95% 0%, rgba(255,255,255,.22), transparent 58%),
+        radial-gradient(280px 180px at 0% 100%, rgba(255,212,93,.22), transparent 54%),
+        linear-gradient(145deg,#ffb52e 0%,#f07aff 42%,#7d3cff 100%);
+      color:#fff;
     }
 
-    .ac-wallet::before{
+    .vl-hero::after{
       content:"";
       position:absolute;
       inset:0;
-      background:
-        linear-gradient(145deg, rgba(255,255,255,.48) 0%, rgba(255,255,255,.18) 27%, transparent 28%),
-        linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
       pointer-events:none;
+      background:linear-gradient(180deg, rgba(255,255,255,.18) 0%, transparent 40%);
     }
 
-    .ac-wallet-inner{
-      position:relative;
-      z-index:1;
-    }
+    .vl-hero > *{ position:relative; z-index:1; }
 
-    .ac-wallet-top{
+    /* back + settings row */
+    .vl-hero-topbar{
+      position:absolute;
+      top:14px;
+      left:14px;
+      right:14px;
+      z-index:2;
       display:flex;
+      align-items:center;
       justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
     }
 
-    .ac-wallet-label{
-      margin:0 0 8px;
-      color:rgba(3,24,20,.62);
-      font-size:12px;
-      font-weight:650;
-      line-height:1.1;
-    }
-
-    .ac-wallet-amount{
-      margin:0;
-      color:#031713;
-      font-size:31px;
-      line-height:1.05;
-      letter-spacing:-.055em;
-      font-weight:880;
-      text-shadow:none;
-    }
-
-    .ac-wallet-sub{
-      margin-top:10px;
-      display:flex;
-      align-items:center;
-      gap:6px;
-      color:#037e5d;
-      font-size:12px;
-      font-weight:760;
-    }
-
-    .ac-wallet-sub span{
-      color:rgba(3,24,20,.56);
-      font-weight:550;
-    }
-
-    .ac-vip-pill{
-      flex:0 0 auto;
-      min-width:74px;
+    .vl-ghost-btn{
+      width:38px;
       height:38px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      color:#05221b;
-      background:rgba(255,255,255,.45);
-      border:1px solid rgba(3,24,20,.10);
-      box-shadow:
-        0 10px 22px rgba(3,24,20,.10),
-        inset 0 1px 0 rgba(255,255,255,.55);
-      font-size:12px;
-      font-weight:850;
-      white-space:nowrap;
-    }
-
-    .ac-vip-pill::before{
-      content:"";
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:#047857;
-      box-shadow:0 0 0 4px rgba(4,120,87,.12);
-    }
-
-    .ac-wallet-actions{
-      margin-top:18px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-    }
-
-    .ac-wallet-btn{
-      min-height:46px;
       border:0;
-      border-radius:17px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.22);
+      border:1px solid rgba(255,255,255,.32);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+      color:#fff;
+      display:grid;
+      place-items:center;
       cursor:pointer;
-      color:#05221b;
-      background:rgba(255,255,255,.38);
-      border:1px solid rgba(3,24,20,.08);
-      box-shadow:
-        0 10px 22px rgba(3,24,20,.08),
-        inset 0 1px 0 rgba(255,255,255,.45);
-      font-size:12px;
-      font-weight:820;
       transition:.18s ease;
     }
 
-    .ac-wallet-btn:hover{
-      transform:translateY(-1px);
-      background:rgba(255,255,255,.54);
-    }
+    .vl-ghost-btn:hover{ background:rgba(255,255,255,.32); }
+    .vl-ghost-btn svg{ width:19px; height:19px; }
 
-    .ac-wallet-btn svg{
-      width:18px;
-      height:18px;
-    }
-
-    .ac-wallet-btn.is-deposit svg{
-      color:#047857;
-    }
-
-    .ac-wallet-btn.is-withdraw svg{
-      color:#2563eb;
-    }
-
-    /* =========================
-       QUICK ACTIONS
-    ========================= */
-    .ac-quick{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:9px;
-    }
-
-    .ac-quick-item{
-      min-height:84px;
-      border-radius:20px;
-      padding:11px 7px;
-      background:
-        radial-gradient(circle at 80% 0%, var(--quick-glow), transparent 44%),
-        linear-gradient(180deg, rgba(18,34,35,.94), rgba(8,21,21,.96));
-      border:1px solid rgba(255,255,255,.085);
-      box-shadow:
-        0 14px 28px rgba(0,0,0,.24),
-        inset 0 1px 0 rgba(255,255,255,.055);
+    /* avatar */
+    .vl-profile-center{
       display:flex;
       flex-direction:column;
       align-items:center;
-      justify-content:center;
-      gap:8px;
+      gap:10px;
       text-align:center;
+    }
+
+    .vl-avatar-ring{
+      width:78px;
+      height:78px;
+      border-radius:999px;
+      padding:3px;
+      background:linear-gradient(135deg, rgba(255,255,255,.90), rgba(255,212,93,.80), rgba(255,255,255,.60));
+      box-shadow:0 14px 34px rgba(0,0,0,.18), 0 0 0 1px rgba(255,255,255,.28);
+    }
+
+    .vl-avatar-inner{
+      width:100%;
+      height:100%;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 30% 22%, rgba(255,255,255,.72), transparent 40%),
+        linear-gradient(135deg,#ffb52e,#d85cff,#7d3cff);
+      display:grid;
+      place-items:center;
+      font-size:24px;
+      font-weight:950;
+      color:#fff;
+      letter-spacing:-.03em;
+      text-shadow:0 4px 12px rgba(0,0,0,.18);
+    }
+
+    .vl-profile-name{
+      margin:0;
+      font-size:20px;
+      font-weight:950;
+      line-height:1.1;
+      letter-spacing:-.04em;
+      color:#fff;
+      text-shadow:0 6px 18px rgba(0,0,0,.14);
+    }
+
+    .vl-profile-id{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:26px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.26);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      color:rgba(255,255,255,.92);
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.12em;
+      cursor:pointer;
       transition:.18s ease;
     }
 
-    .ac-quick-item:hover{
-      transform:translateY(-1px);
+    .vl-profile-id:hover{ background:rgba(255,255,255,.28); }
+    .vl-profile-id svg{ width:12px; height:12px; opacity:.8; }
+
+    /* vip badge */
+    .vl-vip-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:5px;
+      min-height:24px;
+      padding:0 10px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#fffbe6,#ffe793);
+      border:1px solid rgba(255,181,46,.40);
+      color:#7a4a00;
+      font-size:9.5px;
+      font-weight:950;
+      letter-spacing:.06em;
+      text-transform:uppercase;
     }
 
-    .ac-quick-item:nth-child(1){
-      --quick-glow:rgba(0,223,130,.20);
-      --quick-accent:#00DF82;
+    /* ── BALANCE FLOAT CARD ── */
+    .vl-balance-card{
+      margin:0 14px;
+      margin-top:-28px;
+      position:relative;
+      z-index:10;
+      border-radius:26px;
+      background:
+        radial-gradient(300px 140px at 96% 0%, rgba(201,87,255,.08), transparent 58%),
+        rgba(255,255,255,.96);
+      border:1px solid rgba(255,255,255,.88);
+      box-shadow:0 22px 56px rgba(38,16,26,.12), inset 0 1px 0 rgba(255,255,255,.95);
+      padding:20px;
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
     }
 
-    .ac-quick-item:nth-child(2){
-      --quick-glow:rgba(52,213,255,.20);
-      --quick-accent:#34d5ff;
+    .vl-bal-label{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:6px;
     }
 
-    .ac-quick-item:nth-child(3){
-      --quick-glow:rgba(246,196,83,.20);
-      --quick-accent:#f6c453;
+    .vl-bal-label span{
+      color:var(--muted);
+      font-size:11.5px;
+      font-weight:750;
     }
 
-    .ac-quick-item:nth-child(4){
-      --quick-glow:rgba(167,139,250,.20);
-      --quick-accent:#a78bfa;
+    .vl-bal-eye{
+      width:30px;
+      height:30px;
+      border:0;
+      border-radius:999px;
+      background:rgba(125,60,255,.08);
+      color:var(--purple);
+      display:grid;
+      place-items:center;
+      cursor:pointer;
     }
 
-    .ac-quick-icon{
+    .vl-bal-eye svg{ width:16px; height:16px; }
+
+    .vl-bal-amount{
+      margin:0 0 16px;
+      font-size:34px;
+      font-weight:950;
+      letter-spacing:-.045em;
+      color:var(--ink);
+      line-height:1;
+    }
+
+    .vl-bal-amount.hidden{
+      letter-spacing:.1em;
+      color:#c8bece;
+    }
+
+    .vl-bal-split{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      padding-top:14px;
+      border-top:1px solid var(--line);
+    }
+
+    .vl-bal-item span{
+      display:block;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:750;
+      margin-bottom:5px;
+    }
+
+    .vl-bal-item strong{
+      display:block;
+      color:var(--ink);
+      font-size:12.5px;
+      font-weight:950;
+      letter-spacing:-.02em;
+    }
+
+    .vl-bal-divider{
+      width:1px;
+      background:var(--line);
+      margin:0 -5px;
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .vl-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin:14px 14px 0;
+    }
+
+    .vl-btn{
+      min-height:52px;
+      border:0;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:9px;
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:-.01em;
+      cursor:pointer;
+      transition:.18s ease;
+      text-decoration:none;
+    }
+
+    .vl-btn:hover{ transform:translateY(-2px); filter:brightness(1.04); }
+    .vl-btn svg{ width:17px; height:17px; }
+
+    .vl-btn-gold{
+      color:#4a2200;
+      background:linear-gradient(135deg,#ffb52e,#ffd45c);
+      box-shadow:0 14px 28px rgba(255,181,46,.36), inset 0 1px 0 rgba(255,255,255,.55);
+    }
+
+    .vl-btn-purple{
+      color:#fff;
+      background:linear-gradient(135deg,#7d3cff,#c957ff);
+      box-shadow:0 14px 28px rgba(125,60,255,.36), inset 0 1px 0 rgba(255,255,255,.18);
+    }
+
+    /* ── STATS ROW ── */
+    .vl-stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin:14px 14px 0;
+    }
+
+    .vl-stat{
+      border-radius:20px;
+      background:rgba(255,255,255,.88);
+      border:1px solid rgba(255,255,255,.80);
+      box-shadow:var(--shadow-soft);
+      padding:14px 12px;
+      text-align:center;
+    }
+
+    .vl-stat-icon{
+      width:36px;
+      height:36px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      margin:0 auto 8px;
+    }
+
+    .vl-stat-icon svg{ width:18px; height:18px; }
+    .vl-stat-icon.gold{ background:rgba(255,181,46,.14); color:#b87200; }
+    .vl-stat-icon.purple{ background:rgba(125,60,255,.12); color:var(--purple); }
+    .vl-stat-icon.green{ background:rgba(24,201,122,.12); color:#0d9155; }
+
+    .vl-stat strong{
+      display:block;
+      color:var(--ink);
+      font-size:13px;
+      font-weight:950;
+      line-height:1.15;
+      letter-spacing:-.02em;
+    }
+
+    .vl-stat span{
+      display:block;
+      color:var(--muted);
+      font-size:9.5px;
+      font-weight:750;
+      margin-top:3px;
+    }
+
+    /* ── BOOST BANNER ── */
+    .vl-boost{
+      margin:14px 14px 0;
+      border-radius:22px;
+      padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      background:
+        radial-gradient(200px 80px at 90% 50%, rgba(201,87,255,.30), transparent 62%),
+        linear-gradient(135deg,#fff8e0,#fff,#f8eaff);
+      border:1px solid rgba(201,87,255,.14);
+      box-shadow:var(--shadow-soft);
+    }
+
+    .vl-boost-left{ display:flex; align-items:center; gap:11px; min-width:0; }
+
+    .vl-boost-emoji{
+      width:42px;
+      height:42px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      background:linear-gradient(135deg,#ffd45c,#ffb52e);
+      box-shadow:0 10px 22px rgba(255,181,46,.28);
+      font-size:20px;
+    }
+
+    .vl-boost-copy h3{
+      margin:0;
+      color:var(--ink);
+      font-size:13px;
+      font-weight:900;
+      line-height:1.2;
+      letter-spacing:-.025em;
+    }
+
+    .vl-boost-copy p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:10.5px;
+      font-weight:700;
+      line-height:1.3;
+    }
+
+    .vl-boost-pill{
+      flex:0 0 auto;
+      min-height:28px;
+      padding:0 12px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      color:#fff;
+      background:linear-gradient(135deg,#7d3cff,#c957ff);
+      font-size:9.5px;
+      font-weight:950;
+      white-space:nowrap;
+      box-shadow:0 10px 22px rgba(125,60,255,.26);
+    }
+
+    /* ── SECTION HEADING ── */
+    .vl-section-label{
+      margin:22px 14px 10px;
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      color:#9a8a96;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:10.5px;
+    }
+
+    /* ── MENU CARD ── */
+    .vl-card{
+      margin:0 14px;
+      border-radius:24px;
+      background:rgba(255,255,255,.94);
+      border:1px solid rgba(255,255,255,.84);
+      box-shadow:var(--shadow-soft);
+      overflow:hidden;
+    }
+
+    .vl-card + .vl-card{ margin-top:10px; }
+
+    .vl-menu-row{
+      min-height:60px;
+      padding:0 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      border-bottom:1px solid var(--line);
+      transition:.15s ease;
+      text-decoration:none;
+      color:inherit;
+      cursor:pointer;
+    }
+
+    .vl-menu-row:last-child{ border-bottom:0; }
+    .vl-menu-row:hover{ background:rgba(125,60,255,.035); }
+
+    .vl-menu-left{
+      display:flex;
+      align-items:center;
+      gap:13px;
+      min-width:0;
+    }
+
+    .vl-menu-icon{
       width:38px;
       height:38px;
       border-radius:15px;
       display:grid;
       place-items:center;
-      color:var(--quick-accent);
-      background:rgba(255,255,255,.055);
-      border:1px solid rgba(255,255,255,.075);
-    }
-
-    .ac-quick-icon svg{
-      width:19px;
-      height:19px;
-    }
-
-    .ac-quick-label{
-      color:rgba(244,255,251,.88);
-      font-size:10.3px;
-      line-height:1.15;
-      font-weight:760;
-    }
-
-    /* =========================
-       ACCOUNT ID CARD
-    ========================= */
-    .ac-id-card{
-      margin-top:12px;
-      border-radius:21px;
-      background:
-        radial-gradient(180px 100px at 88% 8%, rgba(52,213,255,.11), transparent 64%),
-        linear-gradient(180deg, rgba(13,35,34,.94), rgba(6,20,19,.96));
-      border:1px solid rgba(255,255,255,.085);
-      box-shadow:
-        0 16px 32px rgba(0,0,0,.25),
-        0 0 0 1px rgba(255,255,255,.025) inset;
-      padding:13px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .ac-id-left{
-      min-width:0;
-      display:flex;
-      align-items:center;
-      gap:11px;
-    }
-
-    .ac-id-icon{
-      width:42px;
-      height:42px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 28% 18%, rgba(255,255,255,.70), transparent 34%),
-        linear-gradient(135deg, #34d5ff, #5a8cff);
-      box-shadow:
-        0 12px 24px rgba(0,0,0,.26),
-        inset 0 1px 0 rgba(255,255,255,.28);
       flex:0 0 auto;
     }
 
-    .ac-id-icon svg{
-      width:20px;
-      height:20px;
-    }
+    .vl-menu-icon svg{ width:18px; height:18px; }
 
-    .ac-id-meta{
-      min-width:0;
-    }
+    .vl-menu-icon.purple{ background:rgba(125,60,255,.10); color:var(--purple); }
+    .vl-menu-icon.gold{ background:rgba(255,181,46,.14); color:#b07000; }
+    .vl-menu-icon.green{ background:rgba(24,201,122,.12); color:#0d9155; }
+    .vl-menu-icon.blue{ background:rgba(56,132,255,.12); color:#2060dd; }
+    .vl-menu-icon.pink{ background:rgba(232,74,100,.10); color:#c02040; }
+    .vl-menu-icon.teal{ background:rgba(6,182,212,.10); color:#0682a0; }
 
-    .ac-id-meta p{
-      margin:0;
-      color:rgba(214,255,240,.50);
-      font-size:10.5px;
-      font-weight:560;
-    }
+    .vl-menu-copy{ min-width:0; }
 
-    .ac-id-meta strong{
-      display:block;
-      margin-top:5px;
-      color:#ffffff;
-      font-size:13px;
+    .vl-menu-title{
+      font-size:14px;
       font-weight:800;
-      letter-spacing:-.01em;
-    }
-
-    .ac-copy-btn{
-      min-height:36px;
-      border:0;
-      border-radius:999px;
-      padding:0 13px;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.50), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      font-size:11px;
-      font-weight:850;
-      cursor:pointer;
-      box-shadow:
-        0 12px 24px rgba(0,223,130,.16),
-        inset 0 1px 0 rgba(255,255,255,.30);
+      color:var(--ink);
+      line-height:1.1;
       white-space:nowrap;
-    }
-
-    /* =========================
-       SECTION / LIST
-    ========================= */
-    .ac-section{
-      margin-top:18px;
-    }
-
-    .ac-section-head{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:12px;
-      padding:0 2px;
-    }
-
-    .ac-section-title h2{
-      margin:0;
-      color:#ffffff;
-      font-size:17px;
-      line-height:1.15;
-      letter-spacing:-.03em;
-      font-weight:760;
-    }
-
-    .ac-section-title p{
-      margin:5px 0 0;
-      color:rgba(214,255,240,.56);
-      font-size:11px;
-      font-weight:450;
-    }
-
-    .ac-section-hint{
-      color:#8fffd3;
-      font-size:11.5px;
-      font-weight:750;
-      white-space:nowrap;
-    }
-
-    .ac-menu-list{
-      display:flex;
-      flex-direction:column;
-      gap:9px;
-    }
-
-    .ac-menu-item{
-      position:relative;
       overflow:hidden;
-      border-radius:20px;
-      background:
-        radial-gradient(180px 100px at 88% 8%, var(--menu-glow), transparent 64%),
-        linear-gradient(180deg, rgba(13,35,34,.94), rgba(6,20,19,.96));
-      border:1px solid rgba(255,255,255,.085);
-      box-shadow:
-        0 16px 32px rgba(0,0,0,.22),
-        0 0 0 1px rgba(255,255,255,.025) inset;
-      display:flex;
+      text-overflow:ellipsis;
+    }
+
+    .vl-menu-sub{
+      margin-top:3px;
+      color:var(--muted);
+      font-size:10.5px;
+      font-weight:700;
+    }
+
+    .vl-menu-badge{
+      min-height:20px;
+      padding:0 8px;
+      border-radius:999px;
+      background:rgba(125,60,255,.10);
+      color:var(--purple);
+      font-size:9.5px;
+      font-weight:950;
+      display:inline-flex;
       align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding:12px;
-      transition:.18s ease;
     }
 
-    .ac-menu-item:hover{
-      transform:translateY(-1px);
-      border-color:rgba(255,255,255,.13);
-    }
-
-    .ac-menu-item:nth-child(4n+1){
-      --menu-accent:#00DF82;
-      --menu-accent2:#58ffad;
-      --menu-glow:rgba(0,223,130,.12);
-    }
-
-    .ac-menu-item:nth-child(4n+2){
-      --menu-accent:#34d5ff;
-      --menu-accent2:#5a8cff;
-      --menu-glow:rgba(52,213,255,.12);
-    }
-
-    .ac-menu-item:nth-child(4n+3){
-      --menu-accent:#f6c453;
-      --menu-accent2:#fb923c;
-      --menu-glow:rgba(246,196,83,.12);
-    }
-
-    .ac-menu-item:nth-child(4n+4){
-      --menu-accent:#a78bfa;
-      --menu-accent2:#fb7185;
-      --menu-glow:rgba(167,139,250,.12);
-    }
-
-    .ac-menu-left{
-      display:flex;
-      align-items:center;
-      gap:11px;
-      min-width:0;
-    }
-
-    .ac-menu-icon{
-      width:42px;
-      height:42px;
-      border-radius:16px;
+    .vl-menu-arrow{
+      color:#d0c6ce;
+      flex:0 0 auto;
       display:grid;
       place-items:center;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 28% 18%, rgba(255,255,255,.70), transparent 34%),
-        linear-gradient(135deg, var(--menu-accent), var(--menu-accent2));
-      box-shadow:
-        0 12px 24px rgba(0,0,0,.23),
-        inset 0 1px 0 rgba(255,255,255,.28);
-      flex:0 0 auto;
     }
 
-    .ac-menu-icon svg{
-      width:20px;
-      height:20px;
-    }
+    .vl-menu-arrow svg{ width:17px; height:17px; }
 
-    .ac-menu-text{
-      min-width:0;
-    }
-
-    .ac-menu-text strong{
-      display:block;
-      color:#ffffff;
-      font-size:13.2px;
-      line-height:1.15;
-      font-weight:760;
-      letter-spacing:-.015em;
-      white-space:nowrap;
+    /* ── LOGOUT ── */
+    .vl-logout-wrap{
+      margin:10px 14px 0;
+      border-radius:22px;
       overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .ac-menu-text span{
-      display:block;
-      margin-top:5px;
-      color:rgba(214,255,240,.50);
-      font-size:10.8px;
-      font-weight:500;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .ac-menu-arrow{
-      color:rgba(214,255,240,.48);
-      flex:0 0 auto;
-    }
-
-    .ac-menu-arrow svg{
-      width:18px;
-      height:18px;
-    }
-
-    /* =========================
-       LOGOUT
-    ========================= */
-    .ac-logout{
-      margin-top:12px;
-      border-radius:20px;
-      background:
-        radial-gradient(180px 100px at 88% 8%, rgba(239,68,68,.13), transparent 64%),
-        linear-gradient(180deg, rgba(42,18,22,.92), rgba(18,8,10,.95));
-      border:1px solid rgba(239,68,68,.22);
-      box-shadow:0 16px 32px rgba(0,0,0,.25);
+      background:rgba(255,255,255,.90);
+      border:1px solid rgba(255,255,255,.80);
+      box-shadow:var(--shadow-soft);
       padding:10px;
     }
 
-    .ac-logout-btn{
+    .vl-logout-btn{
       width:100%;
-      min-height:46px;
+      min-height:50px;
       border:0;
-      border-radius:17px;
+      border-radius:16px;
       display:flex;
       align-items:center;
       justify-content:center;
       gap:9px;
-      color:#ffdce2;
-      background:rgba(255,255,255,.055);
-      border:1px solid rgba(239,68,68,.16);
-      font-size:12.5px;
+      color:#d12e4c;
+      background:rgba(239,68,68,.08);
+      border:1px solid rgba(239,68,68,.14);
+      cursor:pointer;
+      font-size:13.5px;
+      font-weight:900;
+      letter-spacing:-.01em;
+      transition:.18s ease;
+    }
+
+    .vl-logout-btn:hover{ background:rgba(239,68,68,.14); transform:translateY(-1px); }
+    .vl-logout-btn svg{ width:18px; height:18px; }
+
+    /* ── APP VERSION ── */
+    .vl-version{
+      text-align:center;
+      margin:18px 0 4px;
+      color:var(--muted);
+      font-size:10.5px;
+      font-weight:700;
+      opacity:.7;
+    }
+
+    /* ── TOAST ── */
+    .vl-toast{
+      position:fixed;
+      left:50%;
+      bottom:100px;
+      transform:translateX(-50%) translateY(10px);
+      z-index:10000;
+      min-height:40px;
+      padding:0 18px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#fff;
+      background:rgba(38,16,26,.88);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
+      font-size:12px;
       font-weight:850;
+      opacity:0;
+      pointer-events:none;
+      transition:.22s ease;
+      box-shadow:0 18px 40px rgba(38,16,26,.20);
+      white-space:nowrap;
+    }
+
+    .vl-toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    /* ── COMING SOON MODAL ── */
+    .ac-overlay{
+      position:fixed;
+      inset:0;
+      z-index:9999;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(38,16,26,.40);
+      backdrop-filter:blur(16px);
+      -webkit-backdrop-filter:blur(16px);
+    }
+
+    .ac-overlay.show{ display:flex; }
+
+    .ac-modal{
+      width:100%;
+      max-width:340px;
+      border-radius:28px;
+      background:
+        radial-gradient(260px 130px at 96% 0%, rgba(201,87,255,.12), transparent 62%),
+        rgba(255,255,255,.98);
+      border:1px solid rgba(255,255,255,.72);
+      box-shadow:0 32px 80px rgba(38,16,26,.22);
+      padding:22px;
+      text-align:center;
+      animation:acIn .24s ease both;
+      position:relative;
+    }
+
+    .ac-close{
+      position:absolute;
+      top:12px;
+      right:12px;
+      width:34px;
+      height:34px;
+      border-radius:13px;
+      border:1px solid var(--line);
+      background:#fbf8ff;
+      color:var(--ink);
+      display:grid;
+      place-items:center;
       cursor:pointer;
     }
 
-    .ac-logout-btn svg{
-      width:18px;
-      height:18px;
+    .ac-close svg{ width:17px; height:17px; }
+
+    .ac-icon{
+      width:60px;
+      height:60px;
+      border-radius:22px;
+      margin:0 auto 16px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,#ffb52e,#ffd45c 28%,#c957ff 68%,#7d3cff);
+      box-shadow:0 18px 36px rgba(125,60,255,.22);
+      color:#fff;
     }
 
-    /* =========================
-       BOTTOM NAV SPACER ONLY
-    ========================= */
-    .rb-bottom-spacer{
-      height:86px;
+    .ac-icon svg{ width:28px; height:28px; }
+
+    .ac-title{
+      margin:0;
+      font-size:20px;
+      font-weight:950;
+      letter-spacing:-.045em;
+      color:var(--ink);
     }
+
+    .ac-desc{
+      margin:9px 0 20px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      font-weight:650;
+    }
+
+    .ac-ok{
+      width:100%;
+      min-height:46px;
+      border:0;
+      border-radius:999px;
+      background:linear-gradient(135deg,#7d3cff,#c957ff);
+      color:#fff;
+      font-size:13px;
+      font-weight:950;
+      cursor:pointer;
+      box-shadow:0 14px 28px rgba(125,60,255,.26);
+    }
+
+    @keyframes acIn{
+      from{ opacity:0; transform:translateY(14px) scale(.96); }
+      to{ opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    /* ── BOTTOM NAV COMPAT ── */
+    .rb-bottom-spacer{ height:94px; }
+    .rb-bottom-nav{ background:rgba(255,255,255,.92)!important; border:1px solid rgba(38,16,26,.08)!important; box-shadow:0 -18px 40px rgba(38,16,26,.10), inset 0 1px 0 rgba(255,255,255,.84)!important; backdrop-filter:blur(22px)!important; -webkit-backdrop-filter:blur(22px)!important; }
+    .rb-bottom-nav__item{ color:#aa8f9f!important; }
+    .rb-bottom-nav__item:hover{ color:#2d1620!important; }
+    .rb-bottom-nav__item.is-active{ color:#111!important; text-shadow:none!important; }
+    .rb-bottom-nav__item.is-active .rb-bottom-nav__icon{ filter:drop-shadow(0 8px 12px rgba(125,60,255,.20)); }
 
     @media (max-width:370px){
-      .ac-phone{
-        padding-left:2px;
-        padding-right:2px;
-      }
-
-      .ac-greeting h1{
-        font-size:21px;
-        max-width:230px;
-      }
-
-      .ac-wallet{
-        padding:15px;
-      }
-
-      .ac-wallet-amount{
-        font-size:28px;
-      }
-
-      .ac-vip-pill{
-        min-width:68px;
-        height:36px;
-        font-size:11px;
-      }
-
-      .ac-quick{
-        gap:7px;
-      }
-
-      .ac-quick-item{
-        min-height:78px;
-        border-radius:18px;
-      }
-
-      .ac-quick-icon{
-        width:35px;
-        height:35px;
-        border-radius:14px;
-      }
-
-      .ac-quick-label{
-        font-size:9.7px;
-      }
-
-      .ac-menu-item{
-        padding:11px;
-      }
-
-      .ac-menu-icon{
-        width:39px;
-        height:39px;
-        border-radius:15px;
-      }
+      .vl-bal-amount{ font-size:28px; }
+      .vl-stats{ grid-template-columns:repeat(3,1fr); gap:8px; }
+      .vl-stat{ padding:12px 8px; }
+      .vl-stat strong{ font-size:11px; }
+      .vl-boost{ padding:12px 14px; }
     }
 
-    /* =========================
-   COMING SOON POPUP - RUBIK THEME
-========================= */
-.ac-coming-overlay{
-  position:fixed;
-  inset:0;
-  z-index:9999;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  background:rgba(2,8,8,.68);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-}
-
-.ac-coming-overlay.show{
-  display:flex;
-}
-
-.ac-coming-modal{
-  width:100%;
-  max-width:360px;
-  position:relative;
-  overflow:hidden;
-  border-radius:26px;
-  background:
-    radial-gradient(260px 150px at 100% 0%, rgba(0,223,130,.18), transparent 62%),
-    radial-gradient(220px 130px at 0% 100%, rgba(90,140,255,.15), transparent 60%),
-    linear-gradient(180deg, rgba(13,35,34,.98), rgba(3,15,15,.98));
-  border:1px solid rgba(255,255,255,.11);
-  box-shadow:
-    0 30px 80px rgba(0,0,0,.52),
-    0 0 0 1px rgba(0,223,130,.08) inset,
-    0 0 42px rgba(0,223,130,.10);
-  padding:20px;
-  animation:acComingIn .24s ease both;
-}
-
-.ac-coming-modal::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.10), transparent 34%),
-    radial-gradient(circle at 20% 0%, rgba(255,255,255,.08), transparent 34%);
-  pointer-events:none;
-}
-
-.ac-coming-icon{
-  position:relative;
-  z-index:1;
-  width:58px;
-  height:58px;
-  margin:0 auto 14px;
-  border-radius:21px;
-  display:grid;
-  place-items:center;
-  color:#06110e;
-  background:
-    radial-gradient(circle at 30% 0%, rgba(255,255,255,.62), transparent 34%),
-    linear-gradient(135deg, #00DF82, #72ffab);
-  box-shadow:
-    0 18px 34px rgba(0,223,130,.22),
-    inset 0 1px 0 rgba(255,255,255,.32);
-}
-
-.ac-coming-icon svg{
-  width:28px;
-  height:28px;
-}
-
-.ac-coming-title{
-  position:relative;
-  z-index:1;
-  margin:0;
-  color:#ffffff;
-  font-size:20px;
-  line-height:1.15;
-  font-weight:900;
-  text-align:center;
-  letter-spacing:-.04em;
-}
-
-.ac-coming-text{
-  position:relative;
-  z-index:1;
-  margin:9px auto 18px;
-  max-width:280px;
-  color:rgba(214,255,240,.68);
-  font-size:13px;
-  line-height:1.5;
-  font-weight:650;
-  text-align:center;
-}
-
-.ac-coming-actions{
-  position:relative;
-  z-index:1;
-  display:grid;
-  grid-template-columns:1fr;
-  gap:10px;
-}
-
-.ac-coming-btn{
-  width:100%;
-  min-height:46px;
-  border:0;
-  border-radius:999px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#06110e;
-  background:
-    radial-gradient(circle at 30% 0%, rgba(255,255,255,.55), transparent 34%),
-    linear-gradient(135deg, #00DF82, #72ffab);
-  box-shadow:
-    0 16px 32px rgba(0,223,130,.20),
-    inset 0 1px 0 rgba(255,255,255,.28);
-  font-size:13px;
-  font-weight:900;
-}
-
-.ac-coming-close{
-  position:absolute;
-  top:12px;
-  right:12px;
-  z-index:2;
-  width:34px;
-  height:34px;
-  border-radius:13px;
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.06);
-  color:#ffffff;
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-}
-
-.ac-coming-close svg{
-  width:18px;
-  height:18px;
-}
-
-@keyframes acComingIn{
-  from{
-    opacity:0;
-    transform:translateY(12px) scale(.96);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0) scale(1);
-  }
-}
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{ animation:none!important; transition:none!important; }
+    }
   </style>
 </head>
 
 <body>
-  <main class="ac-page">
-    <div class="ac-phone">
+  <main class="vl-page">
+    <div class="vl-phone">
 
-      {{-- HEADER --}}
-      <header class="ac-header">
-        <div class="ac-greeting">
-          <span>Hello, {{ $user->name ?? 'Investor' }}!</span>
-          <h1>Akun Rubik ✨</h1>
-        </div>
-
-        <div class="ac-header-actions">
-          <a href="{{ url('/saldo/rincian') }}" class="ac-header-btn" aria-label="Rincian Saldo">
+      {{-- ── HERO ── --}}
+      <div class="vl-hero">
+        <div class="vl-hero-topbar">
+          <button
+            type="button"
+            class="vl-ghost-btn"
+            onclick="history.length > 1 ? history.back() : location.href='/'"
+            aria-label="Kembali"
+          >
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16v10H4V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M8 11h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-              <path d="M16 13h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <a href="{{ route('saldo.rincian') }}" class="vl-ghost-btn" aria-label="Rincian saldo">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="1" fill="currentColor"/>
+              <circle cx="19" cy="12" r="1" fill="currentColor"/>
+              <circle cx="5" cy="12" r="1" fill="currentColor"/>
             </svg>
           </a>
+        </div>
 
-          <div class="ac-avatar" aria-hidden="true">
-            {{ strtoupper(substr($user->name ?? 'A', 0, 1)) }}
+        <div class="vl-profile-center">
+          <div class="vl-avatar-ring">
+            <div class="vl-avatar-inner">{{ $initials }}</div>
+          </div>
+
+          <h1 class="vl-profile-name">{{ $user->name ?? 'Velora Member' }}</h1>
+
+          <button
+            type="button"
+            class="vl-profile-id"
+            id="copyIdBtn"
+            data-real-id="{{ $user->id }}"
+            id-text="{{ $maskedIdView }}"
+            aria-label="Salin ID member"
+          >
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span id="userIdDisplay">{{ $maskedIdView }}</span>
+          </button>
+
+          <div class="vl-vip-badge">
+            ⭐ VIP {{ $user->vip_level ?? 0 }} Member
           </div>
         </div>
-      </header>
+      </div>
 
-      {{-- WALLET --}}
-      <section class="ac-wallet">
-        <div class="ac-wallet-inner">
-          <div class="ac-wallet-top">
-            <div>
-              <p class="ac-wallet-label">Your Wallet Balance</p>
-              <h2 class="ac-wallet-amount">Rp {{ number_format($totalAset, 0, ',', '.') }}</h2>
+      {{-- ── BALANCE CARD ── --}}
+      <div class="vl-balance-card">
+        <div class="vl-bal-label">
+          <span>Total Aset</span>
+          <button type="button" class="vl-bal-eye" id="toggleAmount" aria-label="Tampilkan saldo">
+            <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
+              <path d="M3 12s3.4-6 9-6 9 6 9 6-3.4 6-9 6-9-6-9-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </button>
+        </div>
 
-              <div class="ac-wallet-sub">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M15 6h5v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                Rp {{ number_format($saldoUtama, 0, ',', '.') }}
-                <span>Saldo utama</span>
-              </div>
+        <h2
+          class="vl-bal-amount hidden"
+          id="amountText"
+          data-amount="Rp {{ number_format($totalAset, 0, ',', '.') }}"
+        >••••••••</h2>
+
+        <div class="vl-bal-split">
+          <div class="vl-bal-item">
+            <span>Saldo Utama</span>
+            <strong>Rp {{ number_format($saldoUtama, 0, ',', '.') }}</strong>
+          </div>
+          <div class="vl-bal-divider"></div>
+          <div class="vl-bal-item" style="padding-left:14px;">
+            <span>Saldo Penarikan</span>
+            <strong>Rp {{ number_format($saldoPenarikan, 0, ',', '.') }}</strong>
+          </div>
+        </div>
+      </div>
+
+      {{-- ── ACTION BUTTONS ── --}}
+      <div class="vl-actions">
+        <a href="/deposit" class="vl-btn vl-btn-gold">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+            <path d="M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+          </svg>
+          Deposit
+        </a>
+
+        <a href="/ui/withdrawals" class="vl-btn vl-btn-purple">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 4v13" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
+            <path d="M7 12l5 5 5-5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Withdraw
+        </a>
+      </div>
+
+      {{-- ── STATS ── --}}
+      <div class="vl-stats">
+        <div class="vl-stat">
+          <div class="vl-stat-icon gold">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <strong>{{ $interestRate }}%</strong>
+          <span>Bunga p.a.</span>
+        </div>
+
+        <div class="vl-stat">
+          <div class="vl-stat-icon purple">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M8 7V6a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M4 8h16a1.5 1.5 0 0 1 1.5 1.5v8A2.5 2.5 0 0 1 19 20H5a2.5 2.5 0 0 1-2.5-2.5v-8A1.5 1.5 0 0 1 4 8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <strong>VIP {{ $user->vip_level ?? 0 }}</strong>
+          <span>Level</span>
+        </div>
+
+        <div class="vl-stat">
+          <div class="vl-stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <strong>Aktif</strong>
+          <span>Status</span>
+        </div>
+      </div>
+
+      {{-- ── BOOST BANNER ── --}}
+      <a href="{{ route('investasi.index') }}" class="vl-boost">
+        <div class="vl-boost-left">
+          <div class="vl-boost-emoji">💰</div>
+          <div class="vl-boost-copy">
+            <h3>Boost bunga kamu</h3>
+            <p>Investasi Velora untuk yield lebih tinggi</p>
+          </div>
+        </div>
+        <div class="vl-boost-pill">Up to 15%</div>
+      </a>
+
+      {{-- ── MENU AKUN ── --}}
+      <div class="vl-section-label">Akun Saya</div>
+
+      <div class="vl-card">
+        <a href="{{ route('saldo.rincian') }}" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon purple">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+              </svg>
             </div>
-
-            <div class="ac-vip-pill">
-              VIP {{ $user->vip_level ?? 0 }}
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Detail Akun</div>
+              <div class="vl-menu-sub">Lihat info lengkap profil</div>
             </div>
           </div>
+          <div class="vl-menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </a>
 
-          <div class="ac-wallet-actions">
-            <a href="/deposit" class="ac-wallet-btn is-deposit">
+        <a href="{{ route('investasi.index') }}" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon gold">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Portofolio</div>
+              <div class="vl-menu-sub">Investasi aktif kamu</div>
+            </div>
+          </div>
+          <div class="vl-menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </a>
+
+        <a href="{{ route('referral.index') }}" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon green">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Referral</div>
+              <div class="vl-menu-sub">Ajak teman, raih komisi</div>
+            </div>
+          </div>
+          <div class="vl-menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </a>
+      </div>
+
+      {{-- ── MENU TRANSAKSI ── --}}
+      <div class="vl-section-label">Transaksi</div>
+
+      <div class="vl-card">
+        <a href="/deposit/history" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon blue">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M12 5v14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
                 <path d="M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
               </svg>
-              Deposit
-            </a>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Riwayat Deposit</div>
+              <div class="vl-menu-sub">Semua transaksi masuk</div>
+            </div>
+          </div>
+          <div class="vl-menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </a>
 
-            <a href="/ui/withdrawals" class="ac-wallet-btn is-withdraw">
+        <a href="/withdraw/history" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon purple">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M12 4v13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
                 <path d="M7 12l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              Withdraw
-            </a>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Riwayat Penarikan</div>
+              <div class="vl-menu-sub">Semua transaksi keluar</div>
+            </div>
           </div>
-        </div>
-      </section>
-
-      {{-- QUICK ACTION --}}
-      <section class="ac-quick">
-        <a href="{{ route('investasi.index') }}" class="ac-quick-item">
-          <div class="ac-quick-icon">
+          <div class="vl-menu-arrow">
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 19V5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M8 17V9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M12 17V7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M16 17v-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M20 17V4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <div class="ac-quick-label">Investasi</div>
         </a>
 
-        <a href="/ui/payout-accounts" class="ac-quick-item">
-          <div class="ac-quick-icon">
+        <a href="/ui/payout-accounts" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon teal">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="2.5" y="6" width="19" height="12" rx="2.2" stroke="currentColor" stroke-width="2"/>
+                <path d="M2.5 10h19" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Rekening Penarikan</div>
+              <div class="vl-menu-sub">Kelola rekening bank</div>
+            </div>
+          </div>
+          <div class="vl-menu-arrow">
             <svg viewBox="0 0 24 24" fill="none">
-              <rect x="2.5" y="6" width="19" height="12" rx="2.2" stroke="currentColor" stroke-width="2"/>
-              <path d="M2.5 10h19" stroke="currentColor" stroke-width="2"/>
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <div class="ac-quick-label">Rekening</div>
+        </a>
+      </div>
+
+      {{-- ── MENU LAINNYA ── --}}
+      <div class="vl-section-label">Lainnya</div>
+
+      <div class="vl-card">
+        <a href="https://t.me/veloracompanycs" target="_blank" rel="noopener noreferrer" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon green">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M8 10h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Layanan CS</div>
+              <div class="vl-menu-sub">Chat support via Telegram</div>
+            </div>
+          </div>
+          <div class="vl-menu-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
         </a>
 
-        <a href="{{ route('saldo.rincian') }}" class="ac-quick-item">
-          <div class="ac-quick-icon">
+        <a href="/tentang" class="vl-menu-row">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon blue">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                <path d="M12 10a2 2 0 0 1 2 2c0 1-1 1.5-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Tentang Velora</div>
+              <div class="vl-menu-sub">Versi 1.0 · Kebijakan privasi</div>
+            </div>
+          </div>
+          <div class="vl-menu-arrow">
             <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16v10H4V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M8 11h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-              <path d="M16 13h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </div>
-          <div class="ac-quick-label">Saldo</div>
         </a>
 
-        <a href="https://t.me/rubikcompany" target="_blank" rel="noopener" class="ac-quick-item">
-          <div class="ac-quick-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M22 2 11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M22 2 15 22 11 13 2 9 22 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <a href="javascript:void(0)" class="vl-menu-row" id="comingSoonBtn">
+          <div class="vl-menu-left">
+            <div class="vl-menu-icon pink">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 21h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="vl-menu-copy">
+              <div class="vl-menu-title">Unduh Aplikasi</div>
+              <div class="vl-menu-sub">Segera hadir di App Store & Play</div>
+            </div>
           </div>
-          <div class="ac-quick-label">Grup</div>
+          <div class="vl-menu-badge">Soon</div>
         </a>
-      </section>
+      </div>
 
-      {{-- ID AKUN --}}
-      <section class="ac-id-card">
-        <div class="ac-id-left">
-          <div class="ac-id-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </div>
-
-          <div class="ac-id-meta">
-            <p>ID Member</p>
-            <strong id="userIdText">{{ $user->id }}</strong>
-          </div>
-        </div>
-
-        <button type="button" class="ac-copy-btn" id="copyIdBtn">Salin</button>
-      </section>
-
-      {{-- MENU --}}
-      <section class="ac-section">
-        <div class="ac-section-head">
-          <div class="ac-section-title">
-            <h2>Menu Akun</h2>
-            <p>Kelola aktivitas dan informasi akun Anda.</p>
-          </div>
-
-          <div class="ac-section-hint">Rubik</div>
-        </div>
-
-        <div class="ac-menu-list">
-          <a href="/deposit/history" class="ac-menu-item">
-            <div class="ac-menu-left">
-              <div class="ac-menu-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                </svg>
-              </div>
-              <div class="ac-menu-text">
-                <strong>Riwayat Deposit</strong>
-                <span>Lihat transaksi pengisian saldo</span>
-              </div>
-            </div>
-            <div class="ac-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </a>
-
-          <a href="/withdraw/history" class="ac-menu-item">
-            <div class="ac-menu-left">
-              <div class="ac-menu-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 4v13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                  <path d="M7 12l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </div>
-              <div class="ac-menu-text">
-                <strong>Riwayat Penarikan</strong>
-                <span>Status dan catatan withdraw</span>
-              </div>
-            </div>
-            <div class="ac-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </a>
-
-         <a href="https://t.me/rubikcompanycs" target="_blank" rel="noopener noreferrer" class="ac-menu-item">
-            <div class="ac-menu-left">
-              <div class="ac-menu-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                  <path d="M8 10h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M8 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="ac-menu-text">
-                <strong>Layanan CS</strong>
-                <span>Bantuan dan informasi layanan</span>
-              </div>
-            </div>
-            <div class="ac-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </a>
-
-          <a href="/tentang" class="ac-menu-item">
-            <div class="ac-menu-left">
-              <div class="ac-menu-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                  <path d="M12 16h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                  <path d="M12 10a2 2 0 0 1 2 2c0 1-1 1.5-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="ac-menu-text">
-                <strong>Tentang Rubik</strong>
-                <span>Informasi aplikasi dan layanan</span>
-              </div>
-            </div>
-            <div class="ac-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </a>
-
-          <a href="javascript:void(0)" class="ac-menu-item" id="comingSoonBtn">
-            <div class="ac-menu-left">
-              <div class="ac-menu-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 3v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                  <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M5 21h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                </svg>
-              </div>
-              <div class="ac-menu-text">
-                <strong>Unduh Aplikasi</strong>
-                <span>Download versi aplikasi Rubik</span>
-              </div>
-            </div>
-            <div class="ac-menu-arrow">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      {{-- LOGOUT --}}
-      <section class="ac-logout">
+      {{-- ── LOGOUT ── --}}
+      <div class="vl-logout-wrap">
         <form action="/logout" method="POST" style="margin:0;">
           @csrf
-          <button class="ac-logout-btn" type="submit">
+          <button class="vl-logout-btn" type="submit">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1197,114 +1117,116 @@
             Keluar dari Akun
           </button>
         </form>
-      </section>
+      </div>
+
+      <div class="vl-version">Velora Finance v1.0 · &copy; 2025</div>
 
       <div class="rb-bottom-spacer"></div>
     </div>
   </main>
-<div class="ac-coming-overlay" id="comingSoonOverlay" role="dialog" aria-modal="true">
-  <div class="ac-coming-modal">
-    <button type="button" class="ac-coming-close" id="comingSoonClose" aria-label="Tutup">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M18 6 6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-        <path d="M6 6 18 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-      </svg>
-    </button>
 
-    <div class="ac-coming-icon">
-      <svg viewBox="0 0 24 24" fill="none">
-        <path d="M12 3v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-        <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M5 21h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-      </svg>
-    </div>
+  <div class="vl-toast" id="copyToast">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    ID member tersalin
+  </div>
 
-    <h3 class="ac-coming-title">Fitur Mendatang</h3>
-
-    <p class="ac-coming-text">
-      Fitur unduh aplikasi Rubik sedang kami siapkan dan akan segera tersedia.
-    </p>
-
-    <div class="ac-coming-actions">
-      <button type="button" class="ac-coming-btn" id="comingSoonOk">
-        Oke, Mengerti
+  <div class="ac-overlay" id="comingSoonOverlay" role="dialog" aria-modal="true">
+    <div class="ac-modal">
+      <button type="button" class="ac-close" id="comingSoonClose" aria-label="Tutup">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
       </button>
+
+      <div class="ac-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 3v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 21h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <h3 class="ac-title">Fitur Mendatang</h3>
+      <p class="ac-desc">Aplikasi Velora versi mobile sedang disiapkan dan akan segera tersedia di App Store & Google Play.</p>
+      <button type="button" class="ac-ok" id="comingSoonOk">Oke, Mengerti</button>
     </div>
   </div>
-</div>
+
   @include('partials.bottom-nav')
 
   <script>
-    // Copy ID member
     (function(){
-      const btn = document.getElementById('copyIdBtn');
-      const txt = document.getElementById('userIdText');
+      const copyBtn   = document.getElementById('copyIdBtn');
+      const toast     = document.getElementById('copyToast');
+      const amountBtn = document.getElementById('toggleAmount');
+      const amountEl  = document.getElementById('amountText');
+      const eyeIcon   = document.getElementById('eyeIcon');
+      let shown = false;
 
-      if(!btn || !txt) return;
+      function showToast(msg){
+        if(!toast) return;
+        toast.querySelector('span') && (toast.lastChild.textContent = ' ' + msg);
+        toast.classList.add('show');
+        clearTimeout(window.__vlToast);
+        window.__vlToast = setTimeout(() => toast.classList.remove('show'), 1400);
+      }
 
-      btn.addEventListener('click', async function(){
-        const val = (txt.textContent || '').trim();
-        const original = btn.textContent;
-
-        try{
-          await navigator.clipboard.writeText(val);
-          btn.textContent = 'Tersalin';
-          setTimeout(() => {
-            btn.textContent = original;
-          }, 1200);
-        }catch(e){
-          const ta = document.createElement('textarea');
-          ta.value = val;
-          document.body.appendChild(ta);
-          ta.select();
+      async function copyText(val){
+        try{ await navigator.clipboard.writeText(val); }
+        catch(e){
+          const t = document.createElement('textarea');
+          t.value = val;
+          t.style.cssText = 'position:fixed;opacity:0;';
+          document.body.appendChild(t);
+          t.select();
           document.execCommand('copy');
-          ta.remove();
-
-          btn.textContent = 'Tersalin';
-          setTimeout(() => {
-            btn.textContent = original;
-          }, 1200);
+          t.remove();
         }
-      });
+      }
+
+      if(copyBtn){
+        copyBtn.addEventListener('click', async function(){
+          await copyText(this.dataset.realId || this.textContent.trim());
+          showToast('ID member tersalin');
+        });
+      }
+
+      if(amountBtn && amountEl){
+        amountBtn.addEventListener('click', function(){
+          shown = !shown;
+          if(shown){
+            amountEl.textContent = amountEl.dataset.amount;
+            amountEl.classList.remove('hidden');
+            eyeIcon.innerHTML = `
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M1 1l22 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+          } else {
+            amountEl.textContent = '••••••••';
+            amountEl.classList.add('hidden');
+            eyeIcon.innerHTML = `
+              <path d="M3 12s3.4-6 9-6 9 6 9 6-3.4 6-9 6-9-6-9-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>`;
+          }
+        });
+      }
+
+      const btn     = document.getElementById('comingSoonBtn');
+      const overlay = document.getElementById('comingSoonOverlay');
+      const closeBtn= document.getElementById('comingSoonClose');
+      const okBtn   = document.getElementById('comingSoonOk');
+
+      function openPopup(e){ if(e) e.preventDefault(); overlay.classList.add('show'); document.body.style.overflow='hidden'; }
+      function closePopup(){ overlay.classList.remove('show'); document.body.style.overflow=''; }
+
+      if(btn) btn.addEventListener('click', openPopup);
+      if(closeBtn) closeBtn.addEventListener('click', closePopup);
+      if(okBtn) okBtn.addEventListener('click', closePopup);
+      if(overlay) overlay.addEventListener('click', e => e.target === overlay && closePopup());
+      document.addEventListener('keydown', e => e.key === 'Escape' && overlay.classList.contains('show') && closePopup());
     })();
   </script>
-<script>
-  (function(){
-    const btn = document.getElementById('comingSoonBtn');
-    const overlay = document.getElementById('comingSoonOverlay');
-    const closeBtn = document.getElementById('comingSoonClose');
-    const okBtn = document.getElementById('comingSoonOk');
-
-    if(!btn || !overlay) return;
-
-    function openPopup(e){
-      if(e) e.preventDefault();
-      overlay.classList.add('show');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closePopup(){
-      overlay.classList.remove('show');
-      document.body.style.overflow = '';
-    }
-
-    btn.addEventListener('click', openPopup);
-
-    if(closeBtn) closeBtn.addEventListener('click', closePopup);
-    if(okBtn) okBtn.addEventListener('click', closePopup);
-
-    overlay.addEventListener('click', function(e){
-      if(e.target === overlay){
-        closePopup();
-      }
-    });
-
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape' && overlay.classList.contains('show')){
-        closePopup();
-      }
-    });
-  })();
-</script>
 </body>
 </html>

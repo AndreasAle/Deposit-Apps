@@ -1,4 +1,4 @@
-{{-- Rubik Premium — Investasi Saya (NO @extends) --}}
+{{-- Velora Premium Light — Referral (NO @extends) --}}
  @include('partials.anti-inspect')
 @php
   $user = $user ?? auth()->user();
@@ -20,8 +20,8 @@
       . '?text=' . urlencode($referralLink)
       . '&size=220'
       . '&margin=1'
-      . '&dark=0B2E2A'
-      . '&light=E9FFF5';
+      . '&dark=3A0712'
+      . '&light=FFF7FD';
 @endphp
 
 @if(!$user)
@@ -32,7 +32,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Referral | Rubik Company</title>
+  <title>Referral | Velora Finance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,1353 +41,183 @@
 
   <style>
     :root{
-      --rf-bg:#030F0F;
-      --rf-bg2:#061817;
-      --rf-card:#081a18;
-      --rf-text:#f7fffb;
-      --rf-soft:#dffcf1;
-      --rf-muted:#9bb9ad;
-      --rf-muted2:#6f9084;
-      --rf-border:rgba(255,255,255,.09);
-
-      --rf-green:#00DF82;
-      --rf-cyan:#34d5ff;
-      --rf-blue:#5a8cff;
-      --rf-amber:#f6c453;
-      --rf-rose:#fb7185;
-
-      --rf-shadow:0 28px 70px rgba(0,0,0,.46);
-      --rf-shadow-soft:0 16px 34px rgba(0,0,0,.24);
-      --rf-radius:24px;
-      --rf-radius-sm:18px;
+      --rf-bg:#f7f2fb;
+      --rf-bg2:#fff8fc;
+      --rf-paper:#ffffff;
+      --rf-paper2:#fffafd;
+      --rf-text:#2b0b16;
+      --rf-maroon:#3a0712;
+      --rf-soft:#6f5363;
+      --rf-muted:#9c8190;
+      --rf-border:rgba(43,11,22,.09);
+      --rf-border2:rgba(43,11,22,.14);
+      --rf-purple:#8f57ff;
+      --rf-violet:#d96bff;
+      --rf-gold:#f5af2a;
+      --rf-gold2:#ffd46d;
+      --rf-rose:#ff6fa8;
+      --rf-green:#20b873;
+      --rf-gradient:linear-gradient(135deg,#f5af2a 0%,#ffd46d 25%,#d96bff 60%,#8f57ff 100%);
+      --rf-gradient-soft:linear-gradient(135deg,#fff6d8 0%,#fff 32%,#fce6ff 64%,#f1e9ff 100%);
+      --rf-shadow:0 24px 60px rgba(88,43,145,.14);
+      --rf-shadow-soft:0 14px 34px rgba(43,11,22,.075);
     }
 
-    *{
-      box-sizing:border-box;
-    }
-
-    html,
-    body{
-      min-height:100%;
-    }
-
+    *{box-sizing:border-box;}
+    html,body{min-height:100%;}
     body{
       margin:0;
-      font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       color:var(--rf-text);
       background:
-        radial-gradient(760px 420px at 14% -2%, rgba(0,223,130,.18), transparent 58%),
-        radial-gradient(620px 360px at 90% 10%, rgba(90,140,255,.18), transparent 62%),
-        radial-gradient(520px 300px at 55% 100%, rgba(246,196,83,.10), transparent 62%),
-        linear-gradient(180deg, #071f1a 0%, #030f0f 48%, #020807 100%);
+        radial-gradient(680px 360px at 50% -150px,rgba(245,175,42,.23),transparent 64%),
+        radial-gradient(520px 340px at 100% 4%,rgba(217,107,255,.18),transparent 62%),
+        radial-gradient(520px 330px at -12% 34%,rgba(143,87,255,.13),transparent 58%),
+        linear-gradient(180deg,#fff 0%,#f8f3fa 45%,#f0e9f7 100%);
       overflow-x:hidden;
       -webkit-tap-highlight-color:transparent;
     }
-
     body::before{
       content:"";
       position:fixed;
       inset:0;
       pointer-events:none;
       background:
-        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
-      background-size:38px 38px;
-      mask-image:linear-gradient(180deg, rgba(0,0,0,.65), transparent 76%);
-      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.65), transparent 76%);
+        linear-gradient(rgba(43,11,22,.024) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(43,11,22,.016) 1px,transparent 1px);
+      background-size:32px 32px;
       opacity:.46;
+      mask-image:linear-gradient(180deg,rgba(0,0,0,.44),transparent 76%);
+      -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.44),transparent 76%);
       z-index:0;
     }
-
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    button,
-    input{
-      font-family:inherit;
-    }
-
-    .rf-page{
-      width:100%;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      padding:14px 10px 0;
-      position:relative;
-      z-index:1;
-    }
-
-    .rf-phone{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      position:relative;
-      padding:8px 4px 96px;
-    }
-
-    /* =========================
-       HEADER
-    ========================= */
-    .rf-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-      padding:0 2px;
-    }
-
-    .rf-brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width:0;
-    }
-
-    .rf-logo-card{
-      width:48px;
-      height:48px;
-      border-radius:14px;
-      background:
-        radial-gradient(circle at 30% 10%, rgba(255,255,255,.98), rgba(224,255,242,.90));
-      border:1px solid rgba(0,223,130,.24);
-      box-shadow:
-        0 12px 28px rgba(0,0,0,.30),
-        0 0 0 1px rgba(255,255,255,.08) inset,
-        0 0 28px rgba(0,223,130,.12);
-      display:grid;
-      place-items:center;
-      flex:0 0 auto;
-      overflow:hidden;
-    }
-
-    .rf-logo-card img{
-      width:42px;
-      height:42px;
-      object-fit:contain;
-      display:block;
-    }
-
-    .rf-title{
-      min-width:0;
-    }
-
-    .rf-title span{
-      display:block;
-      margin-bottom:4px;
-      color:rgba(214,255,240,.58);
-      font-size:11px;
-      line-height:1;
-      font-weight:600;
-      letter-spacing:.02em;
-    }
-
-    .rf-title h1{
-      margin:0;
-      font-size:23px;
-      line-height:1;
-      font-weight:850;
-      letter-spacing:-.045em;
-      color:#ffffff;
-      white-space:nowrap;
-    }
-
-    .rf-header-actions{
-      display:flex;
-      align-items:center;
-      gap:9px;
-      flex:0 0 auto;
-    }
-
-    .rf-header-btn{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(circle at 32% 18%, rgba(255,255,255,.18), transparent 34%),
-        linear-gradient(180deg, rgba(10,42,35,.96), rgba(4,18,16,.96));
-      color:#ffffff;
-      display:grid;
-      place-items:center;
-      box-shadow:
-        0 13px 28px rgba(0,0,0,.34),
-        0 0 0 1px rgba(0,223,130,.06) inset;
-      position:relative;
-      transition:.18s ease;
-    }
-
-    .rf-header-btn:hover{
-      transform:translateY(-1px);
-      border-color:rgba(0,223,130,.22);
-    }
-
-    .rf-header-btn svg{
-      width:20px;
-      height:20px;
-    }
-
-    /* =========================
-       HERO
-    ========================= */
-    .rf-hero{
-      position:relative;
-      overflow:hidden;
-      border-radius:26px;
-      background:
-        radial-gradient(320px 180px at 95% 4%, rgba(90,140,255,.24), transparent 62%),
-        radial-gradient(260px 170px at 8% 0%, rgba(0,223,130,.28), transparent 62%),
-        radial-gradient(240px 150px at 90% 110%, rgba(246,196,83,.20), transparent 68%),
-        linear-gradient(135deg, rgba(236,255,248,.96), rgba(199,255,232,.92) 48%, rgba(185,236,255,.88));
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:
-        0 20px 44px rgba(0,0,0,.22),
-        0 0 0 1px rgba(0,223,130,.14) inset,
-        inset 0 1px 0 rgba(255,255,255,.72);
-      padding:16px;
-      animation:rfFadeUp .42s ease both;
-    }
-
-    .rf-hero::before{
+    body::after{
       content:"";
-      position:absolute;
-      inset:0;
-      background:
-        linear-gradient(145deg, rgba(255,255,255,.48) 0%, rgba(255,255,255,.18) 27%, transparent 28%),
-        linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
-      pointer-events:none;
-    }
-
-    .rf-hero::after{
-      content:"";
-      position:absolute;
-      right:-58px;
-      bottom:-64px;
-      width:184px;
-      height:184px;
-      border-radius:50%;
-      background:rgba(0,223,130,.18);
-      filter:blur(4px);
-      pointer-events:none;
-      animation:rfPulse 5.6s ease-in-out infinite;
-    }
-
-    .rf-hero-inner{
-      position:relative;
-      z-index:1;
-    }
-
-    .rf-hero-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-    }
-
-    .rf-hero-label{
-      margin:0 0 8px;
-      color:rgba(3,24,20,.62);
-      font-size:12px;
-      font-weight:650;
-      line-height:1.1;
-    }
-
-    .rf-hero-title{
-      margin:0;
-      color:#031713;
-      font-size:28px;
-      line-height:1.04;
-      letter-spacing:-.055em;
-      font-weight:900;
-      text-shadow:none;
-    }
-
-    .rf-hero-sub{
-      margin-top:10px;
-      display:flex;
-      align-items:center;
-      gap:6px;
-      color:#037e5d;
-      font-size:12px;
-      font-weight:760;
-    }
-
-    .rf-hero-sub span{
-      color:rgba(3,24,20,.56);
-      font-weight:550;
-    }
-
-    .rf-rate-pill{
-      flex:0 0 auto;
-      min-width:78px;
-      height:38px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      color:#05221b;
-      background:rgba(255,255,255,.45);
-      border:1px solid rgba(3,24,20,.10);
-      box-shadow:
-        0 10px 22px rgba(3,24,20,.10),
-        inset 0 1px 0 rgba(255,255,255,.55);
-      font-size:12px;
-      font-weight:850;
-      white-space:nowrap;
-    }
-
-    .rf-rate-pill svg{
-      width:15px;
-      height:15px;
-      color:#047857;
-    }
-
-    .rf-code-box{
-      margin-top:18px;
-      border-radius:20px;
-      padding:12px;
-      background:rgba(255,255,255,.38);
-      border:1px solid rgba(3,24,20,.08);
-      box-shadow:
-        0 10px 22px rgba(3,24,20,.08),
-        inset 0 1px 0 rgba(255,255,255,.45);
-    }
-
-    .rf-code-label{
-      margin:0 0 8px;
-      color:rgba(3,24,20,.58);
-      font-size:10.5px;
-      line-height:1;
-      font-weight:760;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
-
-    .rf-code-row{
-      display:grid;
-      grid-template-columns:minmax(0, 1fr) auto;
-      gap:8px;
-      align-items:center;
-    }
-
-    .rf-code-input{
-      width:100%;
-      min-height:44px;
-      border:1px solid rgba(3,24,20,.10);
-      outline:none;
-      border-radius:16px;
-      padding:0 13px;
-      color:#031713;
-      background:rgba(255,255,255,.58);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
-      font-size:14px;
-      font-weight:900;
-      letter-spacing:.10em;
-    }
-
-    .rf-copy-btn{
-      min-height:44px;
-      border:0;
-      border-radius:16px;
-      padding:0 15px;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.50), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      font-size:12px;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:
-        0 12px 24px rgba(0,223,130,.16),
-        inset 0 1px 0 rgba(255,255,255,.30);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
-      transition:.18s ease;
-      position:relative;
-      overflow:hidden;
-    }
-
-    .rf-copy-btn:hover{
-      transform:translateY(-1px);
-      filter:brightness(1.03);
-    }
-
-    .rf-copy-btn::after{
-      content:"";
-      position:absolute;
-      top:0;
-      left:-120%;
-      width:60%;
-      height:100%;
-      background:linear-gradient(to right, transparent, rgba(255,255,255,.36), transparent);
-      transform:skewX(-18deg);
-      animation:rfShimmer 3.2s infinite;
-      pointer-events:none;
-    }
-
-    .rf-copy-btn svg{
-      width:16px;
-      height:16px;
-      position:relative;
-      z-index:1;
-    }
-
-    .rf-copy-btn span{
-      position:relative;
-      z-index:1;
-    }
-
-    /* =========================
-       SHARE CARD
-    ========================= */
-    .rf-share-card{
-      margin-top:12px;
-      position:relative;
-      overflow:hidden;
-      border-radius:24px;
-      background:
-        radial-gradient(220px 120px at 92% 8%, rgba(0,223,130,.10), transparent 64%),
-        linear-gradient(180deg, rgba(13,35,34,.94), rgba(6,20,19,.96));
-      border:1px solid rgba(255,255,255,.085);
-      box-shadow:
-        0 16px 32px rgba(0,0,0,.25),
-        0 0 0 1px rgba(255,255,255,.025) inset;
-      padding:14px;
-      animation:rfFadeUp .42s ease both;
-    }
-
-    .rf-share-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
-    .rf-share-title{
-      min-width:0;
-    }
-
-    .rf-share-title h3{
-      margin:0;
-      color:#ffffff;
-      font-size:17px;
-      line-height:1.15;
-      letter-spacing:-.03em;
-      font-weight:850;
-    }
-
-    .rf-share-title p{
-      margin:6px 0 0;
-      color:rgba(214,255,240,.58);
-      font-size:11px;
-      line-height:1.45;
-      font-weight:500;
-    }
-
-    .rf-share-chip{
-      flex:0 0 auto;
-      min-height:30px;
-      padding:0 11px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.50), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      font-size:10px;
-      font-weight:850;
-      box-shadow:
-        0 10px 20px rgba(0,223,130,.16),
-        inset 0 1px 0 rgba(255,255,255,.30);
-      white-space:nowrap;
-    }
-
-    .rf-share-chip svg{
-      width:13px;
-      height:13px;
-    }
-
-    .rf-share-stack{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
-
-    .rf-share-row{
-      display:grid;
-      grid-template-columns:96px minmax(0,1fr) 42px;
-      gap:10px;
-      align-items:center;
-    }
-
-    .rf-share-label{
-      color:#ffffff;
-      font-size:12px;
-      font-weight:800;
-      line-height:1.2;
-    }
-
-    .rf-share-input{
-      width:100%;
-      min-width:0;
-      height:42px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      color:#dffcf1;
-      padding:0 12px;
-      outline:none;
-      font-size:12px;
-      font-weight:750;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.05),
-        0 10px 18px rgba(0,0,0,.16);
-    }
-
-    .rf-share-input.is-link{
-      font-size:11px;
-      color:rgba(223,252,241,.86);
-    }
-
-    .rf-icon-copy{
-      width:42px;
-      height:42px;
-      border:0;
-      border-radius:14px;
-      cursor:pointer;
-      color:#ccfff0;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.16), transparent 34%),
-        linear-gradient(180deg, rgba(9,42,35,.96), rgba(4,18,16,.96));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow:
-        0 10px 18px rgba(0,0,0,.22),
-        inset 0 1px 0 rgba(255,255,255,.08);
-      display:grid;
-      place-items:center;
-      transition:.18s ease;
-    }
-
-    .rf-icon-copy:hover{
-      transform:translateY(-1px);
-      border-color:rgba(0,223,130,.24);
-      box-shadow:
-        0 14px 24px rgba(0,0,0,.28),
-        0 0 20px rgba(0,223,130,.08);
-    }
-
-    .rf-icon-copy svg{
-      width:17px;
-      height:17px;
-    }
-
-    .rf-share-actions{
-      display:flex;
-      gap:9px;
-      flex-wrap:wrap;
-      margin-top:4px;
-    }
-
-    .rf-share-btn{
-      min-height:40px;
-      padding:0 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      color:#ffffff;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
-      cursor:pointer;
-      font-size:12px;
-      font-weight:800;
-      transition:.18s ease;
-      box-shadow:
-        0 10px 18px rgba(0,0,0,.16),
-        inset 0 1px 0 rgba(255,255,255,.05);
-    }
-
-    .rf-share-btn:hover{
-      transform:translateY(-1px);
-    }
-
-    .rf-share-btn svg{
-      width:16px;
-      height:16px;
-    }
-
-    .rf-share-btn.is-primary{
-      color:#06110e;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.50), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      box-shadow:
-        0 12px 24px rgba(0,223,130,.16),
-        inset 0 1px 0 rgba(255,255,255,.30);
-    }
-
-    .rf-share-qr-wrap{
-      margin-top:14px;
-      display:flex;
-      justify-content:center;
-    }
-
-    .rf-qr-box{
-      position:relative;
-      width:124px;
-      height:124px;
-      border-radius:22px;
-      padding:10px;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(255,255,255,.18), transparent 36%),
-        linear-gradient(180deg, rgba(8,39,33,.96), rgba(4,18,16,.98));
-      border:1px solid rgba(0,223,130,.18);
-      box-shadow:
-        0 14px 26px rgba(0,0,0,.28),
-        0 0 28px rgba(0,223,130,.08),
-        inset 0 1px 0 rgba(255,255,255,.08);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-    }
-
-    .rf-qr-box::before{
-      content:"";
-      position:absolute;
-      inset:-20%;
-      background:radial-gradient(circle, rgba(0,223,130,.12), transparent 55%);
-      animation:rfQrGlow 4.2s ease-in-out infinite;
-      pointer-events:none;
-    }
-
-    .rf-qr-inner{
-      position:relative;
-      z-index:1;
-      width:100%;
-      height:100%;
-      border-radius:16px;
-      padding:8px;
-      background:rgba(233,255,245,.92);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .rf-qr-inner img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      display:block;
-    }
-
-    /* =========================
-       STATS
-    ========================= */
-    .rf-stats{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:9px;
-    }
-
-    .rf-stat{
-      min-height:86px;
-      border-radius:20px;
-      padding:12px 10px;
-      background:
-        radial-gradient(circle at 80% 0%, var(--stat-glow), transparent 44%),
-        linear-gradient(180deg, rgba(18,34,35,.94), rgba(8,21,21,.96));
-      border:1px solid rgba(255,255,255,.085);
-      box-shadow:
-        0 14px 28px rgba(0,0,0,.24),
-        inset 0 1px 0 rgba(255,255,255,.055);
-      overflow:hidden;
-      position:relative;
-      animation:rfFadeUp .42s ease both;
-    }
-
-    .rf-stat:nth-child(1){
-      --stat-glow:rgba(0,223,130,.20);
-      --stat-accent:#00DF82;
-    }
-
-    .rf-stat:nth-child(2){
-      --stat-glow:rgba(52,213,255,.20);
-      --stat-accent:#34d5ff;
-    }
-
-    .rf-stat:nth-child(3){
-      --stat-glow:rgba(246,196,83,.20);
-      --stat-accent:#f6c453;
-    }
-
-    .rf-stat-label{
-      margin:0;
-      color:rgba(214,255,240,.52);
-      font-size:10px;
-      line-height:1.2;
-      font-weight:650;
-    }
-
-    .rf-stat-value{
-      margin:9px 0 0;
-      color:#ffffff;
-      font-size:15px;
-      line-height:1.13;
-      letter-spacing:-.025em;
-      font-weight:900;
-    }
-
-    .rf-stat-value span{
-      color:var(--stat-accent);
-    }
-
-    /* =========================
-       INFO CARD
-    ========================= */
-    .rf-info-card{
-      margin-top:12px;
-      border-radius:21px;
-      background:
-        radial-gradient(180px 100px at 88% 8%, rgba(52,213,255,.11), transparent 64%),
-        linear-gradient(180deg, rgba(13,35,34,.94), rgba(6,20,19,.96));
-      border:1px solid rgba(255,255,255,.085);
-      box-shadow:
-        0 16px 32px rgba(0,0,0,.25),
-        0 0 0 1px rgba(255,255,255,.025) inset;
-      padding:13px;
-      display:flex;
-      align-items:center;
-      gap:11px;
-      animation:rfFadeUp .42s ease both;
-    }
-
-    .rf-info-icon{
-      width:42px;
-      height:42px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 28% 18%, rgba(255,255,255,.70), transparent 34%),
-        linear-gradient(135deg, #34d5ff, #5a8cff);
-      box-shadow:
-        0 12px 24px rgba(0,0,0,.26),
-        inset 0 1px 0 rgba(255,255,255,.28);
-      flex:0 0 auto;
-    }
-
-    .rf-info-icon svg{
-      width:20px;
-      height:20px;
-    }
-
-    .rf-info-text{
-      min-width:0;
-    }
-
-    .rf-info-text strong{
-      display:block;
-      color:#ffffff;
-      font-size:13px;
-      font-weight:850;
-      letter-spacing:-.01em;
-    }
-
-    .rf-info-text p{
-      margin:5px 0 0;
-      color:rgba(214,255,240,.54);
-      font-size:11px;
-      line-height:1.45;
-      font-weight:550;
-    }
-
-    /* =========================
-       SECTION
-    ========================= */
-    .rf-section{
-      margin-top:18px;
-    }
-
-    .rf-section-head{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:12px;
-      padding:0 2px;
-    }
-
-    .rf-section-title{
-      min-width:0;
-    }
-
-    .rf-section-title h2{
-      margin:0;
-      color:#ffffff;
-      font-size:17px;
-      line-height:1.15;
-      letter-spacing:-.03em;
-      font-weight:760;
-    }
-
-    .rf-section-title p{
-      margin:5px 0 0;
-      color:rgba(214,255,240,.56);
-      font-size:11px;
-      font-weight:450;
-    }
-
-    .rf-section-hint{
-      color:#8fffd3;
-      font-size:11.5px;
-      font-weight:750;
-      white-space:nowrap;
-    }
-
-    /* =========================
-       TABLE
-    ========================= */
-    .rf-table-card{
-      position:relative;
-      overflow:hidden;
-      border-radius:21px;
-      background:
-        radial-gradient(170px 94px at 88% 8%, rgba(0,223,130,.12), transparent 64%),
-        linear-gradient(180deg, rgba(13,35,34,.94), rgba(6,20,19,.96));
-      border:1px solid rgba(255,255,255,.085);
-      box-shadow:
-        0 16px 32px rgba(0,0,0,.25),
-        0 0 0 1px rgba(255,255,255,.025) inset;
-      padding:12px;
-      animation:rfFadeUp .42s ease both;
-    }
-
-    .rf-table-wrap{
-      width:100%;
-      overflow-x:auto;
-      border-radius:17px;
-      border:1px solid rgba(255,255,255,.07);
-      background:rgba(2,10,10,.22);
-    }
-
-    .rf-table-wrap::-webkit-scrollbar{
-      height:6px;
-    }
-
-    .rf-table-wrap::-webkit-scrollbar-thumb{
-      background:rgba(0,223,130,.38);
-      border-radius:999px;
-    }
-
-    .rf-table{
-      width:100%;
-      min-width:560px;
-      border-collapse:collapse;
-    }
-
-    .rf-table.is-wide{
-      min-width:760px;
-    }
-
-    .rf-table thead th{
-      text-align:left;
-      padding:12px 12px;
-      color:rgba(214,255,240,.54);
-      font-size:10px;
-      line-height:1.1;
-      font-weight:800;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      border-bottom:1px solid rgba(255,255,255,.07);
-      background:rgba(255,255,255,.025);
-      white-space:nowrap;
-    }
-
-    .rf-table tbody td{
-      padding:12px 12px;
-      color:rgba(247,255,251,.88);
-      font-size:12px;
-      line-height:1.35;
-      font-weight:600;
-      border-bottom:1px solid rgba(255,255,255,.055);
-      vertical-align:top;
-    }
-
-    .rf-table tbody tr:last-child td{
-      border-bottom:0;
-    }
-
-    .rf-table tbody tr:hover td{
-      background:rgba(255,255,255,.025);
-    }
-
-    .rf-td-strong{
-      color:#ffffff !important;
-      font-weight:850 !important;
-    }
-
-    .rf-td-green{
-      color:#00DF82 !important;
-      font-weight:900 !important;
-      text-shadow:0 0 16px rgba(0,223,130,.10);
-    }
-
-    .rf-badge{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:24px;
-      padding:0 9px;
-      border-radius:999px;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.42), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      font-size:10px;
-      font-weight:850;
-      white-space:nowrap;
-    }
-
-    .rf-empty{
-      padding:18px 14px;
-      border-radius:18px;
-      background:rgba(9,37,31,.76);
-      border:1px dashed rgba(255,255,255,.14);
-      color:rgba(214,255,240,.72);
-      text-align:center;
-      font-size:12.5px;
-      font-weight:650;
-    }
-
-    .rf-pager{
-      margin-top:12px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.075);
-      background:rgba(2,10,10,.26);
-      padding:10px 12px;
-      overflow:auto;
-      color:#ffffff;
-    }
-
-    .rf-pager *{
-      color:rgba(214,255,240,.78);
-      font-size:12px;
-    }
-
-    .rf-pager a{
-      color:#8fffd3 !important;
-      font-weight:850;
-      text-decoration:none;
-    }
-
-    .rf-pager nav{
-      display:block;
-      width:100%;
-    }
-
-    /* =========================
-       TOAST
-    ========================= */
-    .rf-toast{
       position:fixed;
-      left:50%;
-      bottom:92px;
-      z-index:9999;
-      transform:translateX(-50%) translateY(12px);
-      opacity:0;
+      inset:0;
       pointer-events:none;
-      min-height:44px;
-      padding:0 15px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      color:#06110e;
       background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.62), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      box-shadow:
-        0 18px 42px rgba(0,0,0,.32),
-        0 0 28px rgba(0,223,130,.18);
-      font-size:12px;
-      font-weight:850;
-      transition:.22s ease;
-      white-space:nowrap;
+        radial-gradient(circle at 9% 18%,rgba(245,175,42,.10),transparent 28%),
+        radial-gradient(circle at 92% 26%,rgba(217,107,255,.11),transparent 30%),
+        radial-gradient(circle at 50% 100%,rgba(143,87,255,.075),transparent 34%);
+      z-index:0;
     }
+    a{color:inherit;text-decoration:none;}
+    button,input{font-family:inherit;}
 
-    .rf-toast.show{
-      opacity:1;
-      transform:translateX(-50%) translateY(0);
+    .rf-page{width:100%;min-height:100vh;display:flex;justify-content:center;padding:14px 10px 0;position:relative;z-index:1;}
+    .rf-phone{width:100%;max-width:430px;min-height:100vh;position:relative;padding:8px 4px 104px;}
+
+    .rf-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px;padding:0 2px;}
+    .rf-brand{display:flex;align-items:center;gap:11px;min-width:0;}
+    .rf-logo-card{
+      width:50px;height:50px;border-radius:18px;display:grid;place-items:center;flex:0 0 auto;overflow:hidden;
+      background:radial-gradient(circle at 28% 8%,rgba(255,255,255,.98),rgba(255,226,155,.76) 35%,rgba(225,188,255,.76) 92%),var(--rf-gradient);
+      border:1px solid rgba(255,255,255,.72);
+      box-shadow:0 16px 34px rgba(88,43,145,.13),0 8px 22px rgba(245,175,42,.10),inset 0 1px 0 rgba(255,255,255,.75);
     }
-
-    .rf-toast svg{
-      width:16px;
-      height:16px;
+    .rf-logo-card img{width:44px;height:44px;object-fit:contain;display:block;}
+    .rf-title{min-width:0;}
+    .rf-title span{display:block;margin-bottom:5px;color:rgba(58,7,18,.58);font-size:10px;line-height:1;font-weight:900;letter-spacing:.18em;text-transform:uppercase;}
+    .rf-title h1{margin:0;color:var(--rf-maroon);font-size:23px;line-height:1;font-weight:950;letter-spacing:-.055em;white-space:nowrap;}
+    .rf-header-actions{display:flex;align-items:center;gap:9px;flex:0 0 auto;}
+    .rf-header-btn{
+      width:42px;height:42px;border-radius:999px;border:1px solid var(--rf-border);background:rgba(255,255,255,.88);color:#5b2841;display:grid;place-items:center;
+      box-shadow:0 12px 26px rgba(43,11,22,.065),inset 0 1px 0 rgba(255,255,255,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:.18s ease;
     }
+    .rf-header-btn:hover{transform:translateY(-1px);color:var(--rf-purple);}
+    .rf-header-btn svg{width:20px;height:20px;}
 
-    .rb-bottom-spacer{
-      height:86px !important;
-    }
-
-    .rb-bottom-nav{
+    .rf-invite-card{
+      position:relative;overflow:hidden;border-radius:34px;padding:17px;
       background:
-        radial-gradient(240px 110px at 50% 0%, rgba(0,223,130,.10), transparent 65%),
-        linear-gradient(180deg, rgba(8,34,29,.96), rgba(3,15,15,.98)) !important;
-      border:1px solid rgba(255,255,255,.10) !important;
-      border-bottom:0 !important;
-      box-shadow:
-        0 -18px 42px rgba(0,0,0,.38),
-        0 0 0 1px rgba(0,223,130,.06) inset !important;
-      backdrop-filter:blur(20px) !important;
-      -webkit-backdrop-filter:blur(20px) !important;
+        radial-gradient(360px 220px at 92% -12%,rgba(255,212,109,.48),transparent 58%),
+        radial-gradient(300px 200px at 2% 8%,rgba(217,107,255,.34),transparent 62%),
+        linear-gradient(145deg,#8f57ff 0%,#9455ff 40%,#d96bff 72%,#f5af2a 100%);
+      color:#fff;border:1px solid rgba(255,255,255,.44);
+      box-shadow:0 28px 62px rgba(143,87,255,.22),0 18px 42px rgba(245,175,42,.10),inset 0 1px 0 rgba(255,255,255,.22);
+      animation:rfFadeUp .42s ease both;
     }
+    .rf-invite-card::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.22),transparent 34%),radial-gradient(circle at 82% 26%,rgba(255,255,255,.16),transparent 28%),linear-gradient(180deg,transparent,rgba(43,11,22,.08));}
+    .rf-invite-card::after{content:"";position:absolute;right:-68px;bottom:-86px;width:240px;height:240px;border-radius:50%;background:linear-gradient(135deg,rgba(255,212,109,.46),rgba(217,107,255,.25));filter:blur(18px);pointer-events:none;}
+    .rf-invite-card>*{position:relative;z-index:1;}
+    .rf-invite-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;}
+    .rf-kicker{display:inline-flex;align-items:center;min-height:26px;padding:0 10px;border-radius:999px;color:#2c1200;background:linear-gradient(135deg,#ffe08a,#f5af2a);font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 12px 22px rgba(245,175,42,.20);}
+    .rf-main-title{margin:12px 0 0;color:#fff;font-size:23px;line-height:1.06;letter-spacing:-.06em;font-weight:950;text-shadow:0 12px 28px rgba(43,11,22,.24);}
+    .rf-main-sub{margin:8px 0 0;color:rgba(255,255,255,.76);font-size:12px;line-height:1.45;font-weight:650;max-width:280px;}
+    .rf-rate-pill{min-height:40px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;border-radius:999px;color:#2c1200;background:linear-gradient(135deg,#ffd46d,#d96bff 70%,#8f57ff);border:1px solid rgba(255,255,255,.34);box-shadow:0 12px 24px rgba(143,87,255,.18),inset 0 1px 0 rgba(255,255,255,.34);font-size:12px;font-weight:950;white-space:nowrap;}
+    .rf-rate-pill svg{width:15px;height:15px;}
 
-    .rb-bottom-nav__item{
-      color:rgba(214,255,240,.48) !important;
-    }
+    .rf-invite-main{margin-top:14px;display:grid;grid-template-columns:118px minmax(0,1fr);gap:10px;align-items:stretch;}
+    .rf-qr-stage{border-radius:24px;padding:9px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;}
+    .rf-qr-inner{width:100px;height:100px;border-radius:19px;padding:7px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 24px rgba(43,11,22,.18),0 0 0 1px rgba(43,11,22,.05) inset;}
+    .rf-qr-inner img{width:100%;height:100%;object-fit:contain;display:block;}
+    .rf-code-panel{min-width:0;border-radius:24px;padding:11px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);box-shadow:inset 0 1px 0 rgba(255,255,255,.10);display:grid;gap:9px;}
+    .rf-code-label{margin:0 0 6px;color:rgba(255,255,255,.68);font-size:9.5px;line-height:1;font-weight:850;text-transform:uppercase;letter-spacing:.08em;}
+    .rf-code-value,.rf-link-value{width:100%;height:39px;border:1px solid rgba(255,255,255,.12);outline:none;border-radius:14px;padding:0 11px;color:#fff;background:rgba(43,11,22,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}
+    .rf-code-value{font-size:13.5px;font-weight:950;letter-spacing:.08em;}
+    .rf-link-value{font-size:10.5px;font-weight:750;}
+    .rf-invite-actions{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+    .rf-btn{min-height:44px;border:0;border-radius:999px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12.3px;font-weight:950;transition:.18s ease;}
+    .rf-btn:hover{transform:translateY(-1px);filter:brightness(1.04);}
+    .rf-btn svg{width:16px;height:16px;}
+    .rf-btn-primary{color:#2c1200;background:linear-gradient(135deg,#ffe08a,#f5af2a);box-shadow:0 14px 28px rgba(245,175,42,.24),inset 0 1px 0 rgba(255,255,255,.35);}
+    .rf-btn-secondary{color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);}
 
-    .rb-bottom-nav__item:hover{
-      color:rgba(214,255,240,.78) !important;
-    }
+    .rf-stats{margin-top:13px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+    .rf-stat{position:relative;overflow:hidden;min-height:78px;border-radius:21px;padding:11px 10px;background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(255,255,255,.88));border:1px solid var(--rf-border);box-shadow:var(--rf-shadow-soft),inset 0 1px 0 rgba(255,255,255,.92);animation:rfFadeUp .42s ease both;}
+    .rf-stat::before{content:"";position:absolute;top:10px;right:10px;width:9px;height:9px;border-radius:999px;background:linear-gradient(135deg,var(--stat-a),var(--stat-b));box-shadow:0 0 0 6px var(--stat-glow);}
+    .rf-stat:nth-child(1){--stat-a:#f5af2a;--stat-b:#ffd46d;--stat-glow:rgba(245,175,42,.14);}
+    .rf-stat:nth-child(2){--stat-a:#d96bff;--stat-b:#8f57ff;--stat-glow:rgba(143,87,255,.12);}
+    .rf-stat:nth-child(3){--stat-a:#8f57ff;--stat-b:#f5af2a;--stat-glow:rgba(180,92,255,.10);}
+    .rf-stat-label{margin:0;padding-right:14px;color:var(--rf-soft);font-size:9.6px;line-height:1.22;font-weight:750;}
+    .rf-stat-value{margin:12px 0 0;color:var(--rf-maroon);font-size:12.2px;line-height:1.14;letter-spacing:-.025em;font-weight:950;}
+    .rf-stat-value span{color:var(--rf-purple);}
 
-    .rb-bottom-nav__item.is-active{
-      color:#00DF82 !important;
-      text-shadow:0 0 18px rgba(0,223,130,.25);
-    }
+    .rf-section{margin-top:20px;}
+    .rf-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;padding:0 2px;}
+    .rf-section-title{min-width:0;}
+    .rf-section-title h2{margin:0;color:var(--rf-maroon);font-size:17px;line-height:1.15;letter-spacing:-.035em;font-weight:950;}
+    .rf-section-title p{margin:5px 0 0;color:var(--rf-soft);font-size:11px;font-weight:650;}
+    .rf-section-hint{display:inline-flex;align-items:center;min-height:30px;padding:0 11px;border-radius:999px;color:#2c1200;background:linear-gradient(135deg,#ffe08a,#f5af2a);font-size:10.5px;font-weight:950;white-space:nowrap;box-shadow:0 12px 24px rgba(245,175,42,.16);}
+    .rf-card-list{display:flex;flex-direction:column;gap:10px;}
+    .rf-user-card,.rf-commission-card{position:relative;overflow:hidden;border-radius:24px;background:radial-gradient(210px 120px at 88% 8%,var(--card-glow),transparent 64%),linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.90));border:1px solid var(--rf-border);box-shadow:var(--rf-shadow-soft),inset 0 1px 0 rgba(255,255,255,.92);padding:12px;transition:.18s ease;animation:rfFadeUp .42s ease both;}
+    .rf-user-card:hover,.rf-commission-card:hover{transform:translateY(-1px);border-color:rgba(143,87,255,.17);box-shadow:0 18px 36px rgba(43,11,22,.10),0 0 0 4px rgba(143,87,255,.045);}
+    .rf-user-card:nth-child(4n+1),.rf-commission-card:nth-child(4n+1){--card-accent:#d96bff;--card-accent2:#8f57ff;--card-glow:rgba(217,107,255,.11);}
+    .rf-user-card:nth-child(4n+2),.rf-commission-card:nth-child(4n+2){--card-accent:#f5af2a;--card-accent2:#ffd46d;--card-glow:rgba(245,175,42,.13);}
+    .rf-user-card:nth-child(4n+3),.rf-commission-card:nth-child(4n+3){--card-accent:#ffd46d;--card-accent2:#d96bff;--card-glow:rgba(143,87,255,.10);}
+    .rf-user-card:nth-child(4n+4),.rf-commission-card:nth-child(4n+4){--card-accent:#8f57ff;--card-accent2:#ff6fa8;--card-glow:rgba(143,87,255,.11);}
+    .rf-row-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .rf-user-left{display:flex;align-items:center;gap:11px;min-width:0;}
+    .rf-avatar{width:43px;height:43px;border-radius:16px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--card-accent),var(--card-accent2));box-shadow:0 12px 24px rgba(143,87,255,.14),inset 0 1px 0 rgba(255,255,255,.22);flex:0 0 auto;font-size:14px;font-weight:950;}
+    .rf-user-meta{min-width:0;}
+    .rf-user-name{display:block;color:var(--rf-maroon);font-size:13.4px;line-height:1.15;font-weight:950;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;}
+    .rf-user-sub{display:block;margin-top:5px;color:var(--rf-soft);font-size:10.8px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px;}
+    .rf-small-badge{min-height:28px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;border-radius:999px;color:#2c1200;background:linear-gradient(135deg,#ffe08a,#f5af2a);font-size:10px;font-weight:950;white-space:nowrap;}
+    .rf-commission-grid{margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+    .rf-mini-info{min-height:55px;border-radius:16px;padding:9px;background:#fff8fc;border:1px solid rgba(43,11,22,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.86);}
+    .rf-mini-info span{display:block;color:var(--rf-soft);font-size:9.4px;line-height:1.1;font-weight:750;margin-bottom:6px;}
+    .rf-mini-info strong{display:block;color:var(--rf-maroon);font-size:11px;line-height:1.15;font-weight:950;word-break:break-word;}
+    .rf-mini-info strong.is-accent{color:var(--rf-purple);}
+    .rf-empty{padding:17px 14px;border-radius:22px;background:#fff;border:1px dashed rgba(43,11,22,.18);color:var(--rf-soft);text-align:center;font-size:12.5px;font-weight:750;line-height:1.5;box-shadow:var(--rf-shadow-soft);}
+    .rf-pager{margin-top:12px;border-radius:18px;border:1px solid var(--rf-border);background:rgba(255,255,255,.92);padding:10px 12px;overflow:auto;color:var(--rf-maroon);box-shadow:var(--rf-shadow-soft);}
+    .rf-pager *{color:var(--rf-soft);font-size:12px;}
+    .rf-pager a{color:var(--rf-purple)!important;font-weight:950;text-decoration:none;}
+    .rf-toast{position:fixed;left:50%;bottom:92px;z-index:9999;transform:translateX(-50%) translateY(12px);opacity:0;pointer-events:none;min-height:44px;padding:0 15px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;color:#2c1200;background:linear-gradient(135deg,#ffe08a,#f5af2a);box-shadow:0 18px 42px rgba(43,11,22,.16),0 0 28px rgba(245,175,42,.18);font-size:12px;font-weight:950;transition:.22s ease;white-space:nowrap;}
+    .rf-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .rf-toast svg{width:16px;height:16px;}
 
-    .rb-bottom-nav__item.is-active .rb-bottom-nav__icon{
-      filter:drop-shadow(0 0 12px rgba(0,223,130,.30));
-    }
+    .rb-bottom-spacer{height:94px!important;}
+    .rb-bottom-nav{background:rgba(255,255,255,.92)!important;border:1px solid rgba(43,11,22,.08)!important;box-shadow:0 -18px 40px rgba(43,11,22,.10),inset 0 1px 0 rgba(255,255,255,.84)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;}
+    .rb-bottom-nav__item{color:#aa8f9f!important;}
+    .rb-bottom-nav__item:hover{color:#5b2841!important;}
+    .rb-bottom-nav__item.is-active{color:#3a0712!important;text-shadow:none!important;}
+    .rb-bottom-nav__item.is-active .rb-bottom-nav__icon{filter:drop-shadow(0 8px 12px rgba(143,87,255,.18));}
 
-    @keyframes rfShimmer{
-      0%{ left:-120%; }
-      18%{ left:220%; }
-      100%{ left:220%; }
-    }
-
-    @keyframes rfPulse{
-      0%,100%{
-        transform:scale(1);
-        opacity:.65;
-      }
-      50%{
-        transform:scale(1.08);
-        opacity:.95;
-      }
-    }
-
-    @keyframes rfQrGlow{
-      0%,100%{
-        transform:scale(1);
-        opacity:.72;
-      }
-      50%{
-        transform:scale(1.08);
-        opacity:1;
-      }
-    }
-
-    @keyframes rfFadeUp{
-      from{
-        opacity:0;
-        transform:translateY(10px);
-      }
-      to{
-        opacity:1;
-        transform:translateY(0);
-      }
-    }
-
-    @media (max-width:430px){
-      .rf-stats{
-        grid-template-columns:repeat(3,1fr);
-        gap:8px;
-      }
-
-      .rf-stat{
-        min-height:84px;
-        padding:11px 8px;
-      }
-
-      .rf-stat-value{
-        font-size:13px;
-      }
-
-      .rf-code-row{
-        grid-template-columns:1fr;
-      }
-
-      .rf-copy-btn{
-        width:100%;
-      }
-
-      .rf-share-row{
-        grid-template-columns:92px minmax(0,1fr) 42px;
-        gap:8px;
-      }
-
-      .rf-share-title h3{
-        font-size:16px;
-      }
-
-      .rf-share-chip{
-        font-size:9.5px;
-        padding:0 9px;
-      }
-    }
-
-    @media (max-width:370px){
-      .rf-logo-card{
-        width:44px;
-        height:44px;
-      }
-
-      .rf-logo-card img{
-        width:38px;
-        height:38px;
-      }
-
-      .rf-title h1{
-        font-size:21px;
-      }
-
-      .rf-hero{
-        padding:15px;
-      }
-
-      .rf-hero-title{
-        font-size:25px;
-      }
-
-      .rf-rate-pill{
-        min-width:70px;
-        height:36px;
-        font-size:11px;
-      }
-
-      .rf-share-head{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-
-      .rf-share-row{
-        grid-template-columns:1fr;
-      }
-
-      .rf-share-label{
-        margin-bottom:2px;
-      }
-
-      .rf-icon-copy{
-        width:100%;
-        height:40px;
-        border-radius:12px;
-      }
-
-      .rf-share-actions{
-        flex-direction:column;
-      }
-
-      .rf-share-btn{
-        width:100%;
-      }
-
-      .rf-stats{
-        gap:7px;
-      }
-
-      .rf-stat{
-        min-height:78px;
-        border-radius:18px;
-        padding:10px 7px;
-      }
-
-      .rf-stat-label{
-        font-size:9.5px;
-      }
-
-      .rf-stat-value{
-        font-size:12px;
-      }
-
-      .rf-info-card,
-      .rf-table-card{
-        border-radius:20px;
-      }
-
-      .rf-section-title h2{
-        font-size:16px;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce){
-      *,
-      *::before,
-      *::after{
-        animation:none !important;
-        transition:none !important;
-      }
-    }
-
-    /* =========================
-   HERO REFERRAL CONTENT
-   QR + kode + tautan di dalam hero
-========================= */
-
-.rf-hero-qr-wrap{
-  margin-top:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.rf-hero-qr-box{
-  position:relative;
-  width:126px;
-  height:126px;
-  border-radius:24px;
-  padding:10px;
-  background:
-    radial-gradient(circle at 20% 0%, rgba(255,255,255,.20), transparent 36%),
-    linear-gradient(180deg, rgba(8,39,33,.88), rgba(4,18,16,.92));
-  border:1px solid rgba(3,24,20,.14);
-  box-shadow:
-    0 16px 30px rgba(3,24,20,.18),
-    0 0 28px rgba(0,223,130,.12),
-    inset 0 1px 0 rgba(255,255,255,.18);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-}
-
-.rf-hero-qr-box::before{
-  content:"";
-  position:absolute;
-  inset:-24%;
-  background:radial-gradient(circle, rgba(0,223,130,.16), transparent 56%);
-  animation:rfQrGlow 4.2s ease-in-out infinite;
-  pointer-events:none;
-}
-
-.rf-hero-qr-inner{
-  position:relative;
-  z-index:1;
-  width:100%;
-  height:100%;
-  border-radius:18px;
-  padding:8px;
-  background:rgba(233,255,245,.92);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.rf-hero-qr-inner img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  display:block;
-}
-
-.rf-code-box + .rf-code-box{
-  margin-top:10px;
-}
-
-.rf-code-input.is-link{
-  letter-spacing:0 !important;
-  font-size:12px !important;
-  font-weight:800 !important;
-}
-
-.rf-hero-actions{
-  margin-top:12px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;
-}
-
-.rf-hero-action{
-  min-height:42px;
-  border-radius:15px;
-  border:1px solid rgba(3,24,20,.08);
-  background:rgba(255,255,255,.34);
-  color:#05221b;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  cursor:pointer;
-  font-size:12px;
-  font-weight:850;
-  box-shadow:
-    0 10px 22px rgba(3,24,20,.08),
-    inset 0 1px 0 rgba(255,255,255,.45);
-  transition:.18s ease;
-}
-
-.rf-hero-action:hover{
-  transform:translateY(-1px);
-  background:rgba(255,255,255,.48);
-}
-
-.rf-hero-action svg{
-  width:16px;
-  height:16px;
-}
-
-.rf-hero-action.is-primary{
-  color:#06110e;
-  background:
-    radial-gradient(circle at 30% 0%, rgba(255,255,255,.50), transparent 34%),
-    linear-gradient(135deg, #00DF82, #72ffab);
-  box-shadow:
-    0 12px 24px rgba(0,223,130,.16),
-    inset 0 1px 0 rgba(255,255,255,.30);
-}
-
-@keyframes rfQrGlow{
-  0%,100%{
-    transform:scale(1);
-    opacity:.72;
-  }
-  50%{
-    transform:scale(1.08);
-    opacity:1;
-  }
-}
-
-@media (max-width:370px){
-  .rf-hero-qr-box{
-    width:116px;
-    height:116px;
-    border-radius:22px;
-  }
-
-  .rf-hero-actions{
-    grid-template-columns:1fr;
-  }
-
-  .rf-hero-action{
-    width:100%;
-  }
-}
+    @keyframes rfFadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    @media(max-width:430px){.rf-invite-main{grid-template-columns:112px minmax(0,1fr);}.rf-qr-inner{width:94px;height:94px;}.rf-stat-value{font-size:11.8px;}}
+    @media(max-width:370px){.rf-page{padding-left:8px;padding-right:8px;}.rf-logo-card{width:44px;height:44px;border-radius:15px;}.rf-logo-card img{width:38px;height:38px;}.rf-title h1{font-size:21px;}.rf-invite-card{padding:15px;border-radius:28px;}.rf-invite-head{grid-template-columns:1fr;}.rf-main-title{font-size:21px;}.rf-invite-main{grid-template-columns:1fr;}.rf-qr-stage{min-height:132px;}.rf-invite-actions{grid-template-columns:1fr;}.rf-stats{gap:7px;}.rf-stat{min-height:74px;border-radius:19px;padding:10px 7px;}.rf-stat-label{font-size:9px;}.rf-stat-value{font-size:10.8px;}.rf-user-name,.rf-user-sub{max-width:168px;}.rf-commission-grid{grid-template-columns:1fr;}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;}}
   </style>
 </head>
 
@@ -1399,11 +229,11 @@
       <header class="rf-header">
         <div class="rf-brand">
           <div class="rf-logo-card">
-            <img src="{{ asset('logo.png') }}" alt="Rubik Company">
+            <img src="{{ asset('logo.png') }}" alt="Velora Finance">
           </div>
 
           <div class="rf-title">
-            <span>Program komisi</span>
+            <span>Velora Reward</span>
             <h1>Referral</h1>
           </div>
         </div>
@@ -1424,119 +254,76 @@
         </div>
       </header>
 
-      {{-- HERO --}}
-{{-- HERO --}}
-<section class="rf-hero">
-  <div class="rf-hero-inner">
-    <div class="rf-hero-top">
-      <div>
-        <p class="rf-hero-label">Total Komisi Referral</p>
-        <h2 class="rf-hero-title">Rp {{ number_format($totalCommission, 0, ',', '.') }}</h2>
+      {{-- INVITE CARD --}}
+      <section class="rf-invite-card">
+        <div class="rf-invite-head">
+          <div>
+            <span class="rf-kicker">Invite & Earn</span>
+            <h2 class="rf-main-title">Bangun jaringan komisi Velora.</h2>
+            <p class="rf-main-sub">
+              Bagikan kode referral kamu dan pantau komisi dari aktivitas referral secara langsung.
+            </p>
+          </div>
 
-        <div class="rf-hero-sub">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-            <path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M15 6h5v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        Produk 33%
-        <span>Referral aktif</span>
+          <div class="rf-rate-pill">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+            </svg>
+            33%
+          </div>
         </div>
-      </div>
 
-      <div class="rf-rate-pill">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
-        </svg>
-        Aktif
-      </div>
-    </div>
+        <div class="rf-invite-main">
+          <div class="rf-qr-stage">
+            <div class="rf-qr-inner">
+              <img src="{{ $qrImage }}" alt="QR Referral Velora">
+            </div>
+          </div>
 
-    {{-- QR REFERRAL --}}
-    <div class="rf-hero-qr-wrap">
-      <div class="rf-hero-qr-box">
-        <div class="rf-hero-qr-inner">
-          <img src="{{ $qrImage }}" alt="QR Referral">
+          <div class="rf-code-panel">
+            <div>
+              <p class="rf-code-label">Kode Referral</p>
+              <input
+                id="referralCodeField"
+                value="{{ $referralCode }}"
+                class="rf-code-value"
+                readonly
+                aria-label="Kode Referral"
+              >
+            </div>
+
+            <div>
+              <p class="rf-code-label">Tautan Referral</p>
+              <input
+                id="referralLinkField"
+                value="{{ $referralLink }}"
+                class="rf-link-value"
+                readonly
+                aria-label="Tautan Referral"
+              >
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    {{-- KODE REFERRAL --}}
-    <div class="rf-code-box">
-      <p class="rf-code-label">Kode Referral Kamu</p>
+        <div class="rf-invite-actions">
+          <button type="button" class="rf-btn rf-btn-primary" onclick="shareReferral()">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M12 16V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="m7 8 5-5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Bagikan Link
+          </button>
 
-      <div class="rf-code-row">
-        <input
-          id="referralCodeField"
-          value="{{ $referralCode }}"
-          class="rf-code-input"
-          readonly
-          aria-label="Kode Referral"
-        >
-
-        <button
-          type="button"
-          class="rf-copy-btn"
-          onclick="copyById('referralCodeField', 'Kode referral berhasil dicopy!')"
-          aria-label="Copy kode referral"
-        >
-          <svg viewBox="0 0 24 24" fill="none">
-            <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span>Copy</span>
-        </button>
-      </div>
-    </div>
-
-    {{-- TAUTAN REFERRAL --}}
-    <div class="rf-code-box">
-      <p class="rf-code-label">Tautan Referral</p>
-
-      <div class="rf-code-row">
-        <input
-          id="referralLinkField"
-          value="{{ $referralLink }}"
-          class="rf-code-input is-link"
-          readonly
-          aria-label="Tautan Referral"
-        >
-
-        <button
-          type="button"
-          class="rf-copy-btn"
-          onclick="copyById('referralLinkField', 'Tautan referral berhasil dicopy!')"
-          aria-label="Copy tautan referral"
-        >
-          <svg viewBox="0 0 24 24" fill="none">
-            <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span>Copy</span>
-        </button>
-      </div>
-    </div>
-
-    {{-- ACTION --}}
-    <div class="rf-hero-actions">
-      <button type="button" class="rf-hero-action is-primary" onclick="shareReferral()">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M12 16V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="m7 8 5-5 5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Bagikan Link
-      </button>
-
-      <button type="button" class="rf-hero-action" onclick="copyById('referralLinkField', 'Tautan referral berhasil dicopy!')">
-        <svg viewBox="0 0 24 24" fill="none">
-          <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-        Copy Link
-      </button>
-    </div>
-  </div>
-</section>
+          <button type="button" class="rf-btn rf-btn-secondary" onclick="copyById('referralLinkField', 'Tautan referral berhasil dicopy!')">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+            Copy Link
+          </button>
+        </div>
+      </section>
 
       {{-- STATS --}}
       <section class="rf-stats" aria-label="Statistik Referral">
@@ -1556,23 +343,6 @@
         </div>
       </section>
 
-      {{-- INFO --}}
-      <section class="rf-info-card">
-        <div class="rf-info-icon">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2.2"/>
-            <path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-
-        <div class="rf-info-text">
-          <strong>Bagikan kode referral ke teman kamu</strong>
-          <p>Komisi akan tercatat otomatis saat referral melakukan deposit atau membeli produk investasi.</p>
-        </div>
-      </section>
-
       {{-- USER REFERRAL --}}
       <section class="rf-section">
         <div class="rf-section-head">
@@ -1586,42 +356,37 @@
           </div>
         </div>
 
-        <div class="rf-table-card">
-          <div class="rf-table-wrap">
-            <table class="rf-table">
-              <thead>
-                <tr>
-                  <th>Nama</th>
-                  <th>Phone</th>
-                  <th>Tanggal Daftar</th>
-                </tr>
-              </thead>
+        <div class="rf-card-list">
+          @forelse ($refUsers as $ru)
+            <article class="rf-user-card">
+              <div class="rf-row-head">
+                <div class="rf-user-left">
+                  <div class="rf-avatar" aria-hidden="true">
+                    {{ strtoupper(substr($ru->name ?? 'U', 0, 1)) }}
+                  </div>
 
-              <tbody>
-                @forelse ($refUsers as $ru)
-                  <tr>
-                    <td class="rf-td-strong">{{ $ru->name }}</td>
-                    <td>{{ $ru->phone ?? '-' }}</td>
-                    <td>{{ optional($ru->created_at)->format('d-m-Y H:i') ?? '-' }}</td>
-                  </tr>
-                @empty
-                  <tr>
-                    <td colspan="3">
-                      <div class="rf-empty">
-                        Belum ada user yang daftar memakai kode kamu.
-                      </div>
-                    </td>
-                  </tr>
-                @endforelse
-              </tbody>
-            </table>
+                  <div class="rf-user-meta">
+                    <strong class="rf-user-name">{{ $ru->name }}</strong>
+                    <span class="rf-user-sub">{{ $ru->phone ?? '-' }}</span>
+                  </div>
+                </div>
 
-         @if(is_object($refUsers) && method_exists($refUsers, 'links'))
-            <div class="rf-pager">
-                {{ $refUsers->links() }}
+                <span class="rf-small-badge">
+                  {{ optional($ru->created_at)->format('d M') ?? '-' }}
+                </span>
+              </div>
+            </article>
+          @empty
+            <div class="rf-empty">
+              Belum ada user yang daftar memakai kode kamu.
             </div>
-        @endif   
-          </div>
+          @endforelse
+
+          @if(is_object($refUsers) && method_exists($refUsers, 'links'))
+            <div class="rf-pager">
+              {{ $refUsers->links() }}
+            </div>
+          @endif
         </div>
       </section>
 
@@ -1630,7 +395,7 @@
         <div class="rf-section-head">
           <div class="rf-section-title">
             <h2>Riwayat Komisi</h2>
-            <p>Komisi terbaru dari deposit dan pembelian produk</p>
+            <p>Komisi terbaru dari pembelian produk referral</p>
           </div>
 
           <div class="rf-section-hint">
@@ -1638,48 +403,52 @@
           </div>
         </div>
 
-        <div class="rf-table-card">
-          <div class="rf-table-wrap">
-            <table class="rf-table is-wide">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Sumber</th>
-                  <th>Dasar</th>
-                  <th>Rate</th>
-                  <th>Komisi</th>
-                </tr>
-              </thead>
+        <div class="rf-card-list">
+          @forelse ($commissions as $c)
+            <article class="rf-commission-card">
+              <div class="rf-row-head">
+                <div class="rf-user-left">
+                  <div class="rf-avatar" aria-hidden="true">
+                    %
+                  </div>
 
-              <tbody>
-                @forelse ($commissions as $c)
-                  <tr>
-                    <td>{{ optional($c->created_at)->format('d-m-Y H:i') ?? '-' }}</td>
-
-                    <td>
+                  <div class="rf-user-meta">
+                    <strong class="rf-user-name">
                       @if($c->source_type === 'deposit')
-                        <span class="rf-badge">Deposit</span>
+                        Deposit
                       @else
-                        <span class="rf-badge">Beli Produk</span>
+                        Beli Produk
                       @endif
-                    </td>
+                    </strong>
+                    <span class="rf-user-sub">{{ optional($c->created_at)->format('d-m-Y H:i') ?? '-' }}</span>
+                  </div>
+                </div>
 
-                    <td>Rp {{ number_format($c->base_amount, 0, ',', '.') }}</td>
-                    <td>{{ (float) $c->rate * 100 }}%</td>
-                    <td class="rf-td-green">Rp {{ number_format($c->commission_amount, 0, ',', '.') }}</td>
-                  </tr>
-                @empty
-                  <tr>
-                    <td colspan="5">
-                      <div class="rf-empty">
-                        Belum ada komisi masuk.
-                      </div>
-                    </td>
-                  </tr>
-                @endforelse
-              </tbody>
-            </table>
-          </div>
+                <span class="rf-small-badge">{{ (float) $c->rate * 100 }}%</span>
+              </div>
+
+              <div class="rf-commission-grid">
+                <div class="rf-mini-info">
+                  <span>Dasar</span>
+                  <strong>Rp {{ number_format($c->base_amount, 0, ',', '.') }}</strong>
+                </div>
+
+                <div class="rf-mini-info">
+                  <span>Rate</span>
+                  <strong>{{ (float) $c->rate * 100 }}%</strong>
+                </div>
+
+                <div class="rf-mini-info">
+                  <span>Komisi</span>
+                  <strong class="is-accent">Rp {{ number_format($c->commission_amount, 0, ',', '.') }}</strong>
+                </div>
+              </div>
+            </article>
+          @empty
+            <div class="rf-empty">
+              Belum ada komisi masuk.
+            </div>
+          @endforelse
 
           @if(is_object($commissions) && method_exists($commissions, 'links'))
             <div class="rf-pager">
@@ -1697,7 +466,7 @@
     <svg viewBox="0 0 24 24" fill="none">
       <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <span>Kode referral berhasil dicopy!</span>
+    <span>Tautan referral berhasil dicopy!</span>
   </div>
 
   @include('partials.bottom-nav')
@@ -1755,7 +524,7 @@
       }
 
       const shareData = {
-        title: 'Referral Rubik',
+        title: 'Referral Velora',
         text: `Gabung pakai kode referral saya: ${code}`,
         url: link
       };

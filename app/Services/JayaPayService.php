@@ -216,7 +216,7 @@ if (!empty($data['method']) && $data['method'] !== 'CASHIER') {
     }
 
     protected function normalizePublicKey(string $key): string
-    {
+    { 
         $key = trim($key);
 
         if (str_contains($key, 'BEGIN')) {

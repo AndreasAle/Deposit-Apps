@@ -27,6 +27,12 @@ class ReferralAdminController extends Controller
             ->pluck('total', 'source_type')
             ->toArray();
 
+        $levelBreakdown = ReferralCommission::select('level', DB::raw('SUM(commission_amount) as total'))
+            ->groupBy('level')
+            ->orderBy('level')
+            ->pluck('total', 'level')
+            ->toArray();
+
         $topReferrers = ReferralCommission::query()
             ->join('users as u', 'u.id', '=', 'referral_commissions.referrer_id')
             ->select(
@@ -102,6 +108,9 @@ class ReferralAdminController extends Controller
         if ($request->filled('source_type')) {
             $cq->where('referral_commissions.source_type', $request->string('source_type'));
         }
+        if ($request->filled('level')) {
+            $cq->where('referral_commissions.level', (int) $request->level);
+        }
         if ($request->filled('referrer_id')) {
             $cq->where('referral_commissions.referrer_id', (int) $request->referrer_id);
         }
@@ -125,6 +134,7 @@ class ReferralAdminController extends Controller
             'commissionToday',
             'commission7d',
             'breakdown',
+            'levelBreakdown',
             'topReferrers',
             'referrers',
             'referrerDetail',

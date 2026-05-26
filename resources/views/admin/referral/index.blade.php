@@ -724,6 +724,24 @@
             border-color: rgba(122, 90, 248, .16);
         }
 
+        .badge.l1 {
+            color: #b45309;
+            background: #fff7ed;
+            border-color: rgba(245, 158, 11, .22);
+        }
+
+        .badge.l2 {
+            color: #1d4ed8;
+            background: var(--blue-soft);
+            border-color: rgba(49, 87, 248, .16);
+        }
+
+        .badge.l3 {
+            color: #6b7280;
+            background: #f3f4f6;
+            border-color: rgba(107, 114, 128, .18);
+        }
+
         .action-link,
         .btn {
             height: 36px;
@@ -1198,11 +1216,25 @@
                         </div>
 
                         <div class="soft-card">
-                            <b>Catatan Referral</b>
-                            <p>
-                                Sistem referral saat ini menampilkan komisi berdasarkan source type.
-                                Gunakan tab Commissions untuk audit detail transaksi dan tab Users untuk melihat performa per referrer.
-                            </p>
+                            <b>Breakdown Level Komisi</b>
+                            <p>Distribusi total komisi berdasarkan level referral (L1 = 32%, L2 = 2%, L3 = 1%).</p>
+
+                            <div style="height:12px"></div>
+
+                            <div class="breakdown-row">
+                                <span><span class="badge l1">L1</span> &nbsp;Referrer Langsung (32%)</span>
+                                <strong>{{ adminMoney($levelBreakdown[1] ?? 0) }}</strong>
+                            </div>
+
+                            <div class="breakdown-row">
+                                <span><span class="badge l2">L2</span> &nbsp;Level 2 (2%)</span>
+                                <strong>{{ adminMoney($levelBreakdown[2] ?? 0) }}</strong>
+                            </div>
+
+                            <div class="breakdown-row">
+                                <span><span class="badge l3">L3</span> &nbsp;Level 3 (1%)</span>
+                                <strong>{{ adminMoney($levelBreakdown[3] ?? 0) }}</strong>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1397,6 +1429,7 @@
                                         <tr>
                                             <th>Tanggal</th>
                                             <th>Sumber</th>
+                                            <th>Level</th>
                                             <th>Referred</th>
                                             <th>Base</th>
                                             <th>Rate</th>
@@ -1411,6 +1444,9 @@
                                                 <td data-label="Sumber">
                                                     <span class="badge {{ sourceBadgeClass($c->source_type) }}">{{ strtoupper($c->source_type) }}</span>
                                                 </td>
+                                                <td data-label="Level">
+                                                    <span class="badge l{{ $c->level ?? 1 }}">L{{ $c->level ?? 1 }}</span>
+                                                </td>
                                                 <td data-label="Referred">{{ $c->referred_name ?? '-' }} ({{ maskPhone($c->referred_phone ?? '-') }})</td>
                                                 <td data-label="Base">{{ adminMoney($c->base_amount) }}</td>
                                                 <td data-label="Rate">{{ (float) $c->rate * 100 }}%</td>
@@ -1418,7 +1454,7 @@
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6">
+                                                <td colspan="7">
                                                     <div class="empty">Belum ada komisi masuk.</div>
                                                 </td>
                                             </tr>
@@ -1449,11 +1485,18 @@
                 <form method="GET" action="{{ route('admin.referral') }}">
                     <input type="hidden" name="tab" value="commissions">
 
-                    <div class="filters">
+                    <div class="filters" style="grid-template-columns: 140px 110px repeat(4, minmax(130px, 1fr)) auto auto">
                         <select name="source_type">
                             <option value="">All source</option>
                             <option value="deposit" {{ request('source_type') === 'deposit' ? 'selected' : '' }}>deposit</option>
                             <option value="buy" {{ request('source_type') === 'buy' ? 'selected' : '' }}>buy</option>
+                        </select>
+
+                        <select name="level">
+                            <option value="">All level</option>
+                            <option value="1" {{ request('level') == '1' ? 'selected' : '' }}>L1 (32%)</option>
+                            <option value="2" {{ request('level') == '2' ? 'selected' : '' }}>L2 (2%)</option>
+                            <option value="3" {{ request('level') == '3' ? 'selected' : '' }}>L3 (1%)</option>
                         </select>
 
                         <input type="number" name="referrer_id" placeholder="referrer_id" value="{{ request('referrer_id') }}">
@@ -1474,6 +1517,7 @@
                             <th>Referrer</th>
                             <th>Referred</th>
                             <th>Sumber</th>
+                            <th>Level</th>
                             <th>Source ID</th>
                             <th>Base</th>
                             <th>Rate</th>
@@ -1498,6 +1542,10 @@
                                     <span class="badge {{ sourceBadgeClass($c->source_type) }}">{{ strtoupper($c->source_type) }}</span>
                                 </td>
 
+                                <td data-label="Level">
+                                    <span class="badge l{{ $c->level ?? 1 }}">L{{ $c->level ?? 1 }}</span>
+                                </td>
+
                                 <td data-label="Source ID">#{{ $c->source_id }}</td>
 
                                 <td data-label="Base">{{ adminMoney($c->base_amount) }}</td>
@@ -1510,7 +1558,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8">
+                                <td colspan="9">
                                     <div class="empty">Belum ada data komisi.</div>
                                 </td>
                             </tr>

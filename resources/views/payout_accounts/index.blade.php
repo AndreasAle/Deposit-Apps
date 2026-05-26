@@ -1,46 +1,54 @@
- @include('partials.anti-inspect')
+@include('partials.anti-inspect')
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Rekening Bank | Rubik Company</title>
+  <title>Rekening Penarikan | Velora Finance</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#030F0F;
-      --panel:#071f1b;
-      --panel2:#0a2a23;
-      --text:#f7fffb;
-      --muted:#89a99c;
-      --soft:#d6fff0;
-      --neon:#00DF82;
-      --neon2:#79ff99;
-      --border:rgba(255,255,255,.10);
-      --red:#ff5b75;
+      --vl-bg:#f7f2fa;
+      --vl-bg2:#eee8f6;
+      --vl-paper:#ffffff;
+      --vl-paper2:#fbf8ff;
+      --vl-text:#2b0b16;
+      --vl-maroon:#3a0712;
+      --vl-soft:#7b6370;
+      --vl-muted:#a894a0;
+      --vl-border:rgba(43,11,22,.085);
+      --vl-border2:rgba(43,11,22,.14);
+      --vl-gold:#f5af2a;
+      --vl-gold2:#ffd46d;
+      --vl-purple:#8f57ff;
+      --vl-violet:#d96bff;
+      --vl-pink:#d96bff;
+      --vl-red:#e24a64;
+      --vl-green:#20b873;
+      --vl-gradient:linear-gradient(135deg,#f5af2a 0%,#ffd46d 26%,#d96bff 58%,#8f57ff 100%);
+      --vl-gradient-soft:linear-gradient(145deg,#8f57ff 0%,#9f55ff 40%,#d96bff 72%,#f5af2a 100%);
+      --vl-shadow:0 26px 68px rgba(88,43,145,.16);
+      --vl-shadow-soft:0 14px 36px rgba(43,11,22,.075);
     }
 
     *{box-sizing:border-box}
 
-    html,
-    body{
-      min-height:100%;
-    }
+    html,body{min-height:100%}
 
     body{
       margin:0;
-      font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-      color:var(--text);
+      font-family:"Plus Jakarta Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--vl-text);
       background:
-        radial-gradient(760px 420px at 14% -2%,rgba(0,223,130,.18),transparent 58%),
-        radial-gradient(620px 360px at 90% 10%,rgba(90,140,255,.14),transparent 62%),
-        radial-gradient(520px 300px at 55% 100%,rgba(246,196,83,.08),transparent 62%),
-        linear-gradient(180deg,#071f1a 0%,#030f0f 48%,#020807 100%);
+        radial-gradient(680px 360px at 50% -150px, rgba(245,175,42,.23), transparent 64%),
+        radial-gradient(520px 340px at 100% 4%, rgba(217,107,255,.18), transparent 62%),
+        radial-gradient(520px 330px at -12% 34%, rgba(143,87,255,.13), transparent 58%),
+        linear-gradient(180deg,#fff 0%,#f7f2fa 44%,#eee8f6 100%);
       overflow-x:hidden;
       -webkit-tap-highlight-color:transparent;
     }
@@ -51,25 +59,17 @@
       inset:0;
       pointer-events:none;
       background:
-        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
-      background-size:38px 38px;
-      mask-image:linear-gradient(180deg, rgba(0,0,0,.65), transparent 76%);
-      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.65), transparent 76%);
-      opacity:.46;
+        linear-gradient(rgba(43,11,22,.026) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(43,11,22,.018) 1px, transparent 1px);
+      background-size:32px 32px;
+      mask-image:linear-gradient(180deg, rgba(0,0,0,.46), transparent 76%);
+      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.46), transparent 76%);
+      opacity:.48;
       z-index:0;
     }
 
-    a{
-      color:inherit;
-      text-decoration:none;
-    }
-
-    button,
-    input,
-    select{
-      font-family:inherit;
-    }
+    a{color:inherit;text-decoration:none}
+    button,input,select{font-family:inherit}
 
     .bank-page{
       width:100%;
@@ -94,62 +94,59 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:14px;
+      margin-bottom:16px;
       padding:0 2px;
     }
 
     .bank-brand{
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:12px;
       min-width:0;
     }
 
     .bank-logo{
-      width:48px;
-      height:48px;
-      border-radius:14px;
-      background:
-        radial-gradient(circle at 30% 10%, rgba(255,255,255,.98), rgba(224,255,242,.90));
-      border:1px solid rgba(0,223,130,.24);
-      box-shadow:
-        0 12px 28px rgba(0,0,0,.30),
-        0 0 0 1px rgba(255,255,255,.08) inset,
-        0 0 28px rgba(0,223,130,.12);
+      width:52px;
+      height:52px;
+      border-radius:19px;
       display:grid;
       place-items:center;
-      flex:0 0 auto;
       overflow:hidden;
+      background:
+        radial-gradient(circle at 28% 8%, rgba(255,255,255,.98), rgba(255,226,155,.78) 34%, rgba(225,188,255,.76) 92%),
+        var(--vl-gradient);
+      border:1px solid rgba(255,255,255,.68);
+      box-shadow:0 16px 34px rgba(88,43,145,.13), 0 8px 22px rgba(245,175,42,.10), inset 0 1px 0 rgba(255,255,255,.72);
+      flex:0 0 auto;
     }
 
     .bank-logo img{
-      width:42px;
-      height:42px;
+      width:46px;
+      height:46px;
       object-fit:contain;
       display:block;
     }
 
-    .bank-title-wrap{
-      min-width:0;
-    }
+    .bank-title-wrap{min-width:0}
 
     .bank-title-wrap span{
       display:block;
-      margin-bottom:4px;
-      color:rgba(214,255,240,.58);
-      font-size:11px;
+      margin-bottom:6px;
+      font-size:10px;
       line-height:1;
-      font-weight:600;
-      letter-spacing:.02em;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      font-weight:900;
+      color:rgba(58,7,18,.58);
     }
 
     .bank-title-wrap h1{
       margin:0;
+      color:var(--vl-maroon);
       font-size:23px;
       line-height:1;
-      font-weight:850;
-      letter-spacing:-.045em;
-      color:#fff;
+      font-weight:900;
+      letter-spacing:-.052em;
       white-space:nowrap;
     }
 
@@ -164,44 +161,32 @@
       width:42px;
       height:42px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(circle at 32% 18%, rgba(255,255,255,.18), transparent 34%),
-        linear-gradient(180deg, rgba(10,42,35,.96), rgba(4,18,16,.96));
-      color:#fff;
+      border:1px solid rgba(43,11,22,.08);
+      background:rgba(255,255,255,.84);
+      color:#5b2841;
       display:grid;
       place-items:center;
-      box-shadow:
-        0 13px 28px rgba(0,0,0,.34),
-        0 0 0 1px rgba(0,223,130,.06) inset;
+      box-shadow:0 12px 26px rgba(43,11,22,.065), inset 0 1px 0 rgba(255,255,255,.92);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
       transition:.18s ease;
     }
 
-    .bank-header-btn:hover{
-      transform:translateY(-1px);
-      border-color:rgba(0,223,130,.24);
-    }
-
-    .bank-header-btn svg{
-      width:20px;
-      height:20px;
-    }
+    .bank-header-btn:hover{transform:translateY(-1px);color:var(--vl-purple)}
+    .bank-header-btn svg{width:20px;height:20px}
 
     .bank-hero{
       position:relative;
       overflow:hidden;
-      border-radius:24px;
+      border-radius:34px;
+      color:#fff;
       background:
-        radial-gradient(320px 180px at 95% 4%, rgba(90,140,255,.20), transparent 62%),
-        radial-gradient(260px 170px at 8% 0%, rgba(0,223,130,.26), transparent 62%),
-        radial-gradient(240px 150px at 90% 110%, rgba(246,196,83,.16), transparent 68%),
-        linear-gradient(135deg, rgba(236,255,248,.96), rgba(199,255,232,.92) 48%, rgba(185,236,255,.88));
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:
-        0 20px 44px rgba(0,0,0,.22),
-        0 0 0 1px rgba(0,223,130,.14) inset,
-        inset 0 1px 0 rgba(255,255,255,.72);
-      padding:16px;
+        radial-gradient(360px 220px at 92% -12%, rgba(255,212,109,.48), transparent 58%),
+        radial-gradient(300px 200px at 2% 8%, rgba(217,107,255,.34), transparent 62%),
+        linear-gradient(145deg,#8f57ff 0%,#9455ff 40%,#d96bff 72%,#f5af2a 100%);
+      border:1px solid rgba(255,255,255,.44);
+      box-shadow:0 28px 62px rgba(143,87,255,.22), 0 18px 42px rgba(245,175,42,.10), inset 0 1px 0 rgba(255,255,255,.22);
+      padding:18px;
       margin-bottom:14px;
       animation:bankFadeUp .42s ease both;
     }
@@ -210,186 +195,182 @@
       content:"";
       position:absolute;
       inset:0;
-      background:
-        linear-gradient(145deg, rgba(255,255,255,.48) 0%, rgba(255,255,255,.18) 27%, transparent 28%),
-        linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
+      pointer-events:none;
+      background:linear-gradient(135deg, rgba(255,255,255,.22), transparent 34%), radial-gradient(circle at 82% 26%, rgba(255,255,255,.16), transparent 28%), linear-gradient(180deg, transparent 0%, rgba(43,11,22,.08) 100%);
+    }
+
+    .bank-hero::after{
+      content:"";
+      position:absolute;
+      right:-68px;
+      bottom:-86px;
+      width:240px;
+      height:240px;
+      border-radius:50%;
+      background:linear-gradient(135deg, rgba(255,212,109,.46), rgba(217,107,255,.25));
+      filter:blur(18px);
       pointer-events:none;
     }
 
     .bank-hero-inner{
       position:relative;
       z-index:1;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:14px;
+      align-items:start;
     }
 
     .bank-hero-label{
       margin:0 0 8px;
-      color:rgba(3,24,20,.62);
+      color:rgba(255,255,255,.74);
       font-size:12px;
-      font-weight:650;
-      line-height:1.1;
+      font-weight:700;
     }
 
     .bank-hero-title{
       margin:0;
-      color:#031713;
+      color:#fff;
       font-size:28px;
-      line-height:1.04;
-      letter-spacing:-.055em;
+      line-height:1.05;
+      letter-spacing:-.06em;
       font-weight:900;
+      text-shadow:0 12px 24px rgba(43,11,22,.22);
     }
 
     .bank-hero-sub{
-      margin-top:10px;
-      color:rgba(3,24,20,.58);
-      font-size:12px;
+      margin:9px 0 0;
+      max-width:260px;
+      color:rgba(255,255,255,.72);
+      font-size:11.5px;
       line-height:1.45;
       font-weight:650;
-      max-width:245px;
     }
 
     .bank-hero-pill{
-      flex:0 0 auto;
       min-width:78px;
-      height:38px;
+      height:40px;
       border-radius:999px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:6px;
-      color:#05221b;
-      background:rgba(255,255,255,.45);
-      border:1px solid rgba(3,24,20,.10);
-      box-shadow:
-        0 10px 22px rgba(3,24,20,.10),
-        inset 0 1px 0 rgba(255,255,255,.55);
+      color:#2b0b16;
+      background:radial-gradient(circle at 24% 0%, rgba(255,255,255,.72), transparent 40%), linear-gradient(135deg,#ffd46d 0%,#d96bff 56%,#8f57ff 100%);
+      border:1px solid rgba(255,255,255,.40);
+      box-shadow:0 12px 24px rgba(143,87,255,.18), inset 0 1px 0 rgba(255,255,255,.40);
       font-size:12px;
-      font-weight:850;
+      font-weight:900;
       white-space:nowrap;
     }
 
-    .bank-hero-pill svg{
-      width:15px;
-      height:15px;
-      color:#047857;
-    }
+    .bank-hero-pill svg{width:15px;height:15px;color:#2b0b16}
 
     .bank-loader{
-      color:rgba(214,255,240,.62);
+      color:var(--vl-soft);
       text-align:center;
       font-size:12px;
-      font-weight:700;
-      padding:30px 12px;
-      border-radius:20px;
-      border:1px dashed rgba(255,255,255,.12);
-      background:rgba(255,255,255,.035);
+      font-weight:750;
+      padding:26px 12px;
+      border-radius:24px;
+      border:1px dashed rgba(43,11,22,.16);
+      background:rgba(255,255,255,.78);
+      box-shadow:var(--vl-shadow-soft);
     }
 
     .bank-empty{
-      min-height:430px;
+      min-height:360px;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
       text-align:center;
-      padding:30px 14px;
-      border-radius:24px;
-      background:
-        radial-gradient(220px 120px at 90% 0%, rgba(0,223,130,.12), transparent 62%),
-        radial-gradient(220px 120px at 0% 100%, rgba(52,213,255,.10), transparent 62%),
-        rgba(9,37,31,.76);
-      border:1px dashed rgba(0,223,130,.22);
-      box-shadow:
-        0 16px 32px rgba(0,0,0,.25),
-        0 0 0 1px rgba(255,255,255,.025) inset;
+      padding:28px 16px;
+      border-radius:30px;
+      background:radial-gradient(260px 140px at 50% 0%, rgba(217,107,255,.14), transparent 62%), radial-gradient(250px 140px at 90% 100%, rgba(245,175,42,.12), transparent 64%), rgba(255,255,255,.92);
+      border:1px dashed rgba(43,11,22,.16);
+      box-shadow:var(--vl-shadow-soft), inset 0 1px 0 rgba(255,255,255,.92);
       animation:bankFadeUp .42s ease both;
     }
 
     .bank-empty-illustration{
-      width:96px;
-      height:96px;
-      border-radius:28px;
-      margin-bottom:18px;
+      width:88px;
+      height:88px;
+      border-radius:30px;
+      margin-bottom:16px;
       display:grid;
       place-items:center;
-      color:#06110d;
-      background:
-        radial-gradient(circle at 30% 0%,rgba(255,255,255,.52),transparent 34%),
-        linear-gradient(135deg,#00DF82,#79ff99);
-      box-shadow:
-        0 18px 38px rgba(0,223,130,.20),
-        inset 0 1px 0 rgba(255,255,255,.30);
+      color:#2c1200;
+      background:radial-gradient(circle at 30% 0%, rgba(255,255,255,.65), transparent 34%), var(--vl-gradient);
+      box-shadow:0 18px 38px rgba(143,87,255,.18), inset 0 1px 0 rgba(255,255,255,.32);
     }
 
-    .bank-empty-illustration svg{
-      width:48px;
-      height:48px;
-    }
+    .bank-empty-illustration svg{width:42px;height:42px}
 
     .bank-empty-title{
       margin:0;
-      font-size:21px;
-      font-weight:950;
-      letter-spacing:-.04em;
-      color:#fff;
+      font-size:18px;
+      line-height:1.2;
+      font-weight:900;
+      letter-spacing:-.035em;
+      color:var(--vl-maroon);
     }
 
     .bank-empty-text{
-      max-width:310px;
+      max-width:320px;
       margin:10px auto 18px;
-      color:rgba(214,255,240,.64);
+      color:var(--vl-soft);
       font-size:12.5px;
-      font-weight:650;
       line-height:1.55;
+      font-weight:650;
     }
 
     .bank-primary{
       width:100%;
-      min-height:50px;
+      min-height:48px;
       border:0;
       border-radius:999px;
-      color:#06110d;
-      background:
-        radial-gradient(circle at 30% 0%,rgba(255,255,255,.55),transparent 34%),
-        linear-gradient(135deg,#00DF82 0%,#79ff99 100%);
-      box-shadow:
-        0 18px 38px rgba(0,223,130,.24),
-        0 0 0 1px rgba(255,255,255,.22) inset;
-      font-size:14px;
-      font-weight:950;
+      color:#2c1200;
+      background:radial-gradient(circle at 30% 0%, rgba(255,255,255,.55), transparent 34%), linear-gradient(135deg,#ffe08a 0%,#f5af2a 42%,#d96bff 100%);
+      box-shadow:0 16px 32px rgba(143,87,255,.18), inset 0 1px 0 rgba(255,255,255,.32);
+      font-size:13px;
+      font-weight:900;
       cursor:pointer;
+      transition:.18s ease;
     }
 
-    .bank-primary:disabled{
-      opacity:.65;
-      cursor:not-allowed;
-    }
+    .bank-primary:hover{transform:translateY(-1px);filter:brightness(1.03)}
+    .bank-primary:disabled{opacity:.65;cursor:not-allowed}
 
     .bank-list{
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:12px;
       margin-top:12px;
       animation:bankFadeUp .42s ease both;
     }
 
     .bank-card{
-      border:1px solid var(--border);
-      border-radius:20px;
-      background:
-        radial-gradient(220px 100px at 92% 0%,rgba(0,223,130,.10),transparent 64%),
-        linear-gradient(180deg,rgba(9,37,31,.86),rgba(5,20,17,.94));
-      box-shadow:
-        0 16px 36px rgba(0,0,0,.24),
-        inset 0 1px 0 rgba(255,255,255,.06);
+      border:1px solid rgba(43,11,22,.075);
+      border-radius:28px;
+      background:radial-gradient(250px 140px at 100% -10%, rgba(217,107,255,.12), transparent 64%), linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.90));
+      box-shadow:0 14px 34px rgba(43,11,22,.07), inset 0 1px 0 rgba(255,255,255,.94);
       overflow:hidden;
+      position:relative;
     }
 
+    .bank-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(135deg, rgba(255,255,255,.82), transparent 30%), radial-gradient(circle at 12% 0%, rgba(245,175,42,.08), transparent 44%);
+    }
+
+    .bank-card > *{position:relative;z-index:1}
+
     .bank-card-top{
-      padding:16px;
+      padding:14px;
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
@@ -399,120 +380,135 @@
     .bank-card-brand{
       display:flex;
       align-items:center;
-      gap:10px;
+      gap:11px;
       min-width:0;
     }
 
     .bank-provider-icon{
-      width:38px;
-      height:38px;
-      border-radius:999px;
+      width:48px;
+      height:48px;
+      border-radius:18px;
       display:grid;
       place-items:center;
-      color:#071211;
-      background:linear-gradient(135deg,#00DF82,#79ff99);
-      box-shadow:0 12px 24px rgba(0,223,130,.20);
-      font-weight:950;
-      font-size:11px;
+      background:#fff;
+      border:1px solid rgba(43,11,22,.06);
+      box-shadow:0 12px 24px rgba(43,11,22,.09), inset 0 1px 0 rgba(255,255,255,.9);
+      overflow:hidden;
       flex:0 0 auto;
+      color:var(--vl-maroon);
+      font-weight:900;
+      font-size:11px;
+    }
+
+    .bank-provider-icon img{
+      width:38px;
+      height:38px;
+      object-fit:contain;
+      display:block;
     }
 
     .bank-provider-label{
-      color:rgba(214,255,240,.58);
+      color:var(--vl-soft);
       font-size:10px;
-      font-weight:850;
+      font-weight:800;
       text-transform:uppercase;
       letter-spacing:.08em;
     }
 
     .bank-provider-name{
-      margin-top:3px;
-      color:#fff;
-      font-size:16px;
-      font-weight:950;
-      letter-spacing:-.03em;
+      margin-top:4px;
+      color:var(--vl-maroon);
+      font-size:15px;
+      line-height:1.15;
+      font-weight:900;
+      letter-spacing:-.025em;
     }
 
     .bank-default{
-      min-height:24px;
-      padding:5px 9px;
+      min-height:26px;
+      padding:0 10px;
       border-radius:999px;
-      background:rgba(0,223,130,.12);
-      border:1px solid rgba(0,223,130,.24);
-      color:#00DF82;
+      color:#2c1200;
+      background:linear-gradient(135deg,#ffe08a,#f5af2a);
+      border:1px solid rgba(255,255,255,.72);
+      box-shadow:0 10px 20px rgba(245,175,42,.15);
       font-size:10px;
-      font-weight:950;
+      font-weight:900;
+      display:inline-flex;
+      align-items:center;
       white-space:nowrap;
     }
 
     .bank-card-body{
       display:grid;
       grid-template-columns:1fr 1fr;
-      border-top:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.025);
+      border-top:1px solid rgba(43,11,22,.075);
+      background:rgba(251,248,255,.72);
     }
 
     .bank-info{
-      padding:13px 16px;
+      padding:12px 14px;
       min-width:0;
     }
 
-    .bank-info + .bank-info{
-      border-left:1px solid rgba(255,255,255,.08);
-    }
+    .bank-info + .bank-info{border-left:1px solid rgba(43,11,22,.065)}
 
     .bank-info-label{
       display:block;
-      color:rgba(214,255,240,.55);
+      color:var(--vl-soft);
       font-size:10.5px;
-      font-weight:750;
+      font-weight:700;
       margin-bottom:5px;
     }
 
     .bank-info-value{
-      color:#fff;
-      font-size:14px;
+      color:var(--vl-maroon);
+      font-size:13px;
       font-weight:900;
-      letter-spacing:-.02em;
+      letter-spacing:-.01em;
       overflow:hidden;
       text-overflow:ellipsis;
       white-space:nowrap;
     }
 
     .bank-card-actions{
-      padding:12px 16px 14px;
-      display:flex;
-      justify-content:flex-end;
-      gap:8px;
-      border-top:1px solid rgba(255,255,255,.07);
+      padding:12px 14px 14px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:9px;
+      border-top:1px solid rgba(43,11,22,.07);
+      background:rgba(251,248,255,.72);
     }
 
     .bank-action{
-      border:1px solid var(--border);
-      min-height:34px;
+      border:1px solid rgba(43,11,22,.08);
+      min-height:38px;
       padding:0 12px;
       border-radius:999px;
-      background:rgba(255,255,255,.06);
-      color:rgba(214,255,240,.82);
-      font-size:11px;
+      background:#fff;
+      color:var(--vl-soft);
+      font-size:11.5px;
       font-weight:900;
       cursor:pointer;
+      transition:.18s ease;
     }
 
+    .bank-action:hover{transform:translateY(-1px)}
+
     .bank-action.is-edit{
-      color:#071211;
-      background:linear-gradient(135deg,#00DF82,#72ff9a);
+      color:#2c1200;
+      border-color:rgba(255,255,255,.72);
+      background:linear-gradient(135deg,#ffe08a,#f5af2a);
+      box-shadow:0 10px 20px rgba(245,175,42,.14);
     }
 
     .bank-action.is-delete{
-      color:#ffd7df;
-      background:rgba(255,79,109,.10);
-      border-color:rgba(255,79,109,.22);
+      color:#d7495c;
+      background:#fff1f3;
+      border-color:rgba(226,74,100,.12);
     }
 
-    .bank-floating-add{
-      margin-top:14px;
-    }
+    .bank-floating-add{margin-top:2px}
 
     .bank-overlay{
       position:fixed;
@@ -521,110 +517,96 @@
       display:none;
       align-items:flex-end;
       justify-content:center;
-      background:rgba(0,0,0,.58);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
+      background:rgba(43,11,22,.34);
+      backdrop-filter:blur(14px);
+      -webkit-backdrop-filter:blur(14px);
     }
 
-    .bank-overlay.show{
-      display:flex;
-    }
+    .bank-overlay.show{display:flex}
 
     .bank-sheet{
       width:min(100%,430px);
       max-height:88vh;
       overflow:auto;
-      border-radius:28px 28px 0 0;
-      background:
-        radial-gradient(360px 180px at 86% 0%,rgba(0,223,130,.12),transparent 64%),
-        linear-gradient(180deg,rgba(8,34,29,.98),rgba(3,15,15,.98));
-      border:1px solid var(--border);
+      border-radius:30px 30px 0 0;
+      background:radial-gradient(260px 140px at 100% 0%, rgba(217,107,255,.14), transparent 62%), radial-gradient(240px 130px at 0% 100%, rgba(245,175,42,.12), transparent 60%), rgba(255,255,255,.98);
+      border:1px solid rgba(255,255,255,.72);
       border-bottom:0;
-      box-shadow:0 -24px 70px rgba(0,0,0,.44);
-      padding:22px 14px 16px;
+      box-shadow:0 -34px 90px rgba(43,11,22,.22), inset 0 1px 0 rgba(255,255,255,.92);
+      padding:16px 14px calc(16px + env(safe-area-inset-bottom));
       animation:bankSheetUp .22s ease both;
     }
 
     .bank-sheet-head{
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:space-between;
       gap:12px;
-      margin-bottom:22px;
+      margin-bottom:14px;
+      padding-bottom:13px;
+      border-bottom:1px solid rgba(43,11,22,.08);
     }
 
     .bank-sheet-title{
       margin:0;
-      color:#fff;
-      font-size:20px;
-      font-weight:950;
+      color:var(--vl-maroon);
+      font-size:18px;
+      line-height:1.15;
+      font-weight:900;
       letter-spacing:-.04em;
     }
 
     .bank-close{
-      width:38px;
-      height:38px;
-      border-radius:14px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.06);
-      color:#fff;
+      width:40px;
+      height:40px;
+      border-radius:15px;
+      border:1px solid rgba(43,11,22,.08);
+      background:#fbf8ff;
+      color:#5b2841;
       display:grid;
       place-items:center;
       cursor:pointer;
+      flex:0 0 auto;
     }
 
-    .bank-close svg{
-      width:19px;
-    }
+    .bank-close svg{width:20px;height:20px}
 
-    .bank-form{
-      display:grid;
-      gap:13px;
-    }
-
-    .bank-form-group{
-      display:grid;
-      gap:7px;
-    }
+    .bank-form{display:grid;gap:12px}
+    .bank-form-group{display:grid;gap:7px}
 
     .bank-label{
-      color:rgba(214,255,240,.56);
-      font-size:12px;
-      font-weight:850;
+      color:var(--vl-soft);
+      font-size:11.5px;
+      font-weight:800;
     }
 
-    .bank-input,
-    .bank-select{
+    .bank-input,.bank-select{
       width:100%;
-      min-height:54px;
-      border-radius:14px;
-      border:1px solid var(--border);
+      min-height:52px;
+      border-radius:18px;
+      border:1px solid rgba(43,11,22,.09);
       outline:0;
-      background:rgba(255,255,255,.065);
-      color:#fff;
-      padding:0 15px;
-      font-size:14px;
+      background:#fbf8ff;
+      color:var(--vl-maroon);
+      padding:0 14px;
+      font-size:13px;
       font-weight:750;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.86);
     }
 
     .bank-select{
       appearance:none;
-      background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(214,255,240,.75)' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e");
+      background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(91,40,65,.72)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e");
       background-repeat:no-repeat;
       background-position:right 14px center;
-      background-size:18px;
+      background-size:17px;
       padding-right:44px;
     }
 
-    .bank-select option{
-      background:#061714;
-      color:#fff;
-    }
-
-    .bank-input:focus,
-    .bank-select:focus{
-      border-color:rgba(0,223,130,.42);
-      box-shadow:0 0 0 4px rgba(0,223,130,.10);
+    .bank-input:focus,.bank-select:focus{
+      border-color:rgba(217,107,255,.28);
+      background:#fff;
+      box-shadow:0 0 0 4px rgba(217,107,255,.07), inset 0 1px 0 rgba(255,255,255,.9);
     }
 
     .bank-check{
@@ -632,41 +614,33 @@
       align-items:center;
       gap:10px;
       padding:12px 13px;
-      border-radius:15px;
-      background:rgba(255,255,255,.045);
-      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      background:#fbf8ff;
+      border:1px solid rgba(43,11,22,.08);
       cursor:pointer;
     }
 
-    .bank-check input{
-      width:17px;
-      height:17px;
-      accent-color:#00DF82;
-    }
+    .bank-check input{width:17px;height:17px;accent-color:#8f57ff}
 
     .bank-check-text{
-      color:#fff;
-      font-size:13px;
+      color:var(--vl-maroon);
+      font-size:12.5px;
       font-weight:800;
     }
 
     .bank-secondary{
       width:100%;
-      min-height:48px;
+      min-height:46px;
       border-radius:999px;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.04);
-      color:#fff;
-      font-size:14px;
+      border:1px solid rgba(43,11,22,.09);
+      background:#fbf8ff;
+      color:var(--vl-soft);
+      font-size:13px;
       font-weight:900;
       cursor:pointer;
     }
 
-    .bank-sheet-actions{
-      display:grid;
-      gap:10px;
-      margin-top:4px;
-    }
+    .bank-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
 
     .bank-toast{
       position:fixed;
@@ -683,14 +657,9 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
-      color:#06110e;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.62), transparent 34%),
-        linear-gradient(135deg, #00DF82, #72ffab);
-      box-shadow:
-        0 18px 42px rgba(0,0,0,.32),
-        0 0 28px rgba(0,223,130,.18);
+      color:#2c1200;
+      background:linear-gradient(135deg,#ffe08a,#f5af2a,#d96bff);
+      box-shadow:0 18px 42px rgba(43,11,22,.20);
       font-size:12px;
       font-weight:850;
       transition:.22s ease;
@@ -699,9 +668,7 @@
 
     .bank-toast.is-error{
       color:#fff;
-      background:
-        radial-gradient(circle at 30% 0%, rgba(255,255,255,.18), transparent 34%),
-        linear-gradient(135deg, #ff5b75, #fb923c);
+      background:linear-gradient(135deg,#e24a64,#f5af2a);
     }
 
     .bank-toast.show{
@@ -709,54 +676,25 @@
       transform:translateX(-50%) translateY(0);
     }
 
-    @keyframes bankFadeUp{
-      from{opacity:0;transform:translateY(10px)}
-      to{opacity:1;transform:translateY(0)}
-    }
-
-    @keyframes bankSheetUp{
-      from{opacity:0;transform:translateY(24px)}
-      to{opacity:1;transform:translateY(0)}
-    }
+    @keyframes bankFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes bankSheetUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 
     @media(min-width:768px){
-      .bank-page{
-        padding:22px 0;
-      }
-
-      .bank-phone{
-        min-height:calc(100vh - 44px);
-        border-radius:26px;
-        overflow:hidden;
-      }
-
-      .bank-overlay{
-        align-items:center;
-      }
-
-      .bank-sheet{
-        border-radius:28px;
-        border-bottom:1px solid var(--border);
-      }
+      .bank-page{padding:22px 0}
+      .bank-phone{min-height:calc(100vh - 44px);border-radius:30px;overflow:hidden}
+      .bank-overlay{align-items:center}
+      .bank-sheet{border-radius:30px;border-bottom:1px solid rgba(255,255,255,.72)}
     }
 
     @media(max-width:370px){
-      .bank-title-wrap h1{
-        font-size:21px;
-      }
-
-      .bank-hero-title{
-        font-size:25px;
-      }
-
-      .bank-card-body{
-        grid-template-columns:1fr;
-      }
-
-      .bank-info + .bank-info{
-        border-left:0;
-        border-top:1px solid rgba(255,255,255,.08);
-      }
+      .bank-logo{width:45px;height:45px;border-radius:16px}
+      .bank-logo img{width:39px;height:39px}
+      .bank-title-wrap h1{font-size:21px}
+      .bank-hero{border-radius:30px;padding:16px}
+      .bank-hero-title{font-size:25px}
+      .bank-card-body{grid-template-columns:1fr}
+      .bank-info + .bank-info{border-left:0;border-top:1px solid rgba(43,11,22,.065)}
+      .bank-sheet-actions{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -768,17 +706,17 @@
       <header class="bank-header">
         <div class="bank-brand">
           <div class="bank-logo">
-            <img src="{{ asset('logo.png') }}" alt="Rubik Company">
+            <img src="{{ asset('logo.png') }}" alt="Velora Finance">
           </div>
 
           <div class="bank-title-wrap">
-            <span>Penarikan saldo</span>
-            <h1>Rekening Bank</h1>
+            <span>Velora Payout</span>
+            <h1>Rekening</h1>
           </div>
         </div>
 
         <div class="bank-header-actions">
-          <a href="{{ url('/withdrawals') }}" class="bank-header-btn" aria-label="Kembali ke Penarikan">
+          <a href="{{ url('/dashboard') }}" class="bank-header-btn" aria-label="Kembali ke Penarikan">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -798,9 +736,7 @@
           <div>
             <p class="bank-hero-label">Akun penerima penarikan</p>
             <h2 class="bank-hero-title">Kelola Rekening</h2>
-            <p class="bank-hero-sub">
-              Tambahkan rekening bank atau e-wallet untuk menerima penarikan saldo.
-            </p>
+            <p class="bank-hero-sub">Tambahkan e-wallet atau rekening bank untuk menerima pencairan saldo Velora.</p>
           </div>
 
           <div class="bank-hero-pill">
@@ -822,7 +758,7 @@
   <div class="bank-overlay" id="bankOverlay" role="dialog" aria-modal="true" aria-labelledby="bankSheetTitle">
     <section class="bank-sheet">
       <div class="bank-sheet-head">
-        <h2 class="bank-sheet-title" id="bankSheetTitle">Data Akun Bank</h2>
+        <h2 class="bank-sheet-title" id="bankSheetTitle">Data Akun Penarikan</h2>
 
         <button class="bank-close" type="button" id="closeSheet" aria-label="Tutup">
           <svg viewBox="0 0 24 24" fill="none">
@@ -837,13 +773,17 @@
         <input type="hidden" id="type" value="EWALLET" />
 
         <div class="bank-form-group">
-          <label class="bank-label" for="provider">Pilih Penarikan</label>
-            <select id="provider" class="bank-select" required>
-              <option value="OVO">OVO</option>
-              <option value="DANA">DANA</option>
-              <option value="GOPAY">GOPAY</option>
-              <option value="SHOPEEPAY">SHOPEEPAY</option>
-            </select>
+          <label class="bank-label" for="provider">Pilih Metode Penarikan</label>
+          <select id="provider" class="bank-select" required>
+            <option value="OVO">OVO</option>
+            <option value="DANA">DANA</option>
+            <option value="GOPAY">GOPAY</option>
+            <option value="SHOPEEPAY">SHOPEEPAY</option>
+            <option value="BCA">BCA</option>
+            <option value="BRI">BRI</option>
+            <option value="BNI">BNI</option>
+            <option value="MANDIRI">MANDIRI</option>
+          </select>
         </div>
 
         <div class="bank-form-group">
@@ -862,7 +802,7 @@
         </label>
 
         <div class="bank-sheet-actions">
-          <button class="bank-primary" type="submit" id="submitBankBtn">Simpan Akun Bank</button>
+          <button class="bank-primary" type="submit" id="submitBankBtn">Simpan Akun</button>
           <button class="bank-secondary" type="button" id="btnReset">Batal</button>
         </div>
       </form>
@@ -913,11 +853,7 @@
       }
 
       if(!res.ok){
-        const message =
-          data?.message ||
-          data?.error ||
-          'Terjadi kesalahan saat memproses data.';
-
+        const message = data?.message || data?.error || 'Terjadi kesalahan saat memproses data.';
         throw new Error(message);
       }
 
@@ -948,14 +884,50 @@
 
     function maskNumber(n){
       const raw = String(n || '');
-
       if(raw.length <= 6) return raw;
-
       return raw.slice(0,3) + '*'.repeat(Math.max(raw.length - 6, 4)) + raw.slice(-3);
     }
 
     function providerInitial(p){
-      return String(p || 'RB').trim().slice(0,3).toUpperCase();
+      return String(p || 'VL').trim().slice(0,3).toUpperCase();
+    }
+
+    function providerDisplayName(provider){
+      const key = String(provider || '').trim().toUpperCase();
+      const names = {
+        BCA:'BCA', BRI:'BRI', BNI:'BNI', MANDIRI:'Mandiri', BSI:'BSI', CIMB:'CIMB', PERMATA:'Permata',
+        DANA:'DANA', GOPAY:'GoPay', OVO:'OVO', DOKU:'DOKU', LINKAJA:'LinkAja', SHOPEEPAY:'ShopeePay', QRIS:'QRIS'
+      };
+      return names[key] || provider || 'Rekening';
+    }
+
+    function providerLogo(provider){
+      const key = String(provider || '').trim().toUpperCase();
+      const logos = {
+        BCA:'/assets/payment-methods/bca.png',
+        BRI:'/assets/payment-methods/bri.png',
+        BNI:'/assets/payment-methods/bni.png',
+        MANDIRI:'/assets/payment-methods/mandiri.png',
+        DANA:'/assets/payment-methods/dana.png',
+        GOPAY:'/assets/payment-methods/gopay.png',
+        OVO:'/assets/payment-methods/ovo.png',
+        DOKU:'/assets/payment-methods/doku.png',
+        LINKAJA:'/assets/payment-methods/linkaja.png',
+        SHOPEEPAY:'/assets/payment-methods/shopeepay.png',
+        QRIS:'/assets/payment-methods/qris.png'
+      };
+      return logos[key] || '';
+    }
+
+    function providerBadge(provider){
+      const providerName = providerDisplayName(provider);
+      const logo = providerLogo(provider);
+
+      if(logo){
+        return `<img src="${escapeHtml(logo)}" alt="${escapeHtml(providerName)}" loading="lazy" onerror="this.remove(); this.parentElement.textContent='${escapeHtml(providerInitial(providerName))}';">`;
+      }
+
+      return escapeHtml(providerInitial(providerName));
     }
 
     function lock(){
@@ -979,10 +951,10 @@
         $('account_name').value = data.account_name || '';
         $('account_number').value = data.account_number || '';
         $('is_default').checked = Boolean(data.is_default);
-        submitBtn.textContent = 'Perbarui Akun Bank';
+        submitBtn.textContent = 'Perbarui Akun';
       }else{
         resetForm(false);
-        submitBtn.textContent = 'Simpan Akun Bank';
+        submitBtn.textContent = 'Simpan Akun';
       }
 
       setTimeout(function(){
@@ -1002,7 +974,7 @@
       $('account_name').value = '';
       $('account_number').value = '';
       $('is_default').checked = false;
-      submitBtn.textContent = 'Simpan Akun Bank';
+      submitBtn.textContent = 'Simpan Akun';
 
       if(close) closeBankSheet();
     }
@@ -1021,12 +993,10 @@
 
           <h2 class="bank-empty-title">Belum ada rekening</h2>
 
-          <p class="bank-empty-text">
-            Tautkan rekening bank atau e-wallet untuk melakukan penarikan saldo dengan cepat.
-          </p>
+          <p class="bank-empty-text">Tambahkan rekening bank atau e-wallet supaya proses withdraw bisa langsung diproses.</p>
 
           <button class="bank-primary" type="button" onclick="openSheet()">
-            + Tambahkan Akun Bank
+            + Tambahkan Akun
           </button>
         </section>
       `;
@@ -1036,15 +1006,17 @@
       elListWrap.innerHTML = `
         <section class="bank-list">
           ${rows.map(function(r){
+            const providerName = providerDisplayName(r.provider);
+
             return `
               <article class="bank-card">
                 <div class="bank-card-top">
                   <div class="bank-card-brand">
-                    <div class="bank-provider-icon">${escapeHtml(providerInitial(r.provider))}</div>
+                    <div class="bank-provider-icon">${providerBadge(r.provider)}</div>
 
                     <div>
                       <div class="bank-provider-label">${escapeHtml(r.type || 'EWALLET')}</div>
-                      <div class="bank-provider-name">${escapeHtml(r.provider || '-')}</div>
+                      <div class="bank-provider-name">${escapeHtml(providerName)}</div>
                     </div>
                   </div>
 
@@ -1077,7 +1049,7 @@
           }).join('')}
 
           <button class="bank-primary bank-floating-add" type="button" onclick="openSheet()">
-            + Tambahkan Akun Bank
+            + Tambahkan Akun
           </button>
         </section>
       `;
@@ -1144,7 +1116,6 @@
 
       const id = $('id').value.trim();
       const provider = $('provider').value.trim();
-
       const type = bankProviders.includes(provider) ? 'BANK' : 'EWALLET';
 
       const payload = {

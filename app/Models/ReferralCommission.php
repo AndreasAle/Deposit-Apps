@@ -11,6 +11,7 @@ class ReferralCommission extends Model
         'referred_user_id',
         'source_type',
         'source_id',
+        'level',
         'base_amount',
         'rate',
         'commission_amount',

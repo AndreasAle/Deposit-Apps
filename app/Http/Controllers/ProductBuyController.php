@@ -166,10 +166,12 @@ class ProductBuyController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | Referral 33%
+            | Referral 3 Level
             |--------------------------------------------------------------------------
             | Basic / Semua:
-            | - Dapat referral 33%
+            | - Level 1 (referrer langsung) = 32%
+            | - Level 2 (referrer dari referrer) = 2%
+            | - Level 3 = 1%
             |
             | Saham Rubik / Rubik Pro:
             | - Tidak dapat referral
@@ -179,8 +181,7 @@ class ProductBuyController extends Controller
                     $user,
                     'buy',
                     (int) $investment->id,
-                    (float) $investment->price,
-                    0.33
+                    (float) $investment->price
                 );
             }
 
