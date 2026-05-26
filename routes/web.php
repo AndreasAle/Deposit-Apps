@@ -53,7 +53,7 @@ Route::get('/tentang-kami', function (Request $request) {
     }
 
     return view('pages.tentang-rubik');
-})->name('tentang.rubik');
+});
 
 
 /*
