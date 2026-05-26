@@ -173,7 +173,7 @@ class JayaPayWithdrawService
         }
 
         return [
-            'method' => in_array($provider, $ewallets, true) ? $provider : 'Transfer',
+            'method' => 'Transfer',
             'bank_code' => $bankCodes[$provider],
         ];
     }
