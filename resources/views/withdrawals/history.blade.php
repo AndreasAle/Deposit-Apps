@@ -263,7 +263,7 @@
     }
 
     /* Date Group */
-    .wh-date-group{margin-bottom:6px}
+    .wh-date-group{margin-bottom:10px;display:flex;flex-direction:column;gap:10px}
 
     .wh-date-label{
       font-size:11px;
@@ -275,7 +275,7 @@
     }
 
     /* Transaction Card */
-    .wh-list{display:flex;flex-direction:column;gap:10px}
+    .wh-list{display:flex;flex-direction:column;gap:12px}
 
     .wh-card{
       position:relative;
@@ -298,10 +298,10 @@
     .wh-card > *{position:relative;z-index:1}
 
     .wh-card-main{
-      padding:13px 14px;
+      padding:16px 16px;
       display:flex;
       align-items:center;
-      gap:12px;
+      gap:14px;
     }
 
     .wh-bank-logo{
@@ -350,7 +350,7 @@
 
     .wh-card-footer{
       border-top:1px solid rgba(43,11,22,.06);
-      padding:9px 14px;
+      padding:11px 16px;
       display:flex;
       align-items:center;
       justify-content:space-between;
