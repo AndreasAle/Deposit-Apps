@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         */
         $middleware->validateCsrfTokens(except: [
             'payment/jayapay/deposit/callback',
+            'payment/jayapay/withdrawal/callback',
         ]);
 
         // 2. LOGIKA REDIRECT UNTUK GUEST
