@@ -1047,41 +1047,55 @@
     }
 
     .iv-ring-center{
-      position:absolute;
-      inset:0;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      pointer-events:none;
-      padding:8px 38px 0;
-    }
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  pointer-events:none;
+  padding:12px 46px 0;
+}
 
-    .iv-ring-center span{
-      display:block;
-      color:var(--iv-muted);
-      font-size:14px;
-      font-weight:700;
-      margin-bottom:8px;
-    }
+.iv-ring-center span{
+  display:block;
+  color:var(--iv-muted);
+  font-size:12px;
+  line-height:1.1;
+  font-weight:700;
+  margin-bottom:7px;
+  white-space:nowrap;
+}
 
-    .iv-ring-center strong{
-      display:block;
-      color:var(--iv-maroon);
-      font-size:clamp(24px, 5vw, 38px);
-      line-height:1.05;
-      letter-spacing:-.045em;
-      font-weight:900;
-    }
+.iv-ring-center strong{
+  display:block;
+  width:100%;
+  max-width:124px;
+  color:var(--iv-maroon);
+  font-size:clamp(18px, 4.4vw, 24px);
+  line-height:1.08;
+  letter-spacing:-.04em;
+  font-weight:900;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-    .iv-ring-center small{
-      display:block;
-      margin-top:9px;
-      color:var(--iv-purple);
-      font-size:12px;
-      font-weight:800;
-    }
+.iv-ring-center small{
+  display:block;
+  width:100%;
+  max-width:132px;
+  margin-top:8px;
+  color:var(--iv-purple);
+  font-size:11px;
+  line-height:1.1;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
     .iv-ring-float{
       position:absolute;
@@ -1404,11 +1418,15 @@
 
             <div class="iv-ring-float">{{ $totalActive }} Plan Aktif</div>
 
-            <div class="iv-ring-center">
-              <span>Total modal</span>
-              <strong>Rp {{ number_format($totalModal, 0, ',', '.') }}</strong>
-              <small>Return {{ number_format($returnRate, 1, ',', '.') }}%</small>
-            </div>
+<div class="iv-ring-center">
+  <span>Total modal</span>
+  <strong title="Rp {{ number_format($totalModal, 0, ',', '.') }}">
+    Rp {{ number_format($totalModal, 0, ',', '.') }}
+  </strong>
+  <small>Return {{ number_format($returnRate, 1, ',', '.') }}%</small>
+</div>
+
+
           </div>
         </article>
 

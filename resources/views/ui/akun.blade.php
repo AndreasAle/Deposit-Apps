@@ -282,34 +282,52 @@
     }
 
     .vl-bal-split{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      padding-top:14px;
-      border-top:1px solid var(--line);
-    }
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:0;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+}
 
-    .vl-bal-item span{
-      display:block;
-      color:var(--muted);
-      font-size:10px;
-      font-weight:750;
-      margin-bottom:5px;
-    }
+.vl-bal-item{
+  min-width:0;
+  padding:0 14px;
+}
 
-    .vl-bal-item strong{
-      display:block;
-      color:var(--ink);
-      font-size:12.5px;
-      font-weight:950;
-      letter-spacing:-.02em;
-    }
+.vl-bal-item:first-child{
+  padding-left:0;
+  border-right:1px solid var(--line);
+}
 
-    .vl-bal-divider{
-      width:1px;
-      background:var(--line);
-      margin:0 -5px;
-    }
+.vl-bal-item:last-child{
+  padding-right:0;
+}
+
+.vl-bal-item span{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:750;
+  margin-bottom:6px;
+  line-height:1.1;
+  white-space:nowrap;
+}
+
+.vl-bal-item strong{
+  display:block;
+  color:var(--ink);
+  font-size:12.5px;
+  font-weight:950;
+  letter-spacing:-.02em;
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.vl-bal-divider{
+  display:none;
+}
 
     /* ── ACTION BUTTONS ── */
     .vl-actions{
@@ -831,17 +849,18 @@
           data-amount="Rp {{ number_format($totalAset, 0, ',', '.') }}"
         >••••••••</h2>
 
-        <div class="vl-bal-split">
-          <div class="vl-bal-item">
-            <span>Saldo Utama</span>
-            <strong>Rp {{ number_format($saldoUtama, 0, ',', '.') }}</strong>
-          </div>
-          <div class="vl-bal-divider"></div>
-          <div class="vl-bal-item" style="padding-left:14px;">
-            <span>Saldo Penarikan</span>
-            <strong>Rp {{ number_format($saldoPenarikan, 0, ',', '.') }}</strong>
-          </div>
-        </div>
+<div class="vl-bal-split">
+  <div class="vl-bal-item">
+    <span>Saldo Utama</span>
+    <strong>Rp {{ number_format($saldoUtama, 0, ',', '.') }}</strong>
+  </div>
+
+  <div class="vl-bal-item">
+    <span>Saldo Penarikan</span>
+    <strong>Rp {{ number_format($saldoPenarikan, 0, ',', '.') }}</strong>
+  </div>
+</div>
+
       </div>
 
       {{-- ── ACTION BUTTONS ── --}}
