@@ -1044,7 +1044,7 @@
       <div class="vl-section-label">Lainnya</div>
 
       <div class="vl-card">
-        <a href="https://t.me/veloracompanycs" target="_blank" rel="noopener noreferrer" class="vl-menu-row">
+        <a href="https://t.me/velorafinance" target="_blank" rel="noopener noreferrer" class="vl-menu-row">
           <div class="vl-menu-left">
             <div class="vl-menu-icon green">
               <svg viewBox="0 0 24 24" fill="none">

@@ -398,6 +398,334 @@
     .vl-empty{ padding:18px 14px; border-radius:22px; background:#fff; border:1px dashed rgba(75,16,21,.22); color:#8b6b70; text-align:center; font-size:12.5px; font-weight:750; }
     .vl-bottom-spacer{ height:96px; }
 
+
+    /* CS / CHANNEL WELCOME POPUP */
+.vl-cs-popup{
+  position:fixed;
+  inset:0;
+  z-index:100000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px 14px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,181,46,.18), transparent 34%),
+    radial-gradient(circle at 90% 22%, rgba(125,60,255,.22), transparent 38%),
+    rgba(38, 10, 45, .58);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+
+.vl-cs-popup.show{
+  display:flex;
+}
+
+.vl-cs-card{
+  width:100%;
+  max-width:420px;
+  position:relative;
+  overflow:hidden;
+  border-radius:34px;
+  background:
+    radial-gradient(280px 180px at 100% 0%, rgba(201,87,255,.22), transparent 64%),
+    radial-gradient(260px 170px at 0% 100%, rgba(255,181,46,.18), transparent 62%),
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,248,239,.96));
+  border:1px solid rgba(255,255,255,.76);
+  box-shadow:
+    0 34px 90px rgba(41, 10, 55, .34),
+    0 0 0 1px rgba(125,60,255,.08),
+    inset 0 1px 0 rgba(255,255,255,.92);
+  animation:vlCsIn .32s cubic-bezier(.22,.8,.22,1) both;
+}
+
+.vl-cs-card::before{
+  content:"";
+  position:absolute;
+  left:-90px;
+  top:-80px;
+  width:190px;
+  height:190px;
+  border-radius:999px;
+  background:linear-gradient(135deg, rgba(255,181,46,.28), rgba(201,87,255,.20));
+  filter:blur(8px);
+}
+
+.vl-cs-card::after{
+  content:"";
+  position:absolute;
+  right:-70px;
+  bottom:-90px;
+  width:210px;
+  height:210px;
+  border-radius:999px;
+  background:linear-gradient(135deg, rgba(125,60,255,.18), rgba(255,181,46,.16));
+  filter:blur(10px);
+}
+
+.vl-cs-inner{
+  position:relative;
+  z-index:2;
+  padding:22px;
+}
+
+.vl-cs-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.vl-cs-brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+}
+
+.vl-cs-logo{
+  width:52px;
+  height:52px;
+  border-radius:19px;
+  display:grid;
+  place-items:center;
+  background:
+    linear-gradient(135deg, rgba(255,181,46,.18), rgba(201,87,255,.16), rgba(125,60,255,.13)),
+    #fff;
+  border:1px solid rgba(75,16,21,.08);
+  box-shadow:0 16px 32px rgba(75,16,21,.10);
+  overflow:hidden;
+  flex:0 0 auto;
+}
+
+.vl-cs-logo img{
+  width:44px;
+  height:44px;
+  object-fit:contain;
+  display:block;
+}
+
+.vl-cs-brand span{
+  display:block;
+  margin-bottom:5px;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.16em;
+  color:#9b6b72;
+  text-transform:uppercase;
+}
+
+.vl-cs-brand strong{
+  display:block;
+  color:#3b1116;
+  font-size:19px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-.045em;
+}
+
+.vl-cs-close{
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:15px;
+  color:#5b2a30;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 10px 24px rgba(75,16,21,.08);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+}
+
+.vl-cs-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:32px;
+  padding:0 12px;
+  border-radius:999px;
+  color:#fff;
+  background:linear-gradient(135deg, var(--gold), var(--violet), var(--brand));
+  box-shadow:0 14px 28px rgba(125,60,255,.22);
+  font-size:10.5px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+
+.vl-cs-badge::before{
+  content:"";
+  width:7px;
+  height:7px;
+  border-radius:999px;
+  background:#fff3ba;
+  box-shadow:0 0 0 5px rgba(255,255,255,.18);
+}
+
+.vl-cs-title{
+  margin:14px 0 0;
+  color:#321047;
+  font-size:27px;
+  line-height:1.04;
+  font-weight:950;
+  letter-spacing:-.07em;
+}
+
+.vl-cs-title span{
+  color:var(--brand);
+}
+
+.vl-cs-desc{
+  margin:10px 0 0;
+  max-width:330px;
+  color:#8b6b70;
+  font-size:12.5px;
+  line-height:1.55;
+  font-weight:720;
+}
+
+.vl-cs-info{
+  margin-top:18px;
+  display:grid;
+  gap:10px;
+}
+
+.vl-cs-info-item{
+  min-height:58px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:22px;
+  background:rgba(255,255,255,.74);
+  border:1px solid rgba(75,16,21,.08);
+  box-shadow:0 12px 28px rgba(75,16,21,.065);
+}
+
+.vl-cs-info-icon{
+  width:38px;
+  height:38px;
+  border-radius:15px;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  background:linear-gradient(135deg, var(--gold), var(--violet), var(--brand));
+  flex:0 0 auto;
+}
+
+.vl-cs-info-icon svg{
+  width:19px;
+  height:19px;
+}
+
+.vl-cs-info-text{
+  min-width:0;
+}
+
+.vl-cs-info-text span{
+  display:block;
+  margin-bottom:4px;
+  color:#9a6e72;
+  font-size:10px;
+  font-weight:850;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.vl-cs-info-text strong{
+  display:block;
+  color:#3b1116;
+  font-size:13px;
+  line-height:1.15;
+  font-weight:950;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.vl-cs-actions{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.vl-cs-btn{
+  min-height:50px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  font-size:12.5px;
+  font-weight:950;
+  transition:.18s ease;
+}
+
+.vl-cs-btn:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.02);
+}
+
+.vl-cs-btn svg{
+  width:18px;
+  height:18px;
+}
+
+.vl-cs-btn.cs{
+  color:#4a1218;
+  background:linear-gradient(135deg,#ffb52e,#ffd45c);
+  box-shadow:0 16px 28px rgba(255,181,46,.28);
+}
+
+.vl-cs-btn.channel{
+  color:#fff;
+  background:linear-gradient(135deg,#7d3cff,#c957ff);
+  box-shadow:0 16px 28px rgba(125,60,255,.30);
+}
+
+.vl-cs-foot{
+  margin-top:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:#9a6e72;
+  font-size:10.5px;
+  font-weight:800;
+}
+
+.vl-cs-foot svg{
+  width:14px;
+  height:14px;
+  color:var(--gold);
+}
+
+@keyframes vlCsIn{
+  from{
+    opacity:0;
+    transform:translateY(18px) scale(.94);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+
+@media(max-width:370px){
+  .vl-cs-inner{
+    padding:18px;
+  }
+
+  .vl-cs-title{
+    font-size:23px;
+  }
+
+  .vl-cs-actions{
+    grid-template-columns:1fr;
+  }
+}
+
     /* MODAL */
     .vl-modal-overlay{ position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center; padding:18px 14px; background:rgba(75,16,21,.35); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
     .vl-modal-overlay.show{ display:flex; }
@@ -800,7 +1128,93 @@
       @include('partials.bottom-nav')
     </div>
   </main>
+    {{-- CS & CHANNEL POPUP --}}
+  <div class="vl-cs-popup" id="vlCsPopup" aria-hidden="true">
+    <div class="vl-cs-card">
+      <div class="vl-cs-inner">
+        <div class="vl-cs-top">
+          <div class="vl-cs-brand">
+            <div class="vl-cs-logo">
+              <img src="{{ asset('logo.png') }}" alt="Velora Finance">
+            </div>
 
+            <div>
+              <span>Official Support</span>
+              <strong>Velora Finance</strong>
+            </div>
+          </div>
+
+          <button type="button" class="vl-cs-close" id="vlCsPopupClose" aria-label="Tutup">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="vl-cs-badge">Resmi Hadir 2026</div>
+
+        <h2 class="vl-cs-title">
+          Akses CS & Channel <span>Resmi Velora</span>
+        </h2>
+
+        <p class="vl-cs-desc">
+          Gunakan kontak resmi Velora untuk bantuan akun, informasi terbaru, dan update layanan agar transaksi tetap aman dan terpantau.
+        </p>
+
+        <div class="vl-cs-info">
+          <div class="vl-cs-info-item">
+            <div class="vl-cs-info-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <div class="vl-cs-info-text">
+              <span>Customer Service</span>
+              <strong>@goveloracs</strong>
+            </div>
+          </div>
+
+          <div class="vl-cs-info-item">
+            <div class="vl-cs-info-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <div class="vl-cs-info-text">
+              <span>Official Channel</span>
+              <strong>t.me/velorafinance</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="vl-cs-actions">
+          <a href="https://t.me/goveloracs" target="_blank" rel="noopener noreferrer" class="vl-cs-btn cs">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            Hubungi CS
+          </a>
+
+          <a href="https://t.me/velorafinance" target="_blank" rel="noopener noreferrer" class="vl-cs-btn channel">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            Join Channel
+          </a>
+        </div>
+
+        <div class="vl-cs-foot">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2.5 20 7v5.5c0 4.8-3.2 7.7-8 9-4.8-1.3-8-4.2-8-9V7l8-4.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="m8.5 12 2.2 2.2 4.8-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Pastikan hanya menggunakan kontak resmi Velora
+        </div>
+      </div>
+    </div>
+  </div>
   {{-- MODAL ALERT --}}
   <div class="vl-modal-overlay" id="vlModal" aria-hidden="true">
     <div class="vl-modal">
@@ -1146,6 +1560,38 @@
             }
           }
         });
+      });
+    })();
+
+        // CS & Channel popup - selalu muncul saat masuk dashboard
+    (function(){
+      const popup = document.getElementById('vlCsPopup');
+      const close = document.getElementById('vlCsPopupClose');
+
+      if(!popup || !close) return;
+
+      function showPopup(){
+        popup.classList.add('show');
+        popup.setAttribute('aria-hidden', 'false');
+      }
+
+      function hidePopup(){
+        popup.classList.remove('show');
+        popup.setAttribute('aria-hidden', 'true');
+      }
+
+      window.addEventListener('load', function(){
+        setTimeout(showPopup, 450);
+      });
+
+      close.addEventListener('click', hidePopup);
+
+      popup.addEventListener('click', function(e){
+        if(e.target === popup) hidePopup();
+      });
+
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape') hidePopup();
       });
     })();
   </script>
