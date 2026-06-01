@@ -26,6 +26,20 @@ class ReferralService
      */
     public function give(User $buyer, string $sourceType, int $sourceId, float $baseAmount): void
     {
+
+        /*
+    |--------------------------------------------------------------------------
+    | Referral hanya dari pembelian produk BASIC
+    |--------------------------------------------------------------------------
+    | Deposit / VIP / investasi selain basic tidak boleh menghasilkan komisi.
+    */
+    if ($sourceType !== 'basic_product_buy') {
+        return;
+    }
+
+    if ($baseAmount <= 0) {
+        return;
+    }
         $current = $buyer;
 
         for ($level = 1; $level <= 3; $level++) {

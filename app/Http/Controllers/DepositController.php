@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\ReferralService;
 use App\Services\JayaPayService;
 use Illuminate\Support\Facades\Http;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -360,28 +359,15 @@ private function processPaidDeposit(Deposit $deposit): void
 
     /*
     |--------------------------------------------------------------------------
-    | Deposit hanya menambah saldo
+    | Deposit hanya menambah saldo utama
     |--------------------------------------------------------------------------
     | Deposit tidak menaikkan VIP.
-    | VIP naik dari akumulasi pembelian produk di ProductBuyController.
+    | Deposit tidak memberi komisi referral.
+    | Komisi referral hanya dari pembelian produk BASIC.
     */
     $user->saldo = (float) $user->saldo + (float) $deposit->amount;
     $user->save();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Referral deposit 5%
-    |--------------------------------------------------------------------------
-    */
-    (new ReferralService())->give(
-        $user,
-        'deposit',
-        (int) $deposit->id,
-        (float) $deposit->amount,
-        0.05
-    );
 }
-
 
 
 

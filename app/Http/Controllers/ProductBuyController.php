@@ -179,7 +179,7 @@ class ProductBuyController extends Controller
             if ($this->isReferralAllowedProduct($product)) {
                 app(ReferralService::class)->give(
                     $user,
-                    'buy',
+                    'basic_product_buy',
                     (int) $investment->id,
                     (float) $investment->price
                 );

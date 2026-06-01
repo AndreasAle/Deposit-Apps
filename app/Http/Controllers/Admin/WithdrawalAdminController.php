@@ -76,9 +76,9 @@ class WithdrawalAdminController extends Controller
                 | Saat user request WD, saldo biasanya sudah dipindah ke saldo_hold.
                 | Kalau reject, dana dikembalikan ke saldo utama dan hold dikurangi.
                 */
-                $user->saldo = (float) ($user->saldo ?? 0) + (float) ($row->amount ?? 0);
-                $user->saldo_hold = max(0, (float) ($user->saldo_hold ?? 0) - (float) ($row->amount ?? 0));
-                $user->save();
+            $user->saldo_penarikan = (float) ($user->saldo_penarikan ?? 0) + (float) ($row->amount ?? 0);
+            $user->saldo_hold = max(0, (float) ($user->saldo_hold ?? 0) - (float) ($row->amount ?? 0));
+            $user->save();
             }
 
             $row->update([
@@ -183,9 +183,9 @@ class WithdrawalAdminController extends Controller
                 $user = $row->user()->lockForUpdate()->first();
 
                 if ($user) {
-                    $user->saldo = (float) ($user->saldo ?? 0) + (float) ($row->amount ?? 0);
-                    $user->saldo_hold = max(0, (float) ($user->saldo_hold ?? 0) - (float) ($row->amount ?? 0));
-                    $user->save();
+                $user->saldo_penarikan = (float) ($user->saldo_penarikan ?? 0) + (float) ($row->amount ?? 0);
+                $user->saldo_hold = max(0, (float) ($user->saldo_hold ?? 0) - (float) ($row->amount ?? 0));
+                $user->save();
                 }
             }
 

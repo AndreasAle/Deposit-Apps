@@ -20,22 +20,21 @@ class ReferralController extends Controller
             $user->refresh();
         }
 
-        // HITUNG TOTAL ASLI SEMUA REFERRAL
         $refCount = User::where('referred_by_user_id', $user->id)->count();
 
-        // LIST USER REFERRAL, JANGAN LIMIT 50
-        // Gunakan paginate supaya tidak berat kalau sudah ratusan/ribuan user
         $refUsers = User::where('referred_by_user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate(50)
             ->withQueryString();
 
         $commissions = ReferralCommission::where('referrer_id', $user->id)
+            ->where('source_type', 'basic_product_buy')
             ->orderBy('created_at', 'desc')
             ->paginate(10)
             ->withQueryString();
 
         $totalCommission = ReferralCommission::where('referrer_id', $user->id)
+            ->where('source_type', 'basic_product_buy')
             ->sum('commission_amount');
 
         return view('referral.index', compact(
