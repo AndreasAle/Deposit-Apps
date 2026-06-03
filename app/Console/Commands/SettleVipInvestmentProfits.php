@@ -73,7 +73,7 @@ class SettleVipInvestmentProfits extends Command
                         $profit = (float) ($lockedInvestment->total_profit ?? 0);
 
                         if ($profit <= 0) {
-                            $lockedInvestment->status = 'completed';
+                            $lockedInvestment->status = 'finished';
                             $lockedInvestment->save();
 
                             return;
@@ -93,7 +93,7 @@ class SettleVipInvestmentProfits extends Command
                         | Tandai investasi selesai
                         |--------------------------------------------------------------------------
                         */
-                        $lockedInvestment->status = 'completed';
+                        $lockedInvestment->status = 'finished';
                         $lockedInvestment->save();
 
                         $processed++;

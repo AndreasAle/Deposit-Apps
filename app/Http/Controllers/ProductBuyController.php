@@ -177,7 +177,7 @@ class ProductBuyController extends Controller
                 |
                 | Jangan pakai 'non_profit' kalau kolom status kamu enum dan belum mendukung value itu.
                 */
-                'status'        => $isProfitProduct ? 'active' : 'completed',
+                'status'        => $isProfitProduct ? 'active' : 'finished',
             ]);
 
             /*
