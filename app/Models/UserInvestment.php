@@ -30,12 +30,12 @@ class UserInvestment extends Model
      * Biar start_date & end_date otomatis jadi Carbon object.
      */
     protected $casts = [
-        'start_date' => 'datetime',
-        'end_date'   => 'datetime',
-        'price'      => 'integer',
-        'daily_profit' => 'integer',
+        'start_date'    => 'datetime',
+        'end_date'      => 'datetime',
+        'price'         => 'integer',
+        'daily_profit'  => 'integer',
         'duration_days' => 'integer',
-        'total_profit' => 'integer',
+        'total_profit'  => 'integer',
     ];
 
     /**
@@ -47,17 +47,20 @@ class UserInvestment extends Model
     }
 
     /**
+     * Relasi ke User
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Scope: investasi aktif
      */
     public function scopeActive($query)
     {
         return $query->where('status', 'active');
     }
-
-        public function user()
-        {
-            return $this->belongsTo(User::class, 'user_id');
-        }
 
     /**
      * Scope: milik user tertentu
@@ -68,10 +71,43 @@ class UserInvestment extends Model
     }
 
     /**
+     * Scope: hanya produk yang boleh masuk profit harian.
+     *
+     * Rule client:
+     * category_id = 1 / Semua       => tidak masuk profit
+     * category_id = 2 / Saham Velora => masuk profit
+     * category_id = 3 / Velora Pro   => masuk profit
+     */
+    public function scopeProfitEligible($query)
+    {
+        return $query->whereHas('product', function ($q) {
+            $q->whereIn('category_id', [2, 3]);
+        });
+    }
+
+    /**
+     * Scope: produk yang tidak masuk profit.
+     */
+    public function scopeNonProfit($query)
+    {
+        return $query->whereHas('product', function ($q) {
+            $q->where('category_id', 1);
+        });
+    }
+
+    /**
      * Helper: cek aktif
      */
     public function isActive(): bool
     {
         return $this->status === 'active';
+    }
+
+    /**
+     * Helper: cek apakah investasi ini boleh masuk profit.
+     */
+    public function isProfitEligible(): bool
+    {
+        return in_array((int) data_get($this->product, 'category_id'), [2, 3], true);
     }
 }

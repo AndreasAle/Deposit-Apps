@@ -15,26 +15,32 @@ class ProductBuyController extends Controller
     |--------------------------------------------------------------------------
     | Product Category Rules
     |--------------------------------------------------------------------------
-    | Sesuai data produk/kategori:
+    | Sesuai request client terbaru:
     |
-    | category_id = 1 / Semua / Basic
+    | category_id = 1 / Semua / All Asset
     | - Bisa dibeli berkali-kali
     | - Bisa dibeli berkali-kali dalam 1 hari
-    | - Dapat referral 33%
+    | - TIDAK masuk profit harian
+    | - Dapat referral
     |
-    | category_id = 2 / Saham Rubik
-    | - Produk VIP
+    | category_id = 2 / Saham Velora
+    | - Masuk profit harian
     | - Hanya bisa dibeli 1 kali per produk
     | - Tidak dapat referral
     |
-    | category_id = 3 / Rubik Pro
-    | - Produk VIP
+    | category_id = 3 / Velora Pro
+    | - Masuk profit harian
     | - Hanya bisa dibeli 1 kali per produk
     | - Tidak dapat referral
     */
+
     private const BASIC_CATEGORY_IDS = [1];
 
-    private const VIP_CATEGORY_IDS = [2, 3];
+    private const NON_PROFIT_CATEGORY_IDS = [1]; // Semua / All Asset
+
+    private const PROFIT_CATEGORY_IDS = [2, 3]; // Saham Velora + Velora Pro
+
+    private const VIP_CATEGORY_IDS = [2, 3]; // Untuk rule 1 kali beli per produk
 
     private const REFERRAL_ALLOWED_CATEGORY_IDS = [1];
 
@@ -95,11 +101,11 @@ class ProductBuyController extends Controller
             |--------------------------------------------------------------------------
             | Rule produk VIP: hanya bisa dibeli 1 kali per produk
             |--------------------------------------------------------------------------
-            | Saham Rubik / Rubik Pro:
+            | Saham Velora / Velora Pro:
             | - Kalau user pernah beli produk ini, status apapun, tidak boleh beli lagi.
             | - Jadi walaupun sudah completed, tetap tidak bisa beli produk yang sama.
             |
-            | Produk Basic / Semua:
+            | Produk Semua / All Asset:
             | - Tidak kena rule ini.
             | - Bisa dibeli berkali-kali.
             */
@@ -114,20 +120,19 @@ class ProductBuyController extends Controller
 
                     return back()->with(
                         'error',
-                        'Produk VIP ini hanya bisa dibeli 1 kali. Silakan naik VIP untuk membeli produk selanjutnya.'
+                        'Produk ini hanya bisa dibeli 1 kali. Silakan naik VIP untuk membeli produk selanjutnya.'
                     );
                 }
             }
 
             /*
             |--------------------------------------------------------------------------
-            | Rule lama duration_days = 1 DIHAPUS untuk basic
+            | Rule lama duration_days = 1 DIHAPUS untuk kategori Semua
             |--------------------------------------------------------------------------
-            | Sesuai request client:
-            | Produk basic boleh dibeli berkali-kali dalam 1 hari asal saldo cukup.
+            | Sesuai request:
+            | Produk kategori Semua boleh dibeli berkali-kali dalam 1 hari asal saldo cukup.
             |
-            | Jadi tidak ada lagi pengecekan:
-            | duration_days === 1 -> 1 kali per hari
+            | Namun kategori Semua TIDAK masuk profit harian.
             */
 
             /*
@@ -142,17 +147,37 @@ class ProductBuyController extends Controller
             |--------------------------------------------------------------------------
             | Buat investasi user
             |--------------------------------------------------------------------------
+            | Rule profit:
+            | - category_id 1 / Semua        => tidak masuk profit
+            | - category_id 2 / Saham Velora => masuk profit
+            | - category_id 3 / Velora Pro   => masuk profit
             */
+            $isProfitProduct = $this->isProfitProduct($product);
+
             $investment = UserInvestment::create([
                 'user_id'       => $user->id,
                 'product_id'    => $product->id,
                 'price'         => (int) ($product->price ?? 0),
-                'daily_profit'  => (int) ($product->daily_profit ?? 0),
-                'duration_days' => (int) ($product->duration_days ?? 0),
-                'total_profit'  => (int) ($product->total_profit ?? 0),
+
+                'daily_profit'  => $isProfitProduct ? (int) ($product->daily_profit ?? 0) : 0,
+                'duration_days' => $isProfitProduct ? (int) ($product->duration_days ?? 0) : 0,
+                'total_profit'  => $isProfitProduct ? (int) ($product->total_profit ?? 0) : 0,
+
                 'start_date'    => now(),
-                'end_date'      => now()->addDays((int) ($product->duration_days ?? 0)),
-                'status'        => 'active',
+                'end_date'      => $isProfitProduct
+                    ? now()->addDays((int) ($product->duration_days ?? 0))
+                    : now(),
+
+                /*
+                |--------------------------------------------------------------------------
+                | Status investasi
+                |--------------------------------------------------------------------------
+                | Produk profit tetap active.
+                | Produk non-profit dibuat completed supaya tidak ikut diproses cron profit.
+                |
+                | Jangan pakai 'non_profit' kalau kolom status kamu enum dan belum mendukung value itu.
+                */
+                'status'        => $isProfitProduct ? 'active' : 'completed',
             ]);
 
             /*
@@ -160,7 +185,7 @@ class ProductBuyController extends Controller
             | Sync VIP berdasarkan total pembelian produk
             |--------------------------------------------------------------------------
             | Deposit tidak dihitung.
-            | Produk basic dan produk VIP tetap dihitung ke akumulasi VIP.
+            | Produk Semua, Saham Velora, dan Velora Pro tetap dihitung ke akumulasi VIP.
             */
             $this->syncUserVipByInvestment($user);
 
@@ -168,12 +193,12 @@ class ProductBuyController extends Controller
             |--------------------------------------------------------------------------
             | Referral 3 Level
             |--------------------------------------------------------------------------
-            | Basic / Semua:
-            | - Level 1 (referrer langsung) = 32%
-            | - Level 2 (referrer dari referrer) = 2%
-            | - Level 3 = 1%
+            | Produk Semua / All Asset:
+            | - Level 1
+            | - Level 2
+            | - Level 3
             |
-            | Saham Rubik / Rubik Pro:
+            | Saham Velora / Velora Pro:
             | - Tidak dapat referral
             */
             if ($this->isReferralAllowedProduct($product)) {
@@ -204,9 +229,9 @@ class ProductBuyController extends Controller
         | Total pembelian produk user
         |--------------------------------------------------------------------------
         | Semua pembelian produk dihitung:
-        | - Basic / Semua
-        | - Saham Rubik
-        | - Rubik Pro
+        | - Semua / All Asset
+        | - Saham Velora
+        | - Velora Pro
         |
         | Deposit tidak dihitung.
         */
@@ -251,6 +276,24 @@ class ProductBuyController extends Controller
         return in_array(
             (int) ($product->category_id ?? 0),
             self::BASIC_CATEGORY_IDS,
+            true
+        );
+    }
+
+    private function isNonProfitProduct(Product $product): bool
+    {
+        return in_array(
+            (int) ($product->category_id ?? 0),
+            self::NON_PROFIT_CATEGORY_IDS,
+            true
+        );
+    }
+
+    private function isProfitProduct(Product $product): bool
+    {
+        return in_array(
+            (int) ($product->category_id ?? 0),
+            self::PROFIT_CATEGORY_IDS,
             true
         );
     }
