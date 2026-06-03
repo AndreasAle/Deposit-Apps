@@ -27,8 +27,28 @@ class AdminController extends Controller
             'deposit_paid'      => Deposit::where('status', 'PAID')->sum('amount'),
             'deposit_unpaid'    => Deposit::where('status', 'UNPAID')->count(),
 
-            'withdraw_pending'  => Withdrawal::where('status', 'PENDING')->count(),
-            'withdraw_paid'     => Withdrawal::where('status', 'PAID')->count(),
+'withdraw_total'    => Withdrawal::count(),
+
+'withdraw_pending'  => Withdrawal::whereIn('status', [
+    'PENDING',
+    'PROCESS',
+    'PROCESSING',
+    'WAITING',
+])->count(),
+
+'withdraw_paid'     => Withdrawal::whereIn('status', [
+    'PAID',
+    'SUCCESS',
+    'APPROVED',
+    'COMPLETED',
+])->count(),
+
+'withdraw_amount'   => Withdrawal::whereIn('status', [
+    'PAID',
+    'SUCCESS',
+    'APPROVED',
+    'COMPLETED',
+])->sum('amount'),
         ];
 
         $latestDeposits = Deposit::with('user:id,name,phone')

@@ -1502,19 +1502,20 @@
                 </div>
             </div>
 
-            <div class="stat-card purple">
-                <div class="stat-top">
-                    <div>
-                        <div class="stat-label">Withdraw Queue</div>
-                        <div class="stat-value">{{ number_format($stats['withdraw_pending'] ?? 0) }}</div>
-                    </div>
-                    <div class="stat-icon">↗</div>
-                </div>
-                <div class="stat-note">
-                    <span>●</span>
-                    {{ number_format($stats['withdraw_paid'] ?? 0) }} sudah dibayar
-                </div>
-            </div>
+<div class="stat-card purple">
+    <div class="stat-top">
+        <div>
+            <div class="stat-label">Total Withdraw</div>
+            <div class="stat-value">{{ number_format($stats['withdraw_total'] ?? 0) }}</div>
+        </div>
+        <div class="stat-icon">↗</div>
+    </div>
+    <div class="stat-note">
+        <span>●</span>
+        {{ number_format($stats['withdraw_pending'] ?? 0) }} pending • 
+        {{ number_format($stats['withdraw_paid'] ?? 0) }} sudah dibayar
+    </div>
+</div>
         </section>
 
         {{-- CONTENT --}}
