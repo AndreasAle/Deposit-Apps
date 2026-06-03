@@ -1301,6 +1301,14 @@
                     </div>
                 </a>
 
+                <a class="nav-item" href="{{ route('admin.investments.index') }}" data-label="investments produk user pembelian profit">
+                    <div class="nav-icon">📈</div>
+                    <div class="nav-text">
+                        <b>Investments</b>
+                        <span>Pembelian produk user</span>
+                    </div>
+                </a>
+
                 <a class="nav-item" href="{{ route('admin.forum.index') }}" data-label="forum post komentar team">
                     <div class="nav-icon">💬</div>
                     <div class="nav-text">

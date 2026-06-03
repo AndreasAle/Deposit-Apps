@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Deposit;
 use App\Models\Withdrawal;
+use App\Models\UserInvestment;
 
 class AdminController extends Controller
 {
@@ -40,10 +41,19 @@ class AdminController extends Controller
             ->limit(6)
             ->get();
 
+        $latestInvestments = UserInvestment::with([
+                'user:id,name,phone',
+                'product:id,name,category_id,price,daily_profit,total_profit,duration_days'
+            ])
+            ->latest()
+            ->limit(8)
+            ->get();
+
         return view('admin.dashboard', compact(
             'stats',
             'latestDeposits',
-            'latestWithdrawals'
+            'latestWithdrawals',
+            'latestInvestments'
         ));
     }
 }

@@ -17,6 +17,7 @@ use App\Http\Controllers\SaldoController;
 
 
 
+
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\Admin\WithdrawalAdminController;
 use App\Http\Controllers\Admin\ReferralAdminController;
 use App\Http\Controllers\Admin\AdminForumController;
 use App\Http\Controllers\Admin\DepositAdminController;
+use App\Http\Controllers\Admin\InvestmentAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -338,6 +340,10 @@ Route::post('/deposits/{id}/paid', [DepositAdminController::class, 'markPaid'])
 
 Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed'])
     ->name('admin.deposits.failed');
+
+
+    Route::get('/investments', [InvestmentAdminController::class, 'index'])
+    ->name('admin.investments.index');
         /*
         |--------------------------------------------------------------------------
         | Admin Products
