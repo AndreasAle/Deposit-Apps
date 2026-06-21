@@ -100,6 +100,10 @@ class WithdrawalAdminController extends Controller
             }
         }
 
+        $fee = 7800;
+        $amount = (int) $data['amount'];
+        $net = max($amount - $fee, 0);
+
         $withdrawal = Withdrawal::create([
             'user_id' => $data['user_id'],
             'user_payout_account_id' => $data['user_payout_account_id'] ?? null,
@@ -109,9 +113,9 @@ class WithdrawalAdminController extends Controller
             'account_no' => (string) ($accountNo ?: '0000000000'),
             'account_name' => (string) ($accountName ?: 'Test User'),
 
-            'amount' => $data['amount'],
-            'fee' => 0,
-            'net_amount' => $data['amount'],
+            'amount' => $amount,
+            'fee' => $fee,
+            'net_amount' => $net,
 
             'status' => 'PROCESSING',
             'gateway_status' => 'TEST',
