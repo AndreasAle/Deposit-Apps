@@ -2170,7 +2170,7 @@ ${reasonHtml}
                     <div class="row-body">
                         <div>
                             <div class="amount-line">
-                                <div class="amount">Rp ${rupiah(r.amount)}</div>
+                                <div class="amount">Rp ${rupiah(r.net_amount ?? r.amount)}</div>
                                 ${statusBadge(r.status)}
                                 <span class="status-badge" style="color:#7a5af8;background:#f3f0ff;border-color:rgba(122,90,248,.18)">TEST</span>
                             </div>
@@ -2178,6 +2178,7 @@ ${reasonHtml}
                                 <div><b>User:</b> ${escapeHtml(userLine)}</div>
                                 <div><b>Order:</b> ${escapeHtml(r.order_id || '-')}</div>
                                 <div><b>Akun:</b> ${escapeHtml(r.bank_code || '-')} • ${escapeHtml(r.account_no || '-')} • ${escapeHtml(r.account_name || '-')}</div>
+                                <div><b>Nominal Diminta:</b> Rp ${rupiah(r.amount)} &nbsp;•&nbsp; <b>Fee:</b> -Rp ${rupiah(r.fee)}</div>
                             </div>
                         </div>
                         <div class="row-right">

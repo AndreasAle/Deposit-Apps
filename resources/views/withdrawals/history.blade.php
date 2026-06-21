@@ -763,8 +763,8 @@
           const providerName = providerDisplayName(provider);
           const logo = providerLogo(provider);
           const number = account?.account_number || row.account_no || '-';
-          const amount = getAmount(row);
           const fee = getFee(row);
+          const amount = getNet(row);
 
           const proof = row.proof_url
             ? `<a class="wh-proof" href="${escapeHtml(row.proof_url)}" target="_blank" rel="noopener">Bukti</a>`
