@@ -1406,7 +1406,7 @@
             </div>
 
             <div class="panel-inner">
-                <div class="hint" style="margin-bottom:10px">1. Cari user (ID, nama, email, atau nomor HP)</div>
+                <div class="hint" style="margin-bottom:10px">1. Cari user (ID, nama, atau nomor HP)</div>
 
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
                     <input id="testUserQuery" type="text" class="select" style="width:260px" placeholder="Cari user...">
@@ -2084,7 +2084,7 @@ ${reasonHtml}
 
         testUserResultsEl.innerHTML = users.map((u) => `
             <button type="button" class="btn-mini btn-approve" style="margin:0 6px 6px 0" onclick='selectTestUser(${JSON.stringify(u).replace(/'/g, "&#39;")})'>
-                ${escapeHtml(u.name || '-')} (#${u.id}) • ${escapeHtml(u.email || u.phone || '-')}
+                ${escapeHtml(u.name || '-')} (#${u.id}) • ${escapeHtml(u.phone || '-')}
             </button>
         `).join('');
     }

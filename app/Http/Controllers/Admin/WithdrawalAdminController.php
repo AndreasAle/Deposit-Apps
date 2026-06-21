@@ -47,10 +47,12 @@ class WithdrawalAdminController extends Controller
 
         $users = User::query()
             ->where(function ($query) use ($q) {
-                $query->where('id', $q)
-                    ->orWhere('name', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%")
+                $query->where('name', 'like', "%{$q}%")
                     ->orWhere('phone', 'like', "%{$q}%");
+
+                if (ctype_digit($q)) {
+                    $query->orWhere('id', $q);
+                }
             })
             ->with('payoutAccounts')
             ->limit(10)
