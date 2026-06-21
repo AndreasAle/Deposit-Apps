@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Withdrawal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class WithdrawalAdminController extends Controller
 {
@@ -16,6 +18,7 @@ class WithdrawalAdminController extends Controller
 
         $q = Withdrawal::query()
             ->with(['user', 'payoutAccount'])
+            ->where('is_test', false)
             ->latest();
 
         if ($status) {
@@ -23,6 +26,153 @@ class WithdrawalAdminController extends Controller
         }
 
         return response()->json($q->paginate(30));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | WD Testing Tools
+    |--------------------------------------------------------------------------
+    | Dipakai admin untuk membuat withdrawal dummy (is_test = true) dan
+    | mensimulasikan callback PAID/FAILED tanpa hit API JayaPay sungguhan.
+    | Tidak menyentuh saldo user nyata karena tujuannya hanya cek alur status & UI.
+    */
+
+    public function testLookupUser(Request $request)
+    {
+        $q = trim((string) $request->query('q', ''));
+
+        if ($q === '') {
+            return response()->json(['data' => []]);
+        }
+
+        $users = User::query()
+            ->where(function ($query) use ($q) {
+                $query->where('id', $q)
+                    ->orWhere('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%");
+            })
+            ->with('payoutAccounts')
+            ->limit(10)
+            ->get();
+
+        return response()->json(['data' => $users]);
+    }
+
+    public function testIndex()
+    {
+        $rows = Withdrawal::query()
+            ->with(['user', 'payoutAccount'])
+            ->where('is_test', true)
+            ->latest()
+            ->paginate(30);
+
+        return response()->json($rows);
+    }
+
+    public function testStore(Request $request)
+    {
+        $data = $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_payout_account_id' => ['nullable', 'integer'],
+            'provider' => ['nullable', 'string', 'max:50'],
+            'account_number' => ['nullable', 'string', 'max:50'],
+            'account_name' => ['nullable', 'string', 'max:100'],
+            'amount' => ['required', 'integer', 'min:1000', 'max:50000000'],
+        ]);
+
+        $accountNo = $data['account_number'] ?? null;
+        $accountName = $data['account_name'] ?? null;
+        $provider = $data['provider'] ?? null;
+
+        if (!empty($data['user_payout_account_id'])) {
+            $account = User::find($data['user_id'])
+                ?->payoutAccounts()
+                ->where('id', $data['user_payout_account_id'])
+                ->first();
+
+            if ($account) {
+                $provider = $account->provider;
+                $accountNo = $account->account_number;
+                $accountName = $account->account_name;
+            }
+        }
+
+        $withdrawal = Withdrawal::create([
+            'user_id' => $data['user_id'],
+            'user_payout_account_id' => $data['user_payout_account_id'] ?? null,
+
+            'order_id' => 'TEST' . now()->format('YmdHis') . strtoupper(Str::random(6)),
+            'bank_code' => strtoupper((string) ($provider ?: 'TEST')),
+            'account_no' => (string) ($accountNo ?: '0000000000'),
+            'account_name' => (string) ($accountName ?: 'Test User'),
+
+            'amount' => $data['amount'],
+            'fee' => 0,
+            'net_amount' => $data['amount'],
+
+            'status' => 'PROCESSING',
+            'gateway_status' => 'TEST',
+            'gateway_message' => 'Simulated test withdrawal (tidak dikirim ke JayaPay).',
+            'requested_at' => now(),
+            'processing_at' => now(),
+            'is_test' => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Test withdrawal dibuat.',
+            'data' => $withdrawal->fresh(['user', 'payoutAccount']),
+        ], 201);
+    }
+
+    public function testSimulate(Request $request, $id)
+    {
+        $data = $request->validate([
+            'status' => ['required', 'in:PAID,FAILED,PROCESSING'],
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $row = Withdrawal::where('id', $id)
+            ->where('is_test', true)
+            ->firstOrFail();
+
+        $update = [
+            'status' => $data['status'],
+            'gateway_status' => 'TEST_' . $data['status'],
+            'gateway_message' => $data['status'] === 'FAILED'
+                ? ($data['reason'] ?: 'Simulated failure dari admin testing tool.')
+                : 'Simulated callback dari admin testing tool.',
+        ];
+
+        if ($data['status'] === 'PAID') {
+            $update['paid_at'] = now();
+            $update['failed_at'] = null;
+        } elseif ($data['status'] === 'FAILED') {
+            $update['failed_at'] = now();
+            $update['failed_reason'] = $data['reason'] ?: 'Simulated failure dari admin testing tool.';
+            $update['paid_at'] = null;
+        } else {
+            $update['paid_at'] = null;
+            $update['failed_at'] = null;
+        }
+
+        $row->update($update);
+
+        return response()->json([
+            'message' => 'Status test withdrawal disimulasikan ke ' . $data['status'] . '.',
+            'data' => $row->fresh(['user', 'payoutAccount']),
+        ]);
+    }
+
+    public function testDestroy($id)
+    {
+        $row = Withdrawal::where('id', $id)
+            ->where('is_test', true)
+            ->firstOrFail();
+
+        $row->delete();
+
+        return response()->json(['message' => 'Test withdrawal dihapus.']);
     }
 
     public function approve(Request $request, $id)

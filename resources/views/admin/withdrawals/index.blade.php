@@ -1395,6 +1395,50 @@
                 </div>
             </div>
         </section>
+
+        {{-- TESTING PANEL --}}
+        <section class="panel" style="margin-top:18px">
+            <div class="panel-head">
+                <div class="panel-title">
+                    <b>WD Testing Tools</b>
+                    <span>Buat withdrawal dummy dan simulasikan callback PAID/FAILED tanpa hit JayaPay. Tidak menyentuh saldo user.</span>
+                </div>
+            </div>
+
+            <div class="panel-inner">
+                <div class="hint" style="margin-bottom:10px">1. Cari user (ID, nama, email, atau nomor HP)</div>
+
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                    <input id="testUserQuery" type="text" class="select" style="width:260px" placeholder="Cari user...">
+                    <button id="btnTestSearch" class="btn btn-primary" type="button">Cari User</button>
+                </div>
+
+                <div id="testUserResults" style="margin-bottom:14px"></div>
+
+                <div id="testFormWrap" style="display:none">
+                    <div class="hint" style="margin-bottom:10px">2. Pilih akun payout (opsional) & nominal test</div>
+
+                    <div id="testPayoutAccounts" style="margin-bottom:10px"></div>
+
+                    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px">
+                        <input id="testProvider" type="text" class="select" placeholder="Provider (mis. BCA / OVO)">
+                        <input id="testAccountNumber" type="text" class="select" placeholder="No. rekening / HP">
+                        <input id="testAccountName" type="text" class="select" placeholder="Nama pemilik akun">
+                    </div>
+
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                        <input id="testAmount" type="number" class="select" style="width:200px" placeholder="Nominal (mis. 50000)" min="1000">
+                        <button id="btnTestCreate" class="btn btn-primary" type="button">Buat Test Withdrawal</button>
+                    </div>
+                </div>
+
+                <div class="hint" style="margin:18px 0 10px">Daftar withdrawal hasil testing</div>
+
+                <div id="testRows" class="rows">
+                    <div class="loading">Loading data test withdraw...</div>
+                </div>
+            </div>
+        </section>
     </main>
 </div>
 
@@ -2001,6 +2045,183 @@ ${reasonHtml}
     })();
 
     loadAdmin().catch((e) => toast(e.message, 'err'));
+
+    /*
+    |--------------------------------------------------------------------------
+    | WD Testing Tools
+    |--------------------------------------------------------------------------
+    */
+
+    let testSelectedUserId = null;
+    let testSelectedAccountId = null;
+
+    const testUserResultsEl = document.getElementById('testUserResults');
+    const testFormWrap = document.getElementById('testFormWrap');
+    const testPayoutAccountsEl = document.getElementById('testPayoutAccounts');
+    const testRowsEl = document.getElementById('testRows');
+
+    document.getElementById('btnTestSearch').addEventListener('click', () => {
+        searchTestUser().catch((e) => toast(e.message, 'err'));
+    });
+
+    async function searchTestUser() {
+        const q = document.getElementById('testUserQuery').value.trim();
+
+        if (!q) {
+            return toast('Isi kata kunci pencarian user dulu', 'err');
+        }
+
+        testUserResultsEl.innerHTML = `<div class="loading">Mencari user...</div>`;
+
+        const res = await api(`/admin/withdrawals/test/users?q=${encodeURIComponent(q)}`);
+        const users = res?.data || [];
+
+        if (!users.length) {
+            testUserResultsEl.innerHTML = `<div class="empty">User tidak ditemukan.</div>`;
+            testFormWrap.style.display = 'none';
+            return;
+        }
+
+        testUserResultsEl.innerHTML = users.map((u) => `
+            <button type="button" class="btn-mini btn-approve" style="margin:0 6px 6px 0" onclick='selectTestUser(${JSON.stringify(u).replace(/'/g, "&#39;")})'>
+                ${escapeHtml(u.name || '-')} (#${u.id}) • ${escapeHtml(u.email || u.phone || '-')}
+            </button>
+        `).join('');
+    }
+
+    window.selectTestUser = function(user) {
+        testSelectedUserId = user.id;
+        testSelectedAccountId = null;
+        testFormWrap.style.display = 'block';
+
+        const accounts = user.payout_accounts || user.payoutAccounts || [];
+
+        if (!accounts.length) {
+            testPayoutAccountsEl.innerHTML = `<div class="hint">User ini belum punya akun payout tersimpan. Isi manual di bawah.</div>`;
+        } else {
+            testPayoutAccountsEl.innerHTML = accounts.map((a) => `
+                <button type="button" class="btn-mini btn-paid" style="margin:0 6px 6px 0" onclick='selectTestAccount(${JSON.stringify(a).replace(/'/g, "&#39;")})'>
+                    ${escapeHtml(a.provider || '-')} • ${escapeHtml(a.account_name || '-')} • ${escapeHtml(a.account_number || '-')}
+                </button>
+            `).join('');
+        }
+
+        toast(`User #${user.id} dipilih untuk test withdrawal`);
+    };
+
+    window.selectTestAccount = function(account) {
+        testSelectedAccountId = account.id;
+        document.getElementById('testProvider').value = account.provider || '';
+        document.getElementById('testAccountNumber').value = account.account_number || '';
+        document.getElementById('testAccountName').value = account.account_name || '';
+    };
+
+    document.getElementById('btnTestCreate').addEventListener('click', () => {
+        createTestWithdrawal().catch((e) => toast(e.message, 'err'));
+    });
+
+    async function createTestWithdrawal() {
+        if (!testSelectedUserId) {
+            return toast('Pilih user dulu', 'err');
+        }
+
+        const amount = parseInt(document.getElementById('testAmount').value, 10);
+
+        if (!amount || amount < 1000) {
+            return toast('Nominal test minimal Rp 1.000', 'err');
+        }
+
+        await api('/admin/withdrawals/test', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_id: testSelectedUserId,
+                user_payout_account_id: testSelectedAccountId,
+                provider: document.getElementById('testProvider').value.trim() || null,
+                account_number: document.getElementById('testAccountNumber').value.trim() || null,
+                account_name: document.getElementById('testAccountName').value.trim() || null,
+                amount,
+            }),
+        });
+
+        toast('Test withdrawal berhasil dibuat');
+        document.getElementById('testAmount').value = '';
+        await loadTestRows();
+    }
+
+    async function loadTestRows() {
+        testRowsEl.innerHTML = `<div class="loading">Loading data test withdraw...</div>`;
+
+        const res = await api('/admin/withdrawals/test');
+        const rows = res?.data || [];
+
+        if (!rows.length) {
+            testRowsEl.innerHTML = `<div class="empty">Belum ada test withdrawal.</div>`;
+            return;
+        }
+
+        testRowsEl.innerHTML = rows.map((r) => {
+            const user = r.user;
+            const userLine = user ? `${user.name ?? ''} (#${user.id})` : `#${r.user_id}`;
+            const created = r.created_at ? new Date(r.created_at).toLocaleString('id-ID') : '-';
+
+            return `
+                <div class="row-card">
+                    <div class="${statusBarClass(r.status)}"></div>
+                    <div class="row-body">
+                        <div>
+                            <div class="amount-line">
+                                <div class="amount">Rp ${rupiah(r.amount)}</div>
+                                ${statusBadge(r.status)}
+                                <span class="status-badge" style="color:#7a5af8;background:#f3f0ff;border-color:rgba(122,90,248,.18)">TEST</span>
+                            </div>
+                            <div class="meta">
+                                <div><b>User:</b> ${escapeHtml(userLine)}</div>
+                                <div><b>Order:</b> ${escapeHtml(r.order_id || '-')}</div>
+                                <div><b>Akun:</b> ${escapeHtml(r.bank_code || '-')} • ${escapeHtml(r.account_no || '-')} • ${escapeHtml(r.account_name || '-')}</div>
+                            </div>
+                        </div>
+                        <div class="row-right">
+                            <div class="meta" style="margin-top:0">${escapeHtml(created)}</div>
+                            <div class="actions-list">
+                                <button class="btn-mini btn-paid" type="button" onclick="simulateTest(${r.id}, 'PAID')">Simulate PAID</button>
+                                <button class="btn-mini btn-failed" type="button" onclick="simulateTest(${r.id}, 'FAILED')">Simulate FAILED</button>
+                                <button class="btn-mini btn-approve" type="button" onclick="simulateTest(${r.id}, 'PROCESSING')">Reset</button>
+                                <button class="btn-mini btn-reject" type="button" onclick="deleteTest(${r.id})">Hapus</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.simulateTest = async function(id, status) {
+        try {
+            await api(`/admin/withdrawals/test/${id}/simulate`, {
+                method: 'POST',
+                body: JSON.stringify({ status }),
+            });
+
+            toast(`Test withdrawal disimulasikan ke ${status}`);
+            await loadTestRows();
+        } catch (e) {
+            toast(e.message, 'err');
+        }
+    };
+
+    window.deleteTest = async function(id) {
+        if (!confirm('Hapus test withdrawal ini?')) return;
+
+        try {
+            await api(`/admin/withdrawals/test/${id}`, { method: 'DELETE' });
+            toast('Test withdrawal dihapus');
+            await loadTestRows();
+        } catch (e) {
+            toast(e.message, 'err');
+        }
+    };
+
+    loadTestRows().catch((e) => toast(e.message, 'err'));
 </script>
 
 

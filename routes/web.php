@@ -377,6 +377,18 @@ Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed
 
         /*
         |--------------------------------------------------------------------------
+        | Admin Withdraw Testing Tools
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/withdrawals/test/users', [WithdrawalAdminController::class, 'testLookupUser']);
+        Route::get('/withdrawals/test', [WithdrawalAdminController::class, 'testIndex']);
+        Route::post('/withdrawals/test', [WithdrawalAdminController::class, 'testStore']);
+        Route::post('/withdrawals/test/{id}/simulate', [WithdrawalAdminController::class, 'testSimulate']);
+        Route::delete('/withdrawals/test/{id}', [WithdrawalAdminController::class, 'testDestroy']);
+
+        /*
+        |--------------------------------------------------------------------------
         | Admin Referral
         |--------------------------------------------------------------------------
         */

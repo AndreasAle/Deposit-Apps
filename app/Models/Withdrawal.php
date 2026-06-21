@@ -35,6 +35,7 @@ class Withdrawal extends Model
         'reject_reason',
         'failed_reason',
         'proof_url',
+        'is_test',
 // Dates
 'requested_at',
 'processing_at',
@@ -48,6 +49,7 @@ class Withdrawal extends Model
         'amount' => 'decimal:2',
         'fee' => 'decimal:2',
         'net_amount' => 'decimal:2',
+        'is_test' => 'boolean',
 
         'gateway_response' => 'array',
         'gateway_callback' => 'array',
