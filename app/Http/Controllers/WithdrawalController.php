@@ -12,7 +12,7 @@ class WithdrawalController extends Controller
 {
     private const MIN_WITHDRAW = 50000;
     private const MAX_WITHDRAW = 50000000;
-    private const WITHDRAW_FEE_PERCENT = 0;
+    private const WITHDRAW_FEE_PERCENT = 5;
 
     public function index(Request $request)
     {
@@ -49,10 +49,8 @@ class WithdrawalController extends Controller
 
         $amount = (int) $data['amount'];
 
-        // Tidak ada potongan internal.
-        // Biaya hanya dari gateway JayaPay.
-        $fee = 0;
-        $net = $amount;
+        $fee = (int) round($amount * self::WITHDRAW_FEE_PERCENT / 100);
+        $net = $amount - $fee;
 
         /*
          * Step 1:
