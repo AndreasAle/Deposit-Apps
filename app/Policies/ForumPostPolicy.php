@@ -45,7 +45,7 @@ class ForumPostPolicy
      */
     public function delete(User $user, ForumPost $forumPost): bool
     {
-        return false;
+        return $user->id === $forumPost->user_id || ($user->role ?? null) === 'admin';
     }
 
     /**
