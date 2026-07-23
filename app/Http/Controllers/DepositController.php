@@ -98,6 +98,13 @@ class DepositController extends Controller
 
             DB::commit();
 
+            // Kanal e-wallet (DANA) dibayar di halaman checkout BayarPro, jadi
+            // user langsung diarahkan ke sana. QRIS tetap di halaman invoice
+            // supaya QR-nya bisa discan.
+            if ($channel !== 'QRIS' && !empty($deposit->pay_url)) {
+                return redirect()->away($deposit->pay_url);
+            }
+
             return redirect()
                 ->route('deposit.invoice', $deposit->id)
                 ->with('success', 'Invoice deposit berhasil dibuat');
