@@ -98,13 +98,6 @@ class DepositController extends Controller
 
             DB::commit();
 
-            // Kanal e-wallet (DANA) dibayar di halaman checkout BayarPro, jadi
-            // user langsung diarahkan ke sana. QRIS tetap di halaman invoice
-            // supaya QR-nya bisa discan.
-            if ($channel !== 'QRIS' && !empty($deposit->pay_url)) {
-                return redirect()->away($deposit->pay_url);
-            }
-
             return redirect()
                 ->route('deposit.invoice', $deposit->id)
                 ->with('success', 'Invoice deposit berhasil dibuat');
@@ -131,10 +124,10 @@ class DepositController extends Controller
         $displayPayUrl = $deposit->pay_url ?: null;
         $qrImageSrc = null;
 
-        // Untuk QRIS: render QR lokal dari qris_data (string EMV) yang dikirim BayarPro.
-        if ($deposit->status !== 'PAID'
-            && strtoupper((string) $deposit->method) === 'QRIS'
-            && !empty($deposit->pay_data)) {
+        // Render QR lokal dari qris_data (string EMV) selama BayarPro mengirimnya,
+        // apa pun channel-nya. DANA pun dibayar lewat scan QRIS, jadi user tetap
+        // menyelesaikan pembayaran di dalam Velora tanpa dilempar ke BayarPro.
+        if ($deposit->status !== 'PAID' && !empty($deposit->pay_data)) {
             try {
                 $qrSvg = QrCode::format('svg')
                     ->size(520)
