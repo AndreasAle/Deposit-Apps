@@ -1431,7 +1431,7 @@ function updateReceived(){
   if(taxEl){
     taxEl.textContent = n > 0
       ? 'Biaya gateway akan dihitung setelah diproses'
-      : 'Biaya gateway mengikuti response JayaPay';
+      : 'Biaya mengikuti response gateway pembayaran';
   }
 }
 

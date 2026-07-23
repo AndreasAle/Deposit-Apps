@@ -720,7 +720,7 @@
                                 </p>
                             </div>
 
-                            <span class="pay-pill">BayarPro</span>
+                            <span class="pay-pill">{{ $displayMethod }}</span>
                         </div>
 
                         <div class="qr-card">
