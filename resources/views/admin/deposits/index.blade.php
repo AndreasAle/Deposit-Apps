@@ -1287,7 +1287,7 @@ body.sidebar-open .overlay{display:block}
 
                 <div class="page-title">
                     <h1>Deposits</h1>
-                    <p>Audit invoice deposit, status pembayaran, dan response gateway JayaPay.</p>
+                    <p>Audit invoice deposit, status pembayaran, dan response gateway pembayaran.</p>
                 </div>
             </div>
 
@@ -1321,7 +1321,7 @@ body.sidebar-open .overlay{display:block}
 
                 <p>
                     Admin dapat melihat invoice, order number, channel pembayaran, nominal real, fee gateway,
-                    link pembayaran, expired time, hingga response callback JayaPay.
+                    link pembayaran, expired time, hingga response callback gateway.
                 </p>
             </div>
         </section>

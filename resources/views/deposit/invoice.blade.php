@@ -720,7 +720,7 @@
                                 </p>
                             </div>
 
-                            <span class="pay-pill">BayarPro</span>
+                            <span class="pay-pill">{{ $displayMethod }}</span>
                         </div>
 
                         <div class="qr-card">
@@ -747,7 +747,11 @@
                             </div>
 
                             <div class="qr-footer">
-                                Gunakan e-wallet atau mobile banking yang mendukung QRIS.
+                                @if(!empty($qrImageSrc))
+                                    Gunakan e-wallet atau mobile banking yang mendukung QRIS.
+                                @else
+                                    Selesaikan pembayaran melalui aplikasi {{ $displayMethod }} Anda.
+                                @endif
                             </div>
                         </div>
 

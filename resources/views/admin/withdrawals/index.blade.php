@@ -1401,7 +1401,7 @@
             <div class="panel-head">
                 <div class="panel-title">
                     <b>WD Testing Tools</b>
-                    <span>Buat withdrawal dummy dan simulasikan callback PAID/FAILED tanpa hit JayaPay. Tidak menyentuh saldo user.</span>
+                    <span>Buat withdrawal dummy dan simulasikan callback PAID/FAILED tanpa hit gateway. Tidak menyentuh saldo user.</span>
                 </div>
             </div>
 
