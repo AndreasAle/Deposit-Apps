@@ -775,14 +775,15 @@
         <div class="bank-form-group">
           <label class="bank-label" for="provider">Pilih Metode Penarikan</label>
           <select id="provider" class="bank-select" required>
-            <option value="OVO">OVO</option>
             <option value="DANA">DANA</option>
-            <option value="GOPAY">GOPAY</option>
-            <option value="SHOPEEPAY">SHOPEEPAY</option>
+            <option value="OVO">OVO</option>
             <option value="BCA">BCA</option>
             <option value="BRI">BRI</option>
             <option value="BNI">BNI</option>
             <option value="MANDIRI">MANDIRI</option>
+            <option value="PERMATA">PERMATA</option>
+            <option value="CIMB">CIMB</option>
+            <option value="DANAMON">DANAMON</option>
           </select>
         </div>
 

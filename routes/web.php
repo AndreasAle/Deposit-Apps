@@ -276,11 +276,8 @@ Route::middleware('auth')->group(function () {
 
 
 });
-Route::post('/payment/jayapay/deposit/callback', [DepositController::class, 'callback'])
-    ->name('payment.jayapay.deposit.callback');
-
-Route::post('/payment/jayapay/withdrawal/callback', [WithdrawalController::class, 'jayaPayCallback'])
-    ->name('payment.jayapay.withdrawal.callback');
+Route::post('/api/bayarpro-webhook', [\App\Http\Controllers\BayarProWebhookController::class, 'handle'])
+    ->name('payment.bayarpro.webhook');
 
 /*
 |--------------------------------------------------------------------------
