@@ -34,8 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         |--------------------------------------------------------------------------
         */
         $middleware->validateCsrfTokens(except: [
-            'payment/bayarpro/deposit/callback',
-            'payment/bayarpro/withdrawal/callback',
+            'api/bayarpro-webhook',
         ]);
 
         // 2. LOGIKA REDIRECT UNTUK GUEST

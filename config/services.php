@@ -58,9 +58,8 @@ return [
     'api_key' => env('BAYARPRO_API_KEY'),
     'secret_key' => env('BAYARPRO_SECRET_KEY'),
 
-    // Notify URL didaftarkan di dashboard BayarPro; disimpan di sini untuk referensi.
-    'deposit_notify_url' => env('BAYARPRO_DEPOSIT_NOTIFY_URL'),
-    'payout_notify_url' => env('BAYARPRO_PAYOUT_NOTIFY_URL'),
+    // Satu Webhook URL untuk semua event (didaftarkan di dashboard BayarPro).
+    'webhook_url' => env('BAYARPRO_WEBHOOK_URL'),
 
     // Invoice deposit kedaluwarsa (menit) — dipakai untuk expired_at lokal.
     'expiry_period' => env('BAYARPRO_EXPIRY_PERIOD', 1440),
