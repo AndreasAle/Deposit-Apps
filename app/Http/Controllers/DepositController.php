@@ -91,7 +91,8 @@ class DepositController extends Controller
             $deposit->pay_url = $data['checkout_url'] ?? null;
             $deposit->pay_data = $data['qris_data'] ?? null;
             $deposit->pay_fee = isset($data['fee']) ? (float) $data['fee'] : 0;
-            $deposit->real_amount = isset($data['nett_amount']) ? (int) $data['nett_amount'] : $amount;
+            // Yang dibayar user = amount penuh (fee BayarPro dipotong dari sisi merchant).
+            $deposit->real_amount = $amount;
             $deposit->expired_at = now()->addMinutes((int) config('services.bayarpro.expiry_period', 1440));
             $deposit->save();
 
