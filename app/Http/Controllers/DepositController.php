@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Deposit;
 use App\Models\User;
-use App\Models\VipRule;
+use App\Services\BayarProService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\JayaPayService;
-use Illuminate\Support\Facades\Http;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class DepositController extends Controller
@@ -26,101 +24,86 @@ class DepositController extends Controller
         return view('deposit.index', compact('deposits', 'user'));
     }
 
-public function history()
-{
-    $user = User::findOrFail(Auth::id());
-
-    $deposits = Deposit::where('user_id', $user->id)
-        ->latest()
-        ->get();
-
-    return view('deposit.history', compact('deposits', 'user'));
-}
-
-    public function store(Request $request, JayaPayService $jayaPay)
+    public function history()
     {
-$request->validate([
-    'amount' => 'required|integer|min:50000|max:10000000',
-    'method' => 'nullable|string|max:32',
-    'selected_channel' => 'nullable|string|max:32',
-]);
+        $user = User::findOrFail(Auth::id());
+
+        $deposits = Deposit::where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('deposit.history', compact('deposits', 'user'));
+    }
+
+    public function store(Request $request, BayarProService $bayarPro)
+    {
+        $request->validate([
+            'amount' => 'required|integer|min:50000|max:10000000',
+            'method' => 'nullable|string|max:32',
+            'selected_channel' => 'nullable|string|max:32',
+        ]);
+
         $user = User::findOrFail(Auth::id());
 
         $amount = (int) $request->amount;
-        $method = $request->method ?: 'QRIS';
-        $selectedChannel = $request->selected_channel ?: $method;
+        $channel = strtoupper($request->selected_channel ?: $request->method ?: 'QRIS');
+
+        if (!in_array($channel, BayarProService::CHANNELS, true)) {
+            return back()->with('error', 'Metode pembayaran tidak tersedia. Pilih QRIS atau DANA.');
+        }
 
         $orderId = 'DEP' . now()->format('YmdHis') . strtoupper(substr(md5($user->id . microtime(true)), 0, 6));
 
         DB::beginTransaction();
 
         try {
-       $deposit = Deposit::create([
-    'user_id' => $user->id,
-    'order_id' => $orderId,
-    'amount' => $amount,
-    'method' => $method,
-    'selected_channel' => $selectedChannel,
-    'status' => 'UNPAID',
-]);
-    $result = $jayaPay->createDepositOrder([
-    'order_num' => $orderId,
-    'amount' => $amount,
-    'method' => $method,
-    'product_detail' => 'Deposit Saldo #' . $orderId,
-    'name' => $user->name ?: 'Customer',
-    'email' => $user->email ?: 'customer@email.com',
-    'phone' => $user->phone ?? $user->no_hp ?? '080000000000',
-]);
+            $deposit = Deposit::create([
+                'user_id' => $user->id,
+                'order_id' => $orderId,
+                'amount' => $amount,
+                'method' => $channel,
+                'selected_channel' => $channel,
+                'status' => 'UNPAID',
+            ]);
 
-            $response = $result['response'] ?? [];
+            $result = $bayarPro->createInvoice([
+                'amount' => $amount,
+                'merchant_ref_id' => $orderId,
+                'channel' => $channel,
+                'customer_name' => $user->name ?: 'Customer',
+                'idempotency_key' => 'dep_' . $orderId,
+            ]);
 
-            $deposit->gateway_response = $result;
+            $deposit->gateway_response = $result['response'] ?? [];
 
-            if (!$result['success']) {
+            if (empty($result['success'])) {
                 $deposit->status = 'FAILED';
                 $deposit->save();
 
                 DB::commit();
 
-                return back()->with('error', $result['message'] ?? 'Gagal membuat pembayaran JayaPay');
+                return back()->with('error', $result['message'] ?? 'Gagal membuat pembayaran');
             }
 
-            $payData = $response['payData'] ?? null;
-            $decodedPayData = null;
+            $data = $result['data'] ?? [];
 
-            if ($payData) {
-                $decodedPayData = is_string($payData) ? json_decode($payData, true) : $payData;
-            }
-
-            $realAmount = $amount;
-
-            if (is_array($decodedPayData)) {
-                if (!empty($decodedPayData['realMoney'])) {
-                    $realAmount = (int) $decodedPayData['realMoney'];
-                } elseif (!empty($decodedPayData['matchingId'])) {
-                    $realAmount = (int) $decodedPayData['matchingId'];
-                }
-            }
-
-            $deposit->plat_order_num = $response['platOrderNum'] ?? null;
-            $deposit->pay_url = $response['url'] ?? null;
-            $deposit->pay_data = $payData ? (is_string($payData) ? $payData : json_encode($payData)) : null;
-            $deposit->pay_fee = isset($response['payFee']) ? (float) $response['payFee'] : 0;
-            $deposit->real_amount = $realAmount;
-            $deposit->expired_at = now()->addMinutes((int) config('services.jayapay.expiry_period', 1440));
+            $deposit->plat_order_num = $data['reference_id'] ?? null;
+            $deposit->pay_url = $data['checkout_url'] ?? null;
+            $deposit->pay_data = $data['qris_data'] ?? null;
+            $deposit->pay_fee = isset($data['fee']) ? (float) $data['fee'] : 0;
+            $deposit->real_amount = isset($data['nett_amount']) ? (int) $data['nett_amount'] : $amount;
+            $deposit->expired_at = now()->addMinutes((int) config('services.bayarpro.expiry_period', 1440));
             $deposit->save();
 
-DB::commit();
+            DB::commit();
 
-return redirect()
-    ->route('deposit.invoice', $deposit->id)
-    ->with('success', 'Invoice deposit berhasil dibuat');
-
+            return redirect()
+                ->route('deposit.invoice', $deposit->id)
+                ->with('success', 'Invoice deposit berhasil dibuat');
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error('Deposit JayaPay store error', [
+            Log::error('Deposit BayarPro store error', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -128,188 +111,82 @@ return redirect()
             return back()->with('error', 'Terjadi kesalahan saat membuat deposit');
         }
     }
-public function invoice($id)
-{
-    $user = User::findOrFail(Auth::id());
 
-    $deposit = Deposit::where('user_id', $user->id)
-        ->where('id', $id)
-        ->firstOrFail();
+    public function invoice($id)
+    {
+        $user = User::findOrFail(Auth::id());
 
-    $displayPayUrl = !empty($deposit->pay_url)
-        ? $this->buildJayaPayDisplayUrl($deposit)
-        : null;
+        $deposit = Deposit::where('user_id', $user->id)
+            ->where('id', $id)
+            ->firstOrFail();
 
-    $qrImageSrc = null;
+        $displayPayUrl = $deposit->pay_url ?: null;
+        $qrImageSrc = null;
 
-    if ($deposit->status !== 'PAID' && !empty($displayPayUrl)) {
-        try {
-            $v2Url = $this->buildJayaPayV2Url($displayPayUrl);
-            $v2Payload = $this->buildJayaPayV2Payload($displayPayUrl);
-
-            $origin = parse_url($displayPayUrl, PHP_URL_SCHEME) . '://' . parse_url($displayPayUrl, PHP_URL_HOST);
-
-            // Coba mode JSON
-            $v2Response = Http::timeout(20)
-                ->asJson()
-                ->withHeaders([
-                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
-                    'Accept' => 'application/json, text/plain, */*',
-                    'Origin' => $origin,
-                    'Referer' => $displayPayUrl,
-                ])
-                ->post($v2Url, $v2Payload);
-
-            $json = $v2Response->json();
-            $vaNumber = data_get($json, 'data.vaNumber');
-
-            // Kalau JSON gagal, coba mode form
-            if (empty($vaNumber)) {
-                $v2ResponseForm = Http::timeout(20)
-                    ->asForm()
-                    ->withHeaders([
-                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36',
-                        'Accept' => 'application/json, text/plain, */*',
-                        'Origin' => $origin,
-                        'Referer' => $displayPayUrl,
-                    ])
-                    ->post($v2Url, $v2Payload);
-
-                $jsonForm = $v2ResponseForm->json();
-                $vaNumber = data_get($jsonForm, 'data.vaNumber');
-
-                Log::info('JayaPay V2 FORM response', [
-                    'deposit_id' => $deposit->id,
-                    'status' => $v2ResponseForm->status(),
-                    'body' => $v2ResponseForm->body(),
-                ]);
-            }
-
-            Log::info('JayaPay V2 QR check', [
-                'deposit_id' => $deposit->id,
-                'v2_url' => $v2Url,
-                'payload' => $v2Payload,
-                'status' => $v2Response->status(),
-                'has_va_number' => !empty($vaNumber),
-                'body' => $v2Response->body(),
-            ]);
-
-            if (!empty($vaNumber)) {
+        // Untuk QRIS: render QR lokal dari qris_data (string EMV) yang dikirim BayarPro.
+        if ($deposit->status !== 'PAID'
+            && strtoupper((string) $deposit->method) === 'QRIS'
+            && !empty($deposit->pay_data)) {
+            try {
                 $qrSvg = QrCode::format('svg')
                     ->size(520)
                     ->margin(1)
-                    ->generate($vaNumber);
+                    ->generate($deposit->pay_data);
 
                 $qrImageSrc = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+            } catch (\Throwable $e) {
+                Log::error('Gagal generate QR BayarPro', [
+                    'deposit_id' => $deposit->id,
+                    'message' => $e->getMessage(),
+                ]);
             }
-        } catch (\Throwable $e) {
-            Log::error('Gagal generate QR JayaPay', [
-                'deposit_id' => $deposit->id,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
         }
+
+        return view('deposit.invoice', compact(
+            'deposit',
+            'user',
+            'qrImageSrc',
+            'displayPayUrl'
+        ));
     }
 
-    return view('deposit.invoice', compact(
-        'deposit',
-        'user',
-        'qrImageSrc',
-        'displayPayUrl'
-    ));
-}
-
-private function buildJayaPayDisplayUrl(Deposit $deposit): string
-{
-    $comboChannels = [
-        'DANA',
-        'GOPAY',
-        'OVO',
-        'DOKU',
-        'LINKAJA',
-        'SHOPEEPAY',
-        'BCA',
-        'MANDIRI',
-    ];
-
-    $selectedChannel = strtoupper($deposit->selected_channel ?: $deposit->method);
-
-    if (!in_array($selectedChannel, $comboChannels, true)) {
-        return $deposit->pay_url;
-    }
-
-    $parts = parse_url($deposit->pay_url);
-
-    if (!$parts || empty($parts['scheme']) || empty($parts['host'])) {
-        return $deposit->pay_url;
-    }
-
-    $query = [];
-    parse_str($parts['query'] ?? '', $query);
-
-    $query['logState'] = 2;
-    $query['method'] = 'QRIS';
-    $query['secondMethod'] = $selectedChannel;
-
-    $base = $parts['scheme'] . '://' . $parts['host'] . '/cash/PACKQRIS';
-
-    return $base . '?' . http_build_query($query);
-}
-
-private function buildJayaPayV2Url(string $displayPayUrl): string
-{
-    $parts = parse_url($displayPayUrl);
-
-    if (!$parts || empty($parts['scheme']) || empty($parts['host'])) {
-        return $displayPayUrl;
-    }
-
-    return $parts['scheme'] . '://' . $parts['host'] . '/gateway/order/detail/v2';
-}
-
-private function buildJayaPayV2Payload(string $displayPayUrl): array
-{
-    $parts = parse_url($displayPayUrl);
-
-    $query = [];
-    parse_str($parts['query'] ?? '', $query);
-
-    return [
-        'logState' => $query['logState'] ?? '2',
-        'orderNum' => $query['orderNum'] ?? null,
-        'method' => $query['method'] ?? 'QRIS',
-        'secondMethod' => $query['secondMethod'] ?? null,
-        'SG' => $query['SG'] ?? null,
-        'SV' => $query['SV'] ?? null,
-        'SX' => $query['SX'] ?? null,
-        'SN' => $query['SN'] ?? null,
-    ];
-}
-    public function callback(Request $request, JayaPayService $jayaPay)
+    /**
+     * Webhook notifikasi pembayaran dari BayarPro.
+     * Verifikasi HMAC SHA256 memakai raw body + secret key.
+     */
+    public function bayarProCallback(Request $request, BayarProService $bayarPro)
     {
-        $payload = $request->all();
+        $rawBody = $request->getContent();
+        $signature = (string) $request->header('X-Bayarpro-Signature', '');
 
-        Log::info('JayaPay deposit callback received', $payload);
+        if (!$bayarPro->verifyWebhookSignature($rawBody, $signature)) {
+            Log::warning('BayarPro deposit callback invalid signature', [
+                'body' => $rawBody,
+            ]);
+
+            return response('Invalid Webhook Signature', 401);
+        }
+
+        $payload = json_decode($rawBody, true) ?: [];
+
+        Log::info('BayarPro deposit callback received', $payload);
+
+        $event = $payload['event'] ?? null;
+        $data = $payload['data'] ?? [];
+        $status = strtoupper((string) ($data['status'] ?? ''));
+
+        if ($event !== 'payment.success' || $status !== 'SUCCESS') {
+            // Event lain diabaikan tapi tetap dibalas 200 supaya tidak di-retry terus.
+            return response()->json(['status' => 'ignored']);
+        }
+
+        $orderId = $data['merchant_ref_id'] ?? null;
+
+        if (!$orderId) {
+            return response('merchant_ref_id empty', 400);
+        }
 
         try {
-            $isValid = $jayaPay->verifyCallback($payload);
-
-            if (!$isValid) {
-                Log::warning('JayaPay callback invalid signature', $payload);
-                return response('INVALID SIGN', 400);
-            }
-
-            if (($payload['status'] ?? null) !== 'SUCCESS') {
-                Log::info('JayaPay callback ignored because status is not SUCCESS', $payload);
-                return response('SUCCESS', 200);
-            }
-
-            $orderId = $payload['orderNum'] ?? null;
-
-            if (!$orderId) {
-                return response('ORDER NUM EMPTY', 400);
-            }
-
             DB::beginTransaction();
 
             $deposit = Deposit::where('order_id', $orderId)
@@ -318,19 +195,19 @@ private function buildJayaPayV2Payload(string $displayPayUrl): array
 
             if (!$deposit) {
                 DB::rollBack();
-                Log::warning('JayaPay callback deposit not found', $payload);
-                return response('ORDER NOT FOUND', 404);
+                Log::warning('BayarPro callback deposit not found', $payload);
+                return response('Order not found', 404);
             }
 
             if ($deposit->status === 'PAID') {
                 DB::commit();
-                return response('SUCCESS', 200);
+                return response()->json(['status' => 'ok']);
             }
 
             $deposit->status = 'PAID';
-            $deposit->plat_order_num = $payload['platOrderNum'] ?? $deposit->plat_order_num;
-            $deposit->pay_fee = isset($payload['payFee']) ? (float) $payload['payFee'] : $deposit->pay_fee;
-           $deposit->gateway_response = $payload;
+            $deposit->plat_order_num = $data['reference_id'] ?? $deposit->plat_order_num;
+            $deposit->pay_fee = isset($data['fee']) ? (float) $data['fee'] : $deposit->pay_fee;
+            $deposit->gateway_response = $payload;
             $deposit->paid_at = now();
             $deposit->save();
 
@@ -338,12 +215,11 @@ private function buildJayaPayV2Payload(string $displayPayUrl): array
 
             DB::commit();
 
-            return response('SUCCESS', 200);
-
+            return response()->json(['status' => 'ok']);
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            Log::error('JayaPay deposit callback error', [
+            Log::error('BayarPro deposit callback error', [
                 'message' => $e->getMessage(),
                 'payload' => $payload,
                 'trace' => $e->getTraceAsString(),
@@ -353,23 +229,19 @@ private function buildJayaPayV2Payload(string $displayPayUrl): array
         }
     }
 
-private function processPaidDeposit(Deposit $deposit): void
-{
-    $user = User::lockForUpdate()->findOrFail($deposit->user_id);
+    private function processPaidDeposit(Deposit $deposit): void
+    {
+        $user = User::lockForUpdate()->findOrFail($deposit->user_id);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Deposit hanya menambah saldo utama
-    |--------------------------------------------------------------------------
-    | Deposit tidak menaikkan VIP.
-    | Deposit tidak memberi komisi referral.
-    | Komisi referral hanya dari pembelian produk BASIC.
-    */
-    $user->saldo = (float) $user->saldo + (float) $deposit->amount;
-    $user->save();
-}
-
-
-
-
+        /*
+        |--------------------------------------------------------------------------
+        | Deposit hanya menambah saldo utama
+        |--------------------------------------------------------------------------
+        | Deposit tidak menaikkan VIP.
+        | Deposit tidak memberi komisi referral.
+        | Komisi referral hanya dari pembelian produk BASIC.
+        */
+        $user->saldo = (float) $user->saldo + (float) $deposit->amount;
+        $user->save();
+    }
 }

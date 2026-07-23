@@ -276,11 +276,11 @@ Route::middleware('auth')->group(function () {
 
 
 });
-Route::post('/payment/jayapay/deposit/callback', [DepositController::class, 'callback'])
-    ->name('payment.jayapay.deposit.callback');
+Route::post('/payment/bayarpro/deposit/callback', [DepositController::class, 'bayarProCallback'])
+    ->name('payment.bayarpro.deposit.callback');
 
-Route::post('/payment/jayapay/withdrawal/callback', [WithdrawalController::class, 'jayaPayCallback'])
-    ->name('payment.jayapay.withdrawal.callback');
+Route::post('/payment/bayarpro/withdrawal/callback', [WithdrawalController::class, 'bayarProPayoutCallback'])
+    ->name('payment.bayarpro.withdrawal.callback');
 
 /*
 |--------------------------------------------------------------------------
