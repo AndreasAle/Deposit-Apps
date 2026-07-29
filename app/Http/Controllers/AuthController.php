@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use App\Support\ReferralCode;
 
 class AuthController extends Controller
@@ -44,6 +45,86 @@ class AuthController extends Controller
 
     return redirect()->route('register.form');
 }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Referral gate — Cloudflare Turnstile
+    |--------------------------------------------------------------------------
+    | /r/{code} menampilkan halaman perantara berisi widget Turnstile.
+    | Setelah lolos verifikasi (POST), kode referral disimpan ke session lalu
+    | user diarahkan ke form pendaftaran. Kalau TURNSTILE belum dikonfigurasi
+    | (key kosong), alur kembali ke perilaku lama (langsung redirect).
+    */
+    public function referralGate(Request $request, string $code)
+    {
+        if ($this->isBot($request)) {
+            return response('Not Found', 404);
+        }
+
+        $code = strtoupper(trim($code));
+        if (!preg_match('/^[A-Z0-9]{4,20}$/', $code)) {
+            return redirect()->route('home');
+        }
+
+        $siteKey   = config('services.turnstile.site_key');
+        $secretKey = config('services.turnstile.secret_key');
+
+        // Fallback: Turnstile belum diaktifkan -> perilaku lama.
+        if (empty($siteKey) || empty($secretKey)) {
+            session(['referral_code' => $code]);
+            return redirect()->route('register.form');
+        }
+
+        session(['pending_referral' => $code]);
+
+        return view('auth.referral-gate', [
+            'code'    => $code,
+            'siteKey' => $siteKey,
+        ]);
+    }
+
+    public function referralVerify(Request $request)
+    {
+        if ($this->isBot($request)) {
+            return response('Not Found', 404);
+        }
+
+        $code = strtoupper(trim((string) ($request->input('code') ?: session('pending_referral'))));
+        if (!preg_match('/^[A-Z0-9]{4,20}$/', $code)) {
+            return redirect()->route('home');
+        }
+
+        $secretKey = config('services.turnstile.secret_key');
+        $token = (string) $request->input('cf-turnstile-response');
+
+        if (!empty($secretKey)) {
+            if ($token === '') {
+                return back()->with('error', 'Verifikasi keamanan belum selesai. Silakan coba lagi.');
+            }
+
+            try {
+                $resp = Http::asForm()->timeout(15)->post(
+                    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+                    [
+                        'secret'   => $secretKey,
+                        'response' => $token,
+                        'remoteip' => $request->ip(),
+                    ]
+                );
+            } catch (\Throwable $e) {
+                return back()->with('error', 'Gagal menghubungi server verifikasi. Coba lagi.');
+            }
+
+            if (!($resp->successful() && $resp->json('success') === true)) {
+                return back()->with('error', 'Verifikasi gagal. Silakan ulangi.');
+            }
+        }
+
+        session()->forget('pending_referral');
+        session(['referral_code' => $code]);
+
+        return redirect()->route('register.form');
+    }
 
     public function showRegister(Request $request)
 {
