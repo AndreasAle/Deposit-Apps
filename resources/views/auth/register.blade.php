@@ -7,7 +7,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Daftar — Velora Finance</title>
+  <title>Daftar Akun | Capital Wave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <meta name="robots" content="noindex, nofollow, noarchive">
 
@@ -17,1055 +17,235 @@
 
   <style>
     :root{
-      --bg:#fffaf3;
-      --paper:#ffffff;
-      --text:#3b1116;
-      --soft:#5b2a30;
-      --muted:#8b6b70;
-      --muted2:#b89aa0;
-      --border:rgba(75,16,21,.09);
-      --border2:rgba(75,16,21,.14);
-
-      --brand:#7d3cff;
-      --brand2:#c957ff;
-      --violet:#d35cff;
-      --gold:#ffb52e;
-      --green:#22c982;
-      --rose:#ef4444;
-
-      --shadow:0 22px 55px rgba(75,16,21,.10);
-      --shadow-soft:0 12px 28px rgba(75,16,21,.075);
+      --blue:#0A57A3; --blue-lite:#2f7fd4; --blue-soft:#eef4fb;
+      --navy:#0b2740; --navy-2:#0d3357; --navy-3:#07182a;
+      --gold:#c99433; --gold-lite:#e8c874; --gold-deep:#a9772a; --gold-soft:#faf3e2;
+      --gold-metal:linear-gradient(135deg,#a9772a 0%,#e8c874 46%,#c99433 100%);
+      --green:#1fb97a; --green-soft:#e6f5ee; --red:#dc5757; --red-soft:#fdeaea;
+      --card:#ffffff; --tint:#f5f8fc; --line:#e9edf4; --line-2:#dfe5ee;
+      --ink:#152a3f; --ink-soft:#46586c; --muted:#8493a6; --muted-2:#aab6c4;
+      --sh:0 2px 6px rgba(11,39,64,.04), 0 12px 30px rgba(11,39,64,.07);
+      --sh-lg:0 -10px 40px rgba(11,39,64,.10);
     }
-
-    *{ box-sizing:border-box; margin:0; padding:0; }
+    *{ box-sizing:border-box; }
     html,body{ min-height:100%; }
+    body{ margin:0; color:var(--ink); font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; background:var(--navy-3); overflow-x:hidden; -webkit-font-smoothing:antialiased; letter-spacing:-.01em; }
+    a{ color:inherit; text-decoration:none; } button,input{ font-family:inherit; }
+    h1,h2,h3,p{ margin:0; }
+    .vl-wrap{ width:100%; min-height:100vh; display:flex; justify-content:center; }
+    .vl-phone{ width:100%; max-width:428px; min-height:100vh; position:relative; display:flex; flex-direction:column; }
 
-    body{
-      font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color:var(--text);
+    /* HERO */
+    .vl-hero{ position:relative; overflow:hidden; padding:20px 20px 66px; color:#fff;
       background:
-        radial-gradient(780px 420px at 50% -120px, rgba(201,87,255,.10), transparent 64%),
-        linear-gradient(180deg, #fffdf9 0%, #fff8ee 45%, #f7eefc 100%);
-      overflow-x:hidden;
-      -webkit-tap-highlight-color:transparent;
-    }
+        radial-gradient(500px 300px at 82% 4%, rgba(232,200,116,.16), transparent 60%),
+        radial-gradient(500px 320px at 0% 28%, rgba(47,127,212,.24), transparent 58%),
+        linear-gradient(160deg,#0f3255 0%,#0b2740 55%,#07182a 100%); }
+    .vl-hero::before{ content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+      background-image:linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size:30px 30px; -webkit-mask-image:radial-gradient(120% 90% at 80% 0%, #000, transparent 72%); mask-image:radial-gradient(120% 90% at 80% 0%, #000, transparent 72%); }
+    .vl-hero > *{ position:relative; z-index:1; }
+    .vl-hero-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .vl-brand{ display:flex; align-items:center; gap:11px; }
+    .vl-mark{ width:44px; height:44px; border-radius:50%; position:relative; display:grid; place-items:center; background:linear-gradient(160deg,#ffffff 0%,#eef4fb 100%); box-shadow:0 8px 20px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.14); }
+    .vl-mark::after{ content:""; position:absolute; inset:0; border-radius:50%; padding:1.4px; background:var(--gold-metal); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+    .vl-mark svg{ width:26px; height:26px; position:relative; z-index:1; }
+    .vl-brand-tx span{ display:block; font-size:8.5px; font-weight:600; letter-spacing:.24em; text-transform:uppercase; color:rgba(255,255,255,.5); }
+    .vl-brand-tx b{ display:block; margin-top:4px; font-size:16px; font-weight:800; letter-spacing:.01em; }
+    .vl-brand-tx b i{ font-style:normal; background:var(--gold-metal); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .vl-secure{ display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); font-size:10px; font-weight:700; }
+    .vl-secure::before{ content:""; width:6px; height:6px; border-radius:999px; background:var(--green); box-shadow:0 0 8px var(--green); }
+    .vl-hero-main{ margin-top:20px; display:flex; align-items:center; gap:12px; }
+    .vl-hero-copy{ flex:1; min-width:0; }
+    .vl-hero-copy h1{ font-size:24px; font-weight:800; letter-spacing:-.035em; line-height:1.14; }
+    .vl-hero-copy h1 i{ font-style:normal; background:var(--gold-metal); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .vl-hero-copy p{ margin-top:8px; font-size:11.5px; font-weight:500; color:rgba(255,255,255,.58); line-height:1.5; max-width:230px; }
+    .vl-mascot{ width:72px; height:72px; flex:0 0 auto; animation:vlFloat 4s ease-in-out infinite; }
+    .vl-stats{ margin-top:18px; display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
+    .vl-stat{ padding:11px 8px; border-radius:14px; text-align:center; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); opacity:0; transform:translateY(10px); animation:vlUp .5s cubic-bezier(.22,.8,.22,1) forwards; }
+    .vl-stat:nth-child(1){ animation-delay:.12s; } .vl-stat:nth-child(2){ animation-delay:.22s; } .vl-stat:nth-child(3){ animation-delay:.32s; }
+    .vl-stat-icon{ display:grid; place-items:center; color:var(--gold-lite); }
+    .vl-stat-icon svg{ width:18px; height:18px; }
+    .vl-stat strong{ display:block; margin-top:6px; font-size:10.5px; font-weight:700; }
+    .vl-stat span{ display:block; margin-top:2px; font-size:8.5px; font-weight:500; color:rgba(255,255,255,.5); }
 
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(rgba(75,16,21,.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(75,16,21,.012) 1px, transparent 1px);
-      background-size:34px 34px;
-      opacity:.55;
-      mask-image:linear-gradient(180deg, rgba(0,0,0,.45), transparent 80%);
-      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.45), transparent 80%);
-      z-index:0;
-    }
+    /* SHEET */
+    .vl-sheet{ position:relative; z-index:3; margin-top:-42px; background:var(--card); border-radius:30px 30px 0 0; box-shadow:var(--sh-lg); padding:8px 20px 28px; flex:1; animation:vlSheet .5s cubic-bezier(.22,.8,.22,1) both; }
+    .vl-grip{ width:44px; height:5px; border-radius:999px; background:var(--line-2); margin:8px auto 16px; }
 
-    body::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(circle at 6% 18%, rgba(255,181,46,.12), transparent 30%),
-        radial-gradient(circle at 92% 28%, rgba(201,87,255,.11), transparent 30%),
-        radial-gradient(circle at 50% 100%, rgba(125,60,255,.07), transparent 34%);
-      z-index:0;
-    }
+    .vl-tabs{ display:flex; gap:6px; padding:5px; border-radius:15px; background:var(--tint); border:1px solid var(--line); margin-bottom:18px; }
+    .vl-tab{ flex:1; height:42px; border:0; cursor:pointer; border-radius:11px; background:transparent; color:var(--ink-soft); font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:7px; transition:.16s ease; }
+    .vl-tab svg{ width:16px; height:16px; }
+    .vl-tab.active{ color:#fff; background:linear-gradient(135deg,#123457,#0b2740); box-shadow:0 8px 16px rgba(11,39,64,.2); }
 
-    a{ color:inherit; text-decoration:none; }
-    button,input,select,textarea{ font-family:inherit; }
+    .vl-panel{ }
+    .vl-panel-head{ margin-bottom:4px; }
+    .vl-panel-eyebrow{ display:flex; align-items:center; gap:9px; }
+    .vl-panel-bar{ width:4px; height:18px; border-radius:999px; background:var(--gold-metal); }
+    .vl-panel-label{ font-size:9.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-deep); }
+    .vl-panel-title{ margin-top:8px; font-size:20px; font-weight:800; color:var(--navy); letter-spacing:-.03em; }
+    .vl-panel-sub{ margin-top:6px; font-size:12px; font-weight:500; color:var(--muted); }
 
-    /* PAGE */
-    .vl-page{
-      width:100%;
-      min-height:100vh;
-      position:relative;
-      z-index:1;
-      display:flex;
-      justify-content:center;
-      padding:14px 10px 40px;
-      animation:vlFadeUp .45s ease both;
-    }
-
-    .vl-phone{
-      width:100%;
-      max-width:430px;
-      position:relative;
-      padding:8px 4px;
-    }
-
-    /* HEADER */
-    .vl-topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:20px;
-      padding:2px 2px 0;
-    }
-
-    .vl-brand{ display:flex; align-items:center; gap:11px; min-width:0; }
-
-    .vl-logo{
-      width:50px;
-      height:50px;
-      border-radius:18px;
-      display:grid;
-      place-items:center;
-      overflow:hidden;
-      background:linear-gradient(135deg, rgba(255,181,46,.12), rgba(201,87,255,.12), rgba(125,60,255,.10)), #fff;
-      border:1px solid rgba(75,16,21,.09);
-      box-shadow:0 12px 26px rgba(75,16,21,.075), 0 0 0 5px rgba(255,181,46,.08), inset 0 1px 0 rgba(255,255,255,.9);
-      flex:0 0 auto;
-    }
-
-    .vl-logo img{ width:44px; height:44px; object-fit:contain; display:block; }
-
-    .vl-brand-copy{ min-width:0; }
-    .vl-brand-copy span{
-      display:block;
-      margin-bottom:5px;
-      color:#9a6e72;
-      font-size:11px;
-      line-height:1;
-      font-weight:850;
-      letter-spacing:.16em;
-      text-transform:uppercase;
-    }
-    .vl-brand-copy h1{
-      margin:0;
-      font-size:23px;
-      line-height:1;
-      font-weight:950;
-      letter-spacing:-.055em;
-      color:#3b1116;
-      white-space:nowrap;
-    }
-
-    .vl-kicker-pill{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      min-height:30px;
-      padding:0 13px;
-      border-radius:999px;
-      background:#fff;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow-soft);
-      color:var(--brand);
-      font-size:10px;
-      font-weight:850;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      flex:0 0 auto;
-    }
-    .vl-kicker-pill::before{
-      content:"";
-      width:7px;
-      height:7px;
-      border-radius:999px;
-      background:var(--gold);
-      box-shadow:0 0 0 3px rgba(255,181,46,.20);
-    }
-
-    /* HERO BANNER */
-    .vl-hero-banner{
-      position:relative;
-      overflow:hidden;
-      border-radius:30px;
-      background:
-        radial-gradient(360px 210px at 95% 0%, rgba(255,255,255,.18), transparent 60%),
-        linear-gradient(135deg, #ffb52e 0%, #c957ff 46%, #7d3cff 100%);
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:0 24px 52px rgba(201,87,255,.24), inset 0 1px 0 rgba(255,255,255,.22);
-      padding:22px 20px;
-      color:#fff;
-      margin-bottom:16px;
-      text-align:center;
-    }
-
-    .vl-hero-banner::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      border-radius:inherit;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.20), transparent 34%),
-        radial-gradient(circle at 88% 22%, rgba(255,255,255,.18), transparent 28%);
-    }
-
-    .vl-hero-banner > *{ position:relative; z-index:1; }
-
-    .vl-hero-logo-wrap{
-      width:80px;
-      height:80px;
-      margin:0 auto 14px;
-      border-radius:26px;
-      background:rgba(255,255,255,.96);
-      border:1px solid rgba(255,255,255,.92);
-      box-shadow:0 0 0 6px rgba(255,255,255,.15), 0 18px 40px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.90);
-      display:grid;
-      place-items:center;
-      animation:vlFloat 4s ease-in-out infinite;
-    }
-
-    .vl-hero-logo-wrap img{ width:58px; height:58px; object-fit:contain; display:block; }
-
-    .vl-hero-tagline{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      min-height:26px;
-      padding:0 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.15);
-      border:1px solid rgba(255,255,255,.22);
-      color:#fff9ef;
-      font-size:10px;
-      font-weight:850;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-      margin-bottom:10px;
-    }
-
-    .vl-hero-title{
-      font-size:28px;
-      font-weight:950;
-      line-height:1.05;
-      letter-spacing:-.055em;
-      color:#fff;
-      text-shadow:0 8px 20px rgba(0,0,0,.18);
-      margin-bottom:6px;
-    }
-
-    .vl-hero-sub{
-      color:rgba(255,255,255,.68);
-      font-size:12px;
-      font-weight:650;
-      line-height:1.5;
-    }
-
-    .vl-hero-stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:8px;
-      margin-top:16px;
-    }
-
-    .vl-stat{
-      padding:10px 8px;
-      border-radius:16px;
-      background:rgba(255,255,255,.13);
-      border:1px solid rgba(255,255,255,.18);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
-      text-align:center;
-    }
-
-    .vl-stat-icon{
-      width:28px;
-      height:28px;
-      border-radius:10px;
-      background:rgba(255,255,255,.18);
-      display:grid;
-      place-items:center;
-      margin:0 auto 6px;
-    }
-
-    .vl-stat-icon svg{ width:14px; height:14px; color:#fff; }
-    .vl-stat strong{ display:block; color:#fff; font-size:10px; font-weight:850; line-height:1.2; }
-    .vl-stat span{ display:block; margin-top:2px; color:rgba(255,255,255,.60); font-size:9px; font-weight:650; }
-
-    /* TABS */
-    .vl-tabs{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:5px;
-      padding:5px;
-      border-radius:22px;
-      background:#fff;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow-soft);
-      margin-bottom:14px;
-    }
-
-    .vl-tab{
-      min-height:44px;
-      border-radius:17px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
-      font-size:12.5px;
-      font-weight:850;
-      color:var(--muted);
-      transition:.18s ease;
-    }
-
-    .vl-tab svg{ width:15px; height:15px; }
-
-    .vl-tab.active{
-      color:#fff;
-      background:linear-gradient(135deg, var(--gold), var(--violet), var(--brand));
-      box-shadow:0 8px 20px rgba(201,87,255,.22);
-    }
-
-    /* PANEL */
-    .vl-panel{
-      background:#fff;
-      border-radius:26px;
-      padding:20px 18px 18px;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow-soft);
-      margin-bottom:14px;
-    }
-
-    .vl-panel-head{ margin-bottom:18px; }
-
-    .vl-panel-eyebrow{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-bottom:7px;
-    }
-
-    .vl-panel-bar{
-      width:24px;
-      height:4px;
-      border-radius:999px;
-      background:linear-gradient(90deg, var(--gold), var(--violet), var(--brand));
-    }
-
-    .vl-panel-label{
-      font-size:10.5px;
-      font-weight:850;
-      color:var(--brand);
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
-
-    .vl-panel-title{
-      font-size:21px;
-      font-weight:950;
-      letter-spacing:-.04em;
-      color:var(--text);
-      line-height:1.1;
-    }
-
-    .vl-panel-sub{
-      margin-top:4px;
-      font-size:12px;
-      color:var(--muted);
-      font-weight:650;
-      line-height:1.5;
-    }
+    /* skeleton */
+    .vl-skeleton-spinner{ margin-top:16px; font-size:12px; font-weight:600; color:var(--muted); }
+    .vl-skeleton-bar{ height:48px; border-radius:14px; margin-top:12px; background:linear-gradient(90deg,#eef1f6 25%,#f6f8fb 37%,#eef1f6 63%); background-size:400% 100%; animation:vlShimmer 1.3s ease infinite; }
+    .vl-skeleton-bar.tall{ height:120px; }
+    @keyframes vlShimmer{ 0%{ background-position:100% 0; } 100%{ background-position:0 0; } }
 
     /* ERROR */
-    .vl-error{
-      margin-bottom:14px;
-      padding:12px 14px;
-      border-radius:16px;
-      background:rgba(239,68,68,.06);
-      border:1px solid rgba(239,68,68,.18);
-      color:#B91C1C;
-      font-size:12px;
-      font-weight:700;
-      line-height:1.5;
-    }
-    .vl-error ul{ margin:0; padding-left:16px; }
-    .vl-error li{ margin:3px 0; }
+    .vl-error{ margin-top:14px; padding:12px 14px; border-radius:14px; background:var(--red-soft); border:1px solid #f7d4d4; color:#a33; font-size:12px; font-weight:600; }
+    .vl-error ul{ margin:0; padding-left:18px; } .vl-error li{ margin-top:2px; }
 
-    /* FIELDS */
-    .vl-field{ margin-bottom:12px; }
-
-    .vl-label{
-      display:flex;
-      align-items:center;
-      gap:5px;
-      margin-bottom:6px;
-      font-size:11.5px;
-      font-weight:750;
-      color:var(--muted);
-    }
-
-    .vl-label svg{ width:13px; height:13px; color:var(--brand); }
-
-    .vl-input-wrap{ position:relative; }
-
-    .vl-input{
-      width:100%;
-      height:50px;
-      border-radius:16px;
-      border:1.5px solid var(--border);
-      background:#fffaf3;
-      outline:none;
-      padding:0 14px;
-      font-size:13.5px;
-      font-weight:500;
-      color:var(--text);
-      transition:border-color .18s, box-shadow .18s, transform .18s;
-    }
-
-    .vl-input:focus{
-      border-color:rgba(125,60,255,.36);
-      background:#fff;
-      box-shadow:0 0 0 4px rgba(125,60,255,.08);
-      transform:translateY(-1px);
-    }
-
-    .vl-input::placeholder{ color:var(--muted2); font-weight:400; }
-
+    /* FORM */
+    .vl-field{ margin-top:16px; }
+    .vl-label{ display:flex; align-items:center; gap:6px; margin-bottom:8px; font-size:11.5px; font-weight:700; color:var(--ink-soft); }
+    .vl-label svg{ width:14px; height:14px; color:var(--gold-deep); }
+    .vl-input-wrap{ position:relative; display:flex; align-items:center; border-radius:14px; border:1.5px solid var(--line-2); background:var(--tint); overflow:hidden; transition:.15s ease; }
+    .vl-input-wrap:focus-within{ border-color:var(--blue); box-shadow:0 0 0 3px rgba(10,87,163,.1); background:var(--card); }
+    .vl-input-prefix{ position:absolute; left:0; top:0; bottom:0; width:46px; display:grid; place-items:center; color:var(--muted); pointer-events:none; }
+    .vl-input-prefix svg{ width:19px; height:19px; }
+    .vl-input{ width:100%; height:52px; padding:0 14px; border:0; outline:none; background:transparent; color:var(--navy); font-size:14px; font-weight:600; }
+    .vl-input::placeholder{ color:var(--muted-2); font-weight:500; }
     .vl-input-icon{ padding-left:46px; }
+    .vl-input-locked{ color:var(--muted); background:rgba(11,39,64,.03); }
+    .vl-phone-wrap{ }
+    .vl-phone-prefix{ padding:0 12px; height:52px; display:flex; align-items:center; font-size:14px; font-weight:700; color:var(--navy); border-right:1px solid var(--line-2); background:rgba(11,39,64,.03); }
+    .vl-toggle-pass{ position:absolute; right:6px; top:50%; transform:translateY(-50%); width:40px; height:40px; border:0; background:transparent; color:var(--muted); cursor:pointer; display:grid; place-items:center; }
+    .vl-toggle-pass svg{ width:20px; height:20px; }
+    .vl-hint{ margin-top:8px; font-size:10.5px; font-weight:500; color:var(--muted); }
 
-    .vl-input-prefix{
-      position:absolute;
-      left:13px; top:50%;
-      transform:translateY(-50%);
-      width:22px; height:22px;
-      border-radius:6px;
-      display:grid;
-      place-items:center;
-      color:var(--brand);
-      pointer-events:none;
-    }
-
-    .vl-input-prefix svg{ width:14px; height:14px; }
-
-    .vl-phone-wrap .vl-input{ padding-left:54px; }
-
-    .vl-phone-prefix{
-      position:absolute;
-      left:0; top:0; bottom:0;
-      width:48px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:var(--muted);
-      font-size:13px;
-      font-weight:750;
-      border-right:1.5px solid var(--border);
-      pointer-events:none;
-    }
-
-    .vl-input-locked{
-      color:var(--brand);
-      font-weight:750;
-      cursor:not-allowed;
-      border-color:rgba(125,60,255,.22) !important;
-      background:rgba(125,60,255,.04) !important;
-      box-shadow:0 0 0 3px rgba(125,60,255,.06) !important;
-    }
-
-    .vl-toggle-pass{
-      position:absolute;
-      top:50%; right:8px;
-      transform:translateY(-50%);
-      width:36px; height:36px;
-      border:none;
-      border-radius:12px;
-      background:transparent;
-      cursor:pointer;
-      display:grid;
-      place-items:center;
-      color:var(--muted2);
-      transition:color .18s, background .18s;
-    }
-
-    .vl-toggle-pass:hover{ color:var(--brand); background:rgba(125,60,255,.08); }
-    .vl-toggle-pass svg{ width:17px; height:17px; }
-
-    .vl-hint{
-      margin-top:6px;
-      font-size:11.5px;
-      color:var(--muted2);
-      font-weight:500;
-      line-height:1.5;
-    }
-
-    /* SECURITY SECTION */
-    .vl-security{ margin-top:16px; display:grid; gap:12px; }
-
-    .vl-security-heading{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      font-size:13px;
-      font-weight:900;
-      color:var(--text);
-      letter-spacing:-.02em;
-    }
-
-    .vl-security-dot{
-      width:26px; height:26px;
-      border-radius:999px;
-      background:linear-gradient(135deg, rgba(255,181,46,.15), rgba(201,87,255,.15));
-      border:1px solid rgba(201,87,255,.18);
-      display:grid;
-      place-items:center;
-      color:var(--brand);
-      font-size:12px;
-      font-weight:900;
-    }
-
-    /* PUZZLE */
-    .vl-puzzle{
-      border-radius:22px;
-      border:1.5px solid rgba(201,87,255,.14);
-      background:#fff;
-      box-shadow:var(--shadow-soft);
-      overflow:hidden;
-    }
-
-    .vl-puzzle-head{
-      padding:14px 14px 0;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:12px;
-    }
-
-    .vl-puzzle-head h3{
-      font-size:13.5px;
-      font-weight:900;
-      color:var(--text);
-      letter-spacing:-.02em;
-      margin-bottom:4px;
-    }
-
-    .vl-puzzle-head p{
-      font-size:11.5px;
-      color:var(--muted);
-      font-weight:600;
-      line-height:1.4;
-    }
-
-    .vl-puzzle-badge{
-      height:28px;
-      padding:0 10px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      background:rgba(125,60,255,.08);
-      border:1px solid rgba(125,60,255,.18);
-      color:var(--brand);
-      font-size:10.5px;
-      font-weight:850;
-      white-space:nowrap;
-      flex-shrink:0;
-    }
-
-    .vl-puzzle-badge.is-ok{
-      background:rgba(34,201,130,.10);
-      border-color:rgba(34,201,130,.26);
-      color:#15803d;
-    }
-
-    .vl-puzzle-stage{
-      margin:0 14px 12px;
-      position:relative;
-      height:120px;
-      border-radius:18px;
-      overflow:hidden;
-      background:
-        radial-gradient(360px 210px at 95% 0%, rgba(255,255,255,.18), transparent 60%),
-        linear-gradient(135deg, #ffb52e 0%, #c957ff 46%, #7d3cff 100%);
-      border:1px solid rgba(201,87,255,.20);
-    }
-
-    .vl-puzzle-chip{
-      position:absolute;
-      z-index:2;
-      height:26px;
-      padding:0 10px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      color:rgba(255,255,255,.90);
-      background:rgba(0,0,0,.18);
-      border:1px solid rgba(255,255,255,.22);
-      backdrop-filter:blur(6px);
-      font-size:10.5px;
-      font-weight:850;
-    }
-
+    /* SECURITY / PUZZLE */
+    .vl-security{ margin-top:20px; padding:16px; border-radius:18px; background:var(--tint); border:1px solid var(--line); }
+    .vl-security-heading{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--navy); }
+    .vl-security-dot{ width:22px; height:22px; border-radius:8px; display:grid; place-items:center; color:#0b2740; background:var(--gold-metal); font-size:12px; }
+    .vl-puzzle{ margin-top:14px; border-radius:16px; background:var(--card); border:1px solid var(--line); padding:14px; }
+    .vl-puzzle-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .vl-puzzle-head h3{ font-size:12.5px; font-weight:700; color:var(--navy); letter-spacing:-.01em; }
+    .vl-puzzle-head p{ margin-top:3px; font-size:10px; font-weight:500; color:var(--muted); }
+    .vl-puzzle-badge{ flex:0 0 auto; padding:5px 10px; border-radius:8px; font-size:9.5px; font-weight:800; letter-spacing:.06em; color:var(--gold-deep); background:var(--gold-soft); }
+    .vl-puzzle-badge.is-ok{ color:var(--green); background:var(--green-soft); }
+    .vl-puzzle-stage{ position:relative; margin-top:12px; height:72px; border-radius:13px; overflow:hidden;
+      background:linear-gradient(135deg,#0f3255,#0b2740); }
+    .vl-puzzle-chip{ position:absolute; z-index:1; padding:4px 9px; border-radius:8px; font-size:9.5px; font-weight:700; color:#fff; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); }
     .vl-puzzle-chip-l{ top:14px; left:14px; }
     .vl-puzzle-chip-r{ top:14px; right:14px; }
-
-    .vl-puzzle-piece{
-      position:absolute;
-      left:18px; top:44px;
-      width:60px; height:54px;
-      border-radius:16px;
-      background:rgba(255,255,255,.92);
-      box-shadow:0 10px 24px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.80);
-      transition:transform .08s linear;
-    }
-
-    .vl-puzzle-piece::before{
-      content:'';
-      position:absolute;
-      top:-10px; left:22px;
-      width:18px; height:18px;
-      border-radius:999px;
-      background:rgba(255,255,255,.92);
-    }
-
-    .vl-puzzle-piece::after{
-      content:'';
-      position:absolute;
-      right:-9px; top:20px;
-      width:18px; height:18px;
-      border-radius:999px;
-      background:rgba(255,255,255,.92);
-    }
-
-    .vl-puzzle-slot{
-      position:absolute;
-      right:30px; top:40px;
-      width:70px; height:62px;
-      border-radius:18px;
-      border:2px dashed rgba(255,255,255,.50);
-      background:rgba(0,0,0,.12);
-      display:grid;
-      place-items:center;
-    }
-
-    .vl-puzzle-slot::before{
-      content:'';
-      width:30px; height:30px;
-      border-radius:999px;
-      background:rgba(255,255,255,.20);
-    }
-
-    .vl-puzzle-slider{
-      margin:0 14px 14px;
-      position:relative;
-      height:50px;
-      border-radius:16px;
-      background:#fffaf3;
-      border:1.5px solid var(--border);
-      display:flex;
-      align-items:center;
-      overflow:hidden;
-    }
-
-    .vl-puzzle-slider-text{
-      width:100%;
-      text-align:center;
-      font-size:12px;
-      font-weight:750;
-      color:var(--muted);
-      padding-left:62px;
-      padding-right:12px;
-      line-height:1.3;
-    }
-
-    .vl-puzzle-handle{
-      position:absolute;
-      left:0; top:0;
-      width:60px; height:50px;
-      border:none;
-      border-radius:16px;
-      cursor:grab;
-      background:linear-gradient(135deg, var(--gold), var(--violet), var(--brand));
-      color:#fff;
-      font-size:22px;
-      font-weight:900;
-      box-shadow:0 4px 16px rgba(201,87,255,.30);
-      touch-action:none;
-      user-select:none;
-      transition:box-shadow .18s;
-    }
-
+    .vl-puzzle-piece{ position:absolute; z-index:3; top:50%; left:14px; margin-top:-18px; width:36px; height:36px; border-radius:10px; background:var(--gold-metal); box-shadow:0 6px 14px rgba(201,148,51,.4); }
+    .vl-puzzle-slot{ position:absolute; z-index:2; top:50%; right:14px; margin-top:-18px; width:36px; height:36px; border-radius:10px; border:2px dashed rgba(255,255,255,.35); background:rgba(255,255,255,.05); }
+    .vl-puzzle-slider{ position:relative; margin-top:14px; height:52px; border-radius:13px; background:var(--tint); border:1px solid var(--line-2); overflow:hidden; }
+    .vl-puzzle-slider-text{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--muted); pointer-events:none; }
+    .vl-puzzle-handle{ position:absolute; left:4px; top:4px; width:48px; height:44px; border:0; border-radius:11px; cursor:grab; color:#fff; background:linear-gradient(135deg,#123457,#0b2740); box-shadow:0 6px 14px rgba(11,39,64,.3); font-size:18px; font-weight:800; z-index:2; touch-action:none; }
     .vl-puzzle-handle:active{ cursor:grabbing; }
+    .vl-puzzle-note{ margin-top:12px; font-size:10px; font-weight:500; color:var(--muted); }
+    .vl-puzzle-reset{ margin-top:8px; border:0; background:transparent; color:var(--blue); font-size:11px; font-weight:700; cursor:pointer; }
 
-    .vl-puzzle-note{
-      margin:0 14px 10px;
-      font-size:11px;
-      color:var(--muted2);
-      font-weight:500;
-    }
+    .vl-confirm{ margin-top:14px; display:flex; align-items:flex-start; gap:11px; cursor:pointer; }
+    .vl-confirm input[type="checkbox"]{ appearance:none; -webkit-appearance:none; flex:0 0 auto; width:22px; height:22px; border-radius:7px; border:2px solid var(--line-2); background:var(--card); cursor:pointer; position:relative; transition:.15s ease; }
+    .vl-confirm input[type="checkbox"]:checked{ border-color:var(--blue); background:var(--blue); }
+    .vl-confirm input[type="checkbox"]:checked::before{ content:"✓"; position:absolute; inset:0; display:grid; place-items:center; color:#fff; font-size:13px; font-weight:800; }
+    .vl-confirm span{ font-size:11px; font-weight:500; color:var(--muted); line-height:1.5; }
+    .vl-confirm span strong{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin-bottom:2px; }
 
-    .vl-puzzle-reset{
-      margin:0 14px 14px;
-      height:32px;
-      padding:0 14px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:#fffaf3;
-      color:var(--muted);
-      font-size:11.5px;
-      font-weight:750;
-      cursor:pointer;
-      transition:.16s ease;
-    }
+    .vl-btn-submit{ position:relative; overflow:hidden; margin-top:20px; width:100%; min-height:54px; border:0; border-radius:16px; cursor:pointer; color:#fff;
+      background:linear-gradient(135deg,#123457,#0b2740); box-shadow:0 12px 26px rgba(11,39,64,.3), inset 0 1px 0 rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:center; gap:9px; font-size:15px; font-weight:700; letter-spacing:-.01em; transition:.16s ease; }
+    .vl-btn-submit svg{ width:18px; height:18px; }
+    .vl-btn-submit:not(:disabled)::after{ content:""; position:absolute; top:0; left:-70%; width:45%; height:100%; background:linear-gradient(100deg, transparent, rgba(232,200,116,.4), transparent); transform:skewX(-18deg); animation:vlSheen 3.5s ease-in-out infinite; }
+    .vl-btn-submit:disabled{ opacity:.45; cursor:not-allowed; box-shadow:none; }
+    .vl-btn-submit:not(:disabled):hover{ transform:translateY(-1px); }
 
-    .vl-puzzle-reset:hover{
-      border-color:rgba(125,60,255,.24);
-      color:var(--brand);
-      background:rgba(125,60,255,.05);
-    }
+    /* TRUST + FOOTER */
+    .vl-trust-tiles{ margin-top:20px; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .vl-trust-tile{ padding:14px 8px; border-radius:16px; text-align:center; background:var(--card); border:1px solid var(--line); box-shadow:var(--sh); }
+    .vl-trust-tile-icon{ display:grid; place-items:center; color:var(--blue); }
+    .vl-trust-tile-icon svg{ width:20px; height:20px; }
+    .vl-trust-tile strong{ display:block; margin-top:8px; font-size:11px; font-weight:700; color:var(--navy); }
+    .vl-trust-tile span{ display:block; margin-top:2px; font-size:9px; font-weight:500; color:var(--muted); }
+    .vl-footer{ margin-top:20px; text-align:center; font-size:12.5px; font-weight:500; color:var(--muted); }
+    .vl-footer a{ font-weight:800; background:var(--gold-metal); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .vl-copyright{ margin-top:12px; text-align:center; font-size:9.5px; font-weight:500; color:var(--muted-2); }
 
-    /* CONFIRM BOX */
-    .vl-confirm{
-      display:grid;
-      grid-template-columns:auto 1fr;
-      gap:12px;
-      align-items:flex-start;
-      padding:14px;
-      border-radius:20px;
-      border:1.5px solid var(--border);
-      background:#fff;
-      box-shadow:var(--shadow-soft);
-      cursor:pointer;
-      transition:border-color .18s;
-    }
-
-    .vl-confirm:has(input:checked){
-      border-color:rgba(125,60,255,.24);
-      background:rgba(125,60,255,.03);
-    }
-
-    .vl-confirm input[type="checkbox"]{
-      appearance:none;
-      -webkit-appearance:none;
-      width:22px; height:22px;
-      margin-top:1px;
-      border-radius:7px;
-      border:1.5px solid var(--border2);
-      background:#fffaf3;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      flex-shrink:0;
-      transition:border-color .15s, background .15s;
-    }
-
-    .vl-confirm input[type="checkbox"]:checked{
-      border-color:var(--brand);
-      background:linear-gradient(135deg, var(--gold), var(--violet), var(--brand));
-    }
-
-    .vl-confirm input[type="checkbox"]:checked::before{
-      content:'';
-      width:5px; height:8px;
-      border-right:2px solid #fff;
-      border-bottom:2px solid #fff;
-      transform:rotate(45deg) translate(-1px,-1px);
-    }
-
-    .vl-confirm strong{
-      display:block;
-      font-size:13px;
-      font-weight:900;
-      color:var(--text);
-      margin-bottom:4px;
-    }
-
-    .vl-confirm span{
-      display:block;
-      font-size:11.5px;
-      line-height:1.55;
-      font-weight:600;
-      color:var(--muted);
-    }
-
-    /* SUBMIT */
-    .vl-btn-submit{
-      width:100%;
-      min-height:52px;
-      border:none;
-      border-radius:18px;
-      cursor:pointer;
-      background:linear-gradient(135deg, var(--gold) 0%, var(--violet) 50%, var(--brand) 100%);
-      color:#fff;
-      font-size:14px;
-      font-weight:950;
-      letter-spacing:.01em;
-      box-shadow:0 14px 30px rgba(201,87,255,.28), inset 0 1px 0 rgba(255,255,255,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:9px;
-      position:relative;
-      overflow:hidden;
-      transition:transform .18s, box-shadow .18s, filter .18s;
-      margin-top:14px;
-    }
-
-    .vl-btn-submit::after{
-      content:'';
-      position:absolute;
-      top:0; left:-100%;
-      width:50%; height:100%;
-      background:linear-gradient(to right, transparent, rgba(255,255,255,.22), transparent);
-      transform:skewX(-18deg);
-      animation:vlShine 3s infinite;
-    }
-
-    .vl-btn-submit svg{ width:17px; height:17px; position:relative; z-index:1; }
-    .vl-btn-submit span{ position:relative; z-index:1; }
-
-    .vl-btn-submit:hover{
-      transform:translateY(-2px);
-      box-shadow:0 18px 40px rgba(201,87,255,.36), inset 0 1px 0 rgba(255,255,255,.20);
-    }
-
-    .vl-btn-submit:active{ transform:translateY(0); filter:brightness(.97); }
-
-    .vl-btn-submit:disabled{
-      opacity:.45;
-      filter:saturate(.5);
-      cursor:not-allowed;
-      transform:none !important;
-    }
-
-    .vl-btn-submit:disabled::after{ display:none; }
-
-    /* SKELETON */
-    .vl-skeleton-bar{
-      height:50px;
-      border-radius:16px;
-      background:rgba(75,16,21,.06);
-      margin-bottom:12px;
-      animation:vlSkeletonPulse 1.4s ease-in-out infinite;
-    }
-
-    .vl-skeleton-bar:nth-child(2){ animation-delay:.12s; }
-    .vl-skeleton-bar:nth-child(3){ animation-delay:.24s; }
-    .vl-skeleton-bar:nth-child(4){ animation-delay:.36s; }
-    .vl-skeleton-bar.tall{ height:180px; animation-delay:.48s; }
-
-    .vl-skeleton-spinner{
-      text-align:center;
-      padding:8px 0 16px;
-      font-size:12px;
-      color:var(--muted2);
-      font-weight:650;
-    }
-
-    /* TRUST TILES */
-    .vl-trust-tiles{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:9px;
-      margin-bottom:14px;
-    }
-
-    .vl-trust-tile{
-      padding:12px 8px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid var(--border);
-      box-shadow:var(--shadow-soft);
-      text-align:center;
-    }
-
-    .vl-trust-tile-icon{
-      width:32px; height:32px;
-      border-radius:12px;
-      background:linear-gradient(135deg, rgba(255,181,46,.12), rgba(201,87,255,.12));
-      border:1px solid rgba(201,87,255,.12);
-      display:grid;
-      place-items:center;
-      margin:0 auto 7px;
-      color:var(--brand);
-    }
-
-    .vl-trust-tile-icon svg{ width:15px; height:15px; }
-    .vl-trust-tile strong{ display:block; color:var(--text); font-size:10px; font-weight:850; line-height:1.2; }
-    .vl-trust-tile span{ display:block; margin-top:2px; color:var(--muted); font-size:9px; font-weight:650; }
-
-    /* FOOTER */
-    .vl-footer{
-      text-align:center;
-      font-size:12.5px;
-      color:var(--muted);
-      font-weight:600;
-      line-height:1.6;
-    }
-
-    .vl-footer a{ color:var(--brand); font-weight:850; }
-    .vl-footer a:hover{ text-decoration:underline; }
-
-    .vl-copyright{
-      text-align:center;
-      font-size:10.5px;
-      color:var(--muted2);
-      font-weight:500;
-      margin-top:10px;
-    }
-
-    /* ANIMATIONS */
-    @keyframes vlFloat{ 0%,100%{ transform:translate3d(0,0,0); } 50%{ transform:translate3d(0,-6px,0); } }
-    @keyframes vlShine{ 0%{ left:-100%; } 20%{ left:160%; } 100%{ left:160%; } }
-    @keyframes vlSkeletonPulse{ 0%,100%{ opacity:.7; } 50%{ opacity:1; } }
-    @keyframes vlFadeUp{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:translateY(0); } }
-
-    @media (max-width:370px){
-      .vl-page{ padding-left:8px; padding-right:8px; }
-      .vl-logo{ width:44px; height:44px; border-radius:15px; }
-      .vl-logo img{ width:38px; height:38px; }
-      .vl-brand-copy h1{ font-size:21px; }
-      .vl-hero-title{ font-size:24px; }
-      .vl-hero-logo-wrap{ width:68px; height:68px; }
-      .vl-hero-logo-wrap img{ width:50px; height:50px; }
-    }
-
-    @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } }
+    @keyframes vlFloat{ 0%,100%{ transform:translateY(0) rotate(0); } 50%{ transform:translateY(-8px) rotate(3deg); } }
+    @keyframes vlUp{ to{ opacity:1; transform:translateY(0); } }
+    @keyframes vlSheet{ from{ transform:translateY(40px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+    @keyframes vlSheen{ 0%,55%{ left:-70%; } 100%{ left:130%; } }
+    @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } .vl-stat{ opacity:1; transform:none; } }
   </style>
 </head>
 <body>
+  <div class="vl-wrap"><div class="vl-phone">
 
-<main class="vl-page">
-  <div class="vl-phone">
-
-    {{-- HEADER --}}
-    <header class="vl-topbar">
-      <div class="vl-brand">
-        <div class="vl-logo">
-          <img src="{{ asset('logo.png') }}" alt="Velora Finance">
+    <section class="vl-hero">
+      <div class="vl-hero-top">
+        <div class="vl-brand">
+          <span class="vl-mark"><img src="{{ asset('logo.png') }}" alt="Capital Wave" style="width:82%;height:82%;object-fit:contain;position:relative;z-index:1;"></span>
+          <div class="vl-brand-tx"><span>Official Portal</span><b>Capital Wave</b></div>
         </div>
-        <div class="vl-brand-copy">
-          <span>Velora Finance</span>
-          <h1>Daftar Akun</h1>
-        </div>
+        <span class="vl-secure">SECURE</span>
       </div>
 
-      <div class="vl-kicker-pill">Baru</div>
-    </header>
-
-    {{-- HERO BANNER --}}
-    <section class="vl-hero-banner">
-      <div class="vl-hero-logo-wrap">
-        <img src="{{ asset('logo.png') }}" alt="Velora Finance">
+      <div class="vl-hero-main">
+        <div class="vl-hero-copy">
+          <h1>Buat akun & mulai <i>berinvestasi</i></h1>
+          <p>Daftar cepat, aman, dan terverifikasi. Portofolio pertamamu menunggu.</p>
+        </div>
+        <svg class="vl-mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect x="29" y="6" width="6" height="7" rx="3" fill="#c99433"/><circle cx="32" cy="5" r="2.6" fill="#e8c874"/>
+          <rect x="12" y="14" width="40" height="32" rx="14" fill="#0b2740" stroke="#1a4a75" stroke-width="1.5"/>
+          <rect x="17" y="20" width="30" height="18" rx="9" fill="#0A57A3"/>
+          <circle cx="26" cy="29" r="3.4" fill="#e8c874"/><circle cx="38" cy="29" r="3.4" fill="#e8c874"/>
+          <rect x="27" y="42" width="10" height="12" rx="5" fill="#123a5c"/>
+          <rect x="5" y="24" width="7" height="16" rx="3.5" fill="#123a5c"/><rect x="52" y="24" width="7" height="16" rx="3.5" fill="#123a5c"/>
+        </svg>
       </div>
 
-      <div class="vl-hero-tagline">✦ Pendaftaran Resmi Velora</div>
-      <h2 class="vl-hero-title">Buat Akun Baru</h2>
-      <p class="vl-hero-sub">Daftarkan diri Anda melalui jalur resmi Velora Finance</p>
-
-      <div class="vl-hero-stats">
-        <div class="vl-stat">
-          <div class="vl-stat-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <strong>Pertumbuhan</strong>
-          <span>Berkelanjutan</span>
-        </div>
-        <div class="vl-stat">
-          <div class="vl-stat-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10C8.1 19.6 5 15.9 5 11V6l7-3z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <strong>Akun Aman</strong>
-          <span>Terenkripsi</span>
-        </div>
-        <div class="vl-stat">
-          <div class="vl-stat-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 2.5 20 7v10l-8 4.5L4 17V7l8-4.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <strong>Aset Digital</strong>
-          <span>Terpantau</span>
-        </div>
+      <div class="vl-stats">
+        <div class="vl-stat"><div class="vl-stat-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><strong>Pertumbuhan</strong><span>Berkelanjutan</span></div>
+        <div class="vl-stat"><div class="vl-stat-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10C8.1 19.6 5 15.9 5 11V6l7-3z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg></div><strong>Akun Aman</strong><span>Terenkripsi</span></div>
+        <div class="vl-stat"><div class="vl-stat-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5 20 7v10l-8 4.5L4 17V7l8-4.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div><strong>Aset Digital</strong><span>Terpantau</span></div>
       </div>
     </section>
 
-    {{-- TABS --}}
-    <nav class="vl-tabs" aria-label="Navigasi Daftar / Masuk">
-      <a href="{{ route('register.form') }}" class="vl-tab active">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M19 8v6M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        Daftar
-      </a>
-      <a href="{{ route('login') }}" class="vl-tab">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M10 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        Masuk
-      </a>
-    </nav>
+    <div class="vl-sheet">
+      <div class="vl-grip"></div>
 
-    {{-- FORM PANEL --}}
-    <div class="vl-panel" id="registerPanelContainer">
-      <div class="vl-panel-head">
-        <div class="vl-panel-eyebrow">
-          <div class="vl-panel-bar"></div>
-          <span class="vl-panel-label">Registrasi</span>
+      <nav class="vl-tabs" aria-label="Navigasi Daftar / Masuk">
+        <a href="{{ route('register.form') }}" class="vl-tab active">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.4" stroke="currentColor" stroke-width="2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 8h4M19 6v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Daftar
+        </a>
+        <a href="{{ route('login') }}" class="vl-tab">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17l5-5-5-5M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Masuk
+        </a>
+      </nav>
+
+      <div class="vl-panel" id="registerPanelContainer">
+        <div class="vl-panel-head">
+          <div class="vl-panel-eyebrow"><div class="vl-panel-bar"></div><span class="vl-panel-label">Registrasi</span></div>
+          <h2 class="vl-panel-title">Pendaftaran Akun</h2>
+          <p class="vl-panel-sub">Lengkapi data untuk membuat akun resmi kamu.</p>
         </div>
-        <h2 class="vl-panel-title">Pendaftaran Akun</h2>
-        <p class="vl-panel-sub">Lengkapi data untuk membuat akun resmi Anda</p>
+
+        <div id="formSkeleton">
+          <div class="vl-skeleton-spinner">Mempersiapkan formulir...</div>
+          <div class="vl-skeleton-bar"></div>
+          <div class="vl-skeleton-bar"></div>
+          <div class="vl-skeleton-bar"></div>
+          <div class="vl-skeleton-bar tall"></div>
+        </div>
       </div>
 
-      <div id="formSkeleton" style="margin-top:4px">
-        <div class="vl-skeleton-spinner">Mempersiapkan formulir...</div>
-        <div class="vl-skeleton-bar"></div>
-        <div class="vl-skeleton-bar"></div>
-        <div class="vl-skeleton-bar"></div>
-        <div class="vl-skeleton-bar"></div>
-        <div class="vl-skeleton-bar tall"></div>
+      <div class="vl-trust-tiles">
+        <div class="vl-trust-tile"><div class="vl-trust-tile-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10C8.1 19.6 5 15.9 5 11V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><strong>Data Aman</strong><span>Privasi terjaga</span></div>
+        <div class="vl-trust-tile"><div class="vl-trust-tile-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><strong>Pertumbuhan</strong><span>Real-time</span></div>
+        <div class="vl-trust-tile"><div class="vl-trust-tile-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div><strong>Komunitas</strong><span>Terpercaya</span></div>
       </div>
+
+      <p class="vl-footer">Sudah punya akun? <a href="{{ route('login') }}">Masuk sekarang</a></p>
+      <p class="vl-copyright">&copy; {{ date('Y') }} Capital Wave. Tumbuh bersama, melalui akses resmi.</p>
     </div>
 
-    {{-- TRUST TILES --}}
-    <div class="vl-trust-tiles">
-      <div class="vl-trust-tile">
-        <div class="vl-trust-tile-icon">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 3l7 3v5c0 4.9-3.1 8.6-7 10C8.1 19.6 5 15.9 5 11V6l7-3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="M8.5 11.5l2.2 2.2 4.8-5.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <strong>Data Aman</strong>
-        <span>Privasi terjaga</span>
-      </div>
-      <div class="vl-trust-tile">
-        <div class="vl-trust-tile-icon">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M4 17l6-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M14 7h6v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <strong>Pertumbuhan</strong>
-        <span>Real-time</span>
-      </div>
-      <div class="vl-trust-tile">
-        <div class="vl-trust-tile-icon">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="2"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <strong>Komunitas</strong>
-        <span>Terpercaya</span>
-      </div>
-    </div>
-
-    <p class="vl-footer">
-      Sudah punya akun? <a href="{{ route('login') }}">Masuk sekarang</a>
-    </p>
-    <p class="vl-copyright">© {{ date('Y') }} Velora Finance. Tumbuh bersama, melalui akses resmi.</p>
-
-  </div>
-</main>
+  </div></div>
 
 <script>
   const _bd = {
