@@ -3,22 +3,12 @@
   $user = auth()->user();
 
   $saldoUtama = (int) data_get($user, 'saldo', 0);
+  $saldoBank  = (int) (data_get($user, 'saldo_penarikan') ?? data_get($user, 'withdraw_balance') ?? 0);
+  $totalPorto = $saldoUtama + $saldoBank;
 
-  $saldoPenarikan = (int) (
-    data_get($user, 'saldo_penarikan')
-    ?? data_get($user, 'withdraw_balance')
-    ?? data_get($user, 'saldo_withdraw')
-    ?? 0
-  );
-
-  $totalAset = $saldoUtama + $saldoPenarikan;
-
-  $maskedId = $user ? str_pad((string) $user->id, 8, '0', STR_PAD_LEFT) : '00000000';
-  $maskedIdView = '•••• ' . substr($maskedId, -4);
-  $interestRate = data_get($user, 'interest_rate', '3.5');
-
-  $nameParts = explode(' ', trim($user->name ?? 'User'));
-  $initials  = mb_strtoupper(mb_substr($nameParts[0], 0, 1) . mb_substr($nameParts[1] ?? '', 0, 1));
+  $accountId = $user ? str_pad((string) $user->id, 12, '0', STR_PAD_LEFT) : '000000000000';
+  $vipLevel  = (int) data_get($user, 'vip_level', 0);
+  $initial   = mb_strtoupper(mb_substr(trim($user->name ?? 'U'), 0, 1));
 @endphp
 
 @if(!$user)
@@ -29,1222 +19,277 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Profil | Velora Finance</title>
+  <title>Akun Saya | Capital Wave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --gold:#ffb52e;
-      --gold2:#ffd45c;
-      --purple:#7d3cff;
-      --purple2:#c957ff;
-      --violet:#d85cff;
-      --maroon:#4a1218;
-      --maroon2:#2b070c;
-      --green:#18c97a;
-      --danger:#ef4444;
-      --ink:#26101a;
-      --muted:#8d7a86;
-      --line:rgba(38,16,26,.08);
-      --shadow:0 20px 50px rgba(38,16,26,.10);
-      --shadow-soft:0 10px 28px rgba(38,16,26,.065);
+      --blue:#0A57A3; --blue-ink:#0b4a8c; --blue-lite:#2f7fd4; --blue-soft:#eef4fb;
+      --navy:#0b2740; --navy-2:#0d3357; --navy-3:#0a2036;
+      --gold:#c99433; --gold-lite:#e8c874; --gold-deep:#a9772a; --gold-soft:#faf3e2;
+      --gold-metal:linear-gradient(135deg,#a9772a 0%,#e8c874 46%,#c99433 100%);
+      --green:#1c9d67; --green-soft:#e6f5ee; --red:#dc5757; --red-soft:#fdeaea;
+      --bg:#eef1f6; --card:#ffffff; --tint:#f5f8fc; --line:#e9edf4; --line-2:#dfe5ee;
+      --ink:#152a3f; --ink-soft:#46586c; --muted:#8493a6; --muted-2:#aab6c4;
+      --sh-sm:0 1px 2px rgba(11,39,64,.05);
+      --sh:0 2px 6px rgba(11,39,64,.04), 0 12px 30px rgba(11,39,64,.07);
+      --sh-lg:0 4px 10px rgba(11,39,64,.05), 0 22px 50px rgba(11,39,64,.12);
+      --sh-navy:0 10px 24px rgba(9,30,52,.28), 0 24px 60px rgba(9,30,52,.30);
+      --r:24px; --r-sm:16px;
     }
-
     *{ box-sizing:border-box; }
     html,body{ min-height:100%; }
-
     body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      color:var(--ink);
+      margin:0; color:var(--ink);
+      font-family:'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(600px 320px at 80% -100px, rgba(201,87,255,.12), transparent 64%),
-        radial-gradient(400px 260px at 0% 8%, rgba(255,181,46,.11), transparent 58%),
-        linear-gradient(180deg,#fdfcfe 0%,#f7f4fc 50%,#ede9f5 100%);
-      overflow-x:hidden;
-      -webkit-tap-highlight-color:transparent;
+        radial-gradient(900px 500px at 50% -220px, rgba(10,87,163,.10), transparent 60%),
+        radial-gradient(600px 400px at 100% 8%, rgba(201,148,51,.06), transparent 55%),
+        linear-gradient(180deg,#f2f5f9 0%,#eef1f6 40%,#eaeef4 100%);
+      background-attachment:fixed; overflow-x:hidden;
+      -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent; letter-spacing:-.01em;
     }
-
     a{ color:inherit; text-decoration:none; }
     button{ font-family:inherit; }
+    h1,h2,h3,p{ margin:0; }
+    .ak-page{ width:100%; min-height:100vh; display:flex; justify-content:center; }
+    .ak-phone{ width:100%; max-width:428px; min-height:100vh; position:relative; padding:20px 16px 112px; }
 
-    .vl-page{
-      width:100%;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-    }
+    /* ===== PROFILE HEAD ===== */
+    .ak-head{ display:flex; align-items:center; gap:13px; margin-bottom:16px; }
+    .ak-avatar{ width:56px; height:56px; flex:0 0 auto; border-radius:18px; padding:2px; background:var(--gold-metal); display:grid; box-shadow:0 8px 20px rgba(201,148,51,.3); }
+    .ak-avatar::after{ content:attr(data-i); grid-area:1/1; border-radius:16px; display:grid; place-items:center; color:#fff; font-size:22px; font-weight:700;
+      background:linear-gradient(135deg, var(--navy), var(--blue)); }
+    .ak-id{ min-width:0; flex:1; }
+    .ak-id h1{ font-size:18px; font-weight:700; letter-spacing:-.02em; color:var(--navy); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .ak-id-row{ margin-top:7px; display:inline-flex; align-items:center; gap:6px; padding:4px 9px; border-radius:999px; background:var(--card); border:1px solid var(--line); box-shadow:var(--sh-sm); }
+    .ak-id-row b{ font-size:9px; font-weight:800; letter-spacing:.08em; color:var(--gold-deep); background:var(--gold-soft); padding:2px 6px; border-radius:6px; }
+    .ak-id-row span{ font-size:11px; font-weight:600; color:var(--ink-soft); letter-spacing:.04em; }
+    .ak-head-btn{ width:44px; height:44px; flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:14px; display:grid; place-items:center; box-shadow:var(--sh-sm); cursor:pointer; transition:.16s ease; }
+    .ak-head-btn:hover{ color:var(--gold-deep); border-color:rgba(201,148,51,.3); }
+    .ak-head-btn svg{ width:20px; height:20px; }
 
-    .vl-phone{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      padding:0 0 110px;
-      position:relative;
-    }
-
-    /* ── HERO CARD ── */
-    .vl-hero{
-      position:relative;
-      overflow:hidden;
-      padding:52px 22px 28px;
+    /* ===== PORTFOLIO CARD ===== */
+    .ak-porto{ position:relative; overflow:hidden; border-radius:26px; padding:20px; color:#fff;
       background:
-        radial-gradient(380px 220px at 95% 0%, rgba(255,255,255,.22), transparent 58%),
-        radial-gradient(280px 180px at 0% 100%, rgba(255,212,93,.22), transparent 54%),
-        linear-gradient(145deg,#ffb52e 0%,#f07aff 42%,#7d3cff 100%);
-      color:#fff;
-    }
+        radial-gradient(420px 240px at 88% -20%, rgba(232,200,116,.18), transparent 62%),
+        radial-gradient(360px 220px at 8% 120%, rgba(47,127,212,.22), transparent 60%),
+        linear-gradient(150deg,#0f3255 0%,#0b2740 52%,#0a2036 100%);
+      box-shadow:var(--sh-navy); }
+    .ak-porto::before{ content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; pointer-events:none;
+      background:linear-gradient(150deg, rgba(232,200,116,.6), rgba(232,200,116,0) 34%, rgba(255,255,255,.14) 100%);
+      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+    .ak-porto > *{ position:relative; z-index:1; }
+    .ak-porto-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .ak-eyebrow{ display:inline-flex; align-items:center; gap:8px; color:rgba(255,255,255,.62); font-size:9.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; }
+    .ak-eyebrow::before{ content:""; width:6px; height:6px; border-radius:999px; background:var(--green); box-shadow:0 0 10px rgba(28,157,103,.9); }
+    .ak-vip{ display:inline-flex; align-items:center; gap:5px; padding:5px 11px; border-radius:999px; color:#0b2740; background:var(--gold-metal); font-size:10.5px; font-weight:800; box-shadow:0 6px 16px rgba(201,148,51,.34); }
+    .ak-vip svg{ width:12px; height:12px; }
+    .ak-balance{ margin-top:13px; color:#fff; font-size:33px; font-weight:700; letter-spacing:-.035em; line-height:1; text-shadow:0 8px 24px rgba(0,0,0,.28); }
+    .ak-balance .rp{ font-size:16px; font-weight:600; color:rgba(255,255,255,.55); margin-right:4px; vertical-align:2px; }
+    .ak-sub{ margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .ak-sub-box{ border-radius:16px; padding:12px 13px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); }
+    .ak-sub-box span{ display:flex; align-items:center; gap:6px; color:rgba(255,255,255,.6); font-size:10.5px; font-weight:500; }
+    .ak-sub-box span svg{ width:13px; height:13px; color:var(--gold-lite); }
+    .ak-sub-box strong{ display:block; margin-top:7px; color:#fff; font-size:15px; font-weight:700; letter-spacing:-.02em; }
+    .ak-sub-box strong .rp{ font-size:11px; color:rgba(255,255,255,.5); font-weight:500; margin-right:2px; }
+
+    /* ===== QUICK GRID ===== */
+    .ak-grid{ margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:11px; }
+    .ak-quick{ display:flex; align-items:center; gap:11px; padding:14px 13px; border-radius:18px; background:var(--card); border:1px solid var(--line); box-shadow:var(--sh-sm); transition:.16s ease; }
+    .ak-quick:hover{ box-shadow:var(--sh); transform:translateY(-1px); }
+    .ak-quick-ic{ width:42px; height:42px; flex:0 0 auto; border-radius:13px; display:grid; place-items:center; color:var(--blue); background:var(--blue-soft); }
+    .ak-quick.gold .ak-quick-ic{ color:var(--gold-deep); background:var(--gold-soft); }
+    .ak-quick-ic svg{ width:21px; height:21px; }
+    .ak-quick-tx{ min-width:0; flex:1; }
+    .ak-quick-tx b{ display:block; font-size:13.5px; font-weight:700; color:var(--navy); letter-spacing:-.01em; }
+    .ak-quick-tx span{ display:block; margin-top:3px; font-size:10.5px; font-weight:500; color:var(--muted); }
+    .ak-quick-ch{ color:var(--muted-2); flex:0 0 auto; }
+    .ak-quick-ch svg{ width:16px; height:16px; }
+
+    /* ===== MENU LIST ===== */
+    .ak-menu{ margin-top:14px; border-radius:20px; background:var(--card); border:1px solid var(--line); box-shadow:var(--sh); overflow:hidden; }
+    .ak-row{ display:flex; align-items:center; gap:13px; padding:15px 16px; cursor:pointer; transition:.14s ease; }
+    .ak-row + .ak-row{ border-top:1px solid var(--line); }
+    .ak-row:hover{ background:var(--tint); }
+    .ak-row-ic{ width:40px; height:40px; flex:0 0 auto; border-radius:12px; display:grid; place-items:center; color:var(--blue); background:var(--blue-soft); }
+    .ak-row-ic.gold{ color:var(--gold-deep); background:var(--gold-soft); }
+    .ak-row-ic svg{ width:20px; height:20px; }
+    .ak-row-tx{ min-width:0; flex:1; }
+    .ak-row-tx b{ display:block; font-size:14px; font-weight:700; color:var(--navy); letter-spacing:-.01em; }
+    .ak-row-tx span{ display:block; margin-top:3px; font-size:11px; font-weight:500; color:var(--muted); }
+    .ak-row-ch{ color:var(--muted-2); flex:0 0 auto; }
+    .ak-row-ch svg{ width:18px; height:18px; }
+
+    /* ===== LOGOUT ===== */
+    .ak-logout{ margin-top:16px; width:100%; display:flex; align-items:center; justify-content:center; gap:9px; min-height:52px; border:1px solid var(--red-soft); cursor:pointer;
+      border-radius:16px; background:rgba(220,87,87,.06); color:var(--red); font-size:14px; font-weight:700; transition:.16s ease; }
+    .ak-logout:hover{ background:rgba(220,87,87,.1); }
+    .ak-logout svg{ width:18px; height:18px; }
+    .ak-version{ margin-top:14px; text-align:center; color:var(--muted-2); font-size:10.5px; font-weight:600; letter-spacing:.04em; }
+
+    /* toast */
+    .ak-toast{ position:fixed; left:50%; bottom:120px; transform:translateX(-50%) translateY(20px); z-index:1000; opacity:0; pointer-events:none;
+      display:flex; align-items:center; gap:9px; padding:12px 16px; border-radius:14px; background:var(--navy); color:#fff; box-shadow:var(--sh-lg);
+      font-size:12.5px; font-weight:600; transition:.28s cubic-bezier(.22,.8,.22,1); }
+    .ak-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+    .ak-toast svg{ width:16px; height:16px; color:var(--gold-lite); }
 
-    .vl-hero::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:linear-gradient(180deg, rgba(255,255,255,.18) 0%, transparent 40%);
-    }
-
-    .vl-hero > *{ position:relative; z-index:1; }
-
-    /* back + settings row */
-    .vl-hero-topbar{
-      position:absolute;
-      top:14px;
-      left:14px;
-      right:14px;
-      z-index:2;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-    }
-
-    .vl-ghost-btn{
-      width:38px;
-      height:38px;
-      border:0;
-      border-radius:999px;
-      background:rgba(255,255,255,.22);
-      border:1px solid rgba(255,255,255,.32);
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-      color:#fff;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      transition:.18s ease;
-    }
-
-    .vl-ghost-btn:hover{ background:rgba(255,255,255,.32); }
-    .vl-ghost-btn svg{ width:19px; height:19px; }
-
-    /* avatar */
-    .vl-profile-center{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:10px;
-      text-align:center;
-    }
-
-    .vl-avatar-ring{
-      width:78px;
-      height:78px;
-      border-radius:999px;
-      padding:3px;
-      background:linear-gradient(135deg, rgba(255,255,255,.90), rgba(255,212,93,.80), rgba(255,255,255,.60));
-      box-shadow:0 14px 34px rgba(0,0,0,.18), 0 0 0 1px rgba(255,255,255,.28);
-    }
-
-    .vl-avatar-inner{
-      width:100%;
-      height:100%;
-      border-radius:999px;
-      background:
-        radial-gradient(circle at 30% 22%, rgba(255,255,255,.72), transparent 40%),
-        linear-gradient(135deg,#ffb52e,#d85cff,#7d3cff);
-      display:grid;
-      place-items:center;
-      font-size:24px;
-      font-weight:950;
-      color:#fff;
-      letter-spacing:-.03em;
-      text-shadow:0 4px 12px rgba(0,0,0,.18);
-    }
-
-    .vl-profile-name{
-      margin:0;
-      font-size:20px;
-      font-weight:950;
-      line-height:1.1;
-      letter-spacing:-.04em;
-      color:#fff;
-      text-shadow:0 6px 18px rgba(0,0,0,.14);
-    }
-
-    .vl-profile-id{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      min-height:26px;
-      padding:0 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.18);
-      border:1px solid rgba(255,255,255,.26);
-      backdrop-filter:blur(8px);
-      -webkit-backdrop-filter:blur(8px);
-      color:rgba(255,255,255,.92);
-      font-size:11px;
-      font-weight:800;
-      letter-spacing:.12em;
-      cursor:pointer;
-      transition:.18s ease;
-    }
-
-    .vl-profile-id:hover{ background:rgba(255,255,255,.28); }
-    .vl-profile-id svg{ width:12px; height:12px; opacity:.8; }
-
-    /* vip badge */
-    .vl-vip-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-      min-height:24px;
-      padding:0 10px;
-      border-radius:999px;
-      background:linear-gradient(135deg,#fffbe6,#ffe793);
-      border:1px solid rgba(255,181,46,.40);
-      color:#7a4a00;
-      font-size:9.5px;
-      font-weight:950;
-      letter-spacing:.06em;
-      text-transform:uppercase;
-    }
-
-    /* ── BALANCE FLOAT CARD ── */
-    .vl-balance-card{
-      margin:0 14px;
-      margin-top:-28px;
-      position:relative;
-      z-index:10;
-      border-radius:26px;
-      background:
-        radial-gradient(300px 140px at 96% 0%, rgba(201,87,255,.08), transparent 58%),
-        rgba(255,255,255,.96);
-      border:1px solid rgba(255,255,255,.88);
-      box-shadow:0 22px 56px rgba(38,16,26,.12), inset 0 1px 0 rgba(255,255,255,.95);
-      padding:20px;
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
-    }
-
-    .vl-bal-label{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:6px;
-    }
-
-    .vl-bal-label span{
-      color:var(--muted);
-      font-size:11.5px;
-      font-weight:750;
-    }
-
-    .vl-bal-eye{
-      width:30px;
-      height:30px;
-      border:0;
-      border-radius:999px;
-      background:rgba(125,60,255,.08);
-      color:var(--purple);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-    }
-
-    .vl-bal-eye svg{ width:16px; height:16px; }
-
-    .vl-bal-amount{
-      margin:0 0 16px;
-      font-size:34px;
-      font-weight:950;
-      letter-spacing:-.045em;
-      color:var(--ink);
-      line-height:1;
-    }
-
-    .vl-bal-amount.hidden{
-      letter-spacing:.1em;
-      color:#c8bece;
-    }
-
-    .vl-bal-split{
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:0;
-  padding-top:14px;
-  border-top:1px solid var(--line);
-}
-
-.vl-bal-item{
-  min-width:0;
-  padding:0 14px;
-}
-
-.vl-bal-item:first-child{
-  padding-left:0;
-  border-right:1px solid var(--line);
-}
-
-.vl-bal-item:last-child{
-  padding-right:0;
-}
-
-.vl-bal-item span{
-  display:block;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:750;
-  margin-bottom:6px;
-  line-height:1.1;
-  white-space:nowrap;
-}
-
-.vl-bal-item strong{
-  display:block;
-  color:var(--ink);
-  font-size:12.5px;
-  font-weight:950;
-  letter-spacing:-.02em;
-  line-height:1.15;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.vl-bal-divider{
-  display:none;
-}
-
-    /* ── ACTION BUTTONS ── */
-    .vl-actions{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin:14px 14px 0;
-    }
-
-    .vl-btn{
-      min-height:52px;
-      border:0;
-      border-radius:18px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:9px;
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:-.01em;
-      cursor:pointer;
-      transition:.18s ease;
-      text-decoration:none;
-    }
-
-    .vl-btn:hover{ transform:translateY(-2px); filter:brightness(1.04); }
-    .vl-btn svg{ width:17px; height:17px; }
-
-    .vl-btn-gold{
-      color:#4a2200;
-      background:linear-gradient(135deg,#ffb52e,#ffd45c);
-      box-shadow:0 14px 28px rgba(255,181,46,.36), inset 0 1px 0 rgba(255,255,255,.55);
-    }
-
-    .vl-btn-purple{
-      color:#fff;
-      background:linear-gradient(135deg,#7d3cff,#c957ff);
-      box-shadow:0 14px 28px rgba(125,60,255,.36), inset 0 1px 0 rgba(255,255,255,.18);
-    }
-
-    /* ── STATS ROW ── */
-    .vl-stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:10px;
-      margin:14px 14px 0;
-    }
-
-    .vl-stat{
-      border-radius:20px;
-      background:rgba(255,255,255,.88);
-      border:1px solid rgba(255,255,255,.80);
-      box-shadow:var(--shadow-soft);
-      padding:14px 12px;
-      text-align:center;
-    }
-
-    .vl-stat-icon{
-      width:36px;
-      height:36px;
-      border-radius:14px;
-      display:grid;
-      place-items:center;
-      margin:0 auto 8px;
-    }
-
-    .vl-stat-icon svg{ width:18px; height:18px; }
-    .vl-stat-icon.gold{ background:rgba(255,181,46,.14); color:#b87200; }
-    .vl-stat-icon.purple{ background:rgba(125,60,255,.12); color:var(--purple); }
-    .vl-stat-icon.green{ background:rgba(24,201,122,.12); color:#0d9155; }
-
-    .vl-stat strong{
-      display:block;
-      color:var(--ink);
-      font-size:13px;
-      font-weight:950;
-      line-height:1.15;
-      letter-spacing:-.02em;
-    }
-
-    .vl-stat span{
-      display:block;
-      color:var(--muted);
-      font-size:9.5px;
-      font-weight:750;
-      margin-top:3px;
-    }
-
-    /* ── BOOST BANNER ── */
-    .vl-boost{
-      margin:14px 14px 0;
-      border-radius:22px;
-      padding:14px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      background:
-        radial-gradient(200px 80px at 90% 50%, rgba(201,87,255,.30), transparent 62%),
-        linear-gradient(135deg,#fff8e0,#fff,#f8eaff);
-      border:1px solid rgba(201,87,255,.14);
-      box-shadow:var(--shadow-soft);
-    }
-
-    .vl-boost-left{ display:flex; align-items:center; gap:11px; min-width:0; }
-
-    .vl-boost-emoji{
-      width:42px;
-      height:42px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      flex:0 0 auto;
-      background:linear-gradient(135deg,#ffd45c,#ffb52e);
-      box-shadow:0 10px 22px rgba(255,181,46,.28);
-      font-size:20px;
-    }
-
-    .vl-boost-copy h3{
-      margin:0;
-      color:var(--ink);
-      font-size:13px;
-      font-weight:900;
-      line-height:1.2;
-      letter-spacing:-.025em;
-    }
-
-    .vl-boost-copy p{
-      margin:4px 0 0;
-      color:var(--muted);
-      font-size:10.5px;
-      font-weight:700;
-      line-height:1.3;
-    }
-
-    .vl-boost-pill{
-      flex:0 0 auto;
-      min-height:28px;
-      padding:0 12px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      color:#fff;
-      background:linear-gradient(135deg,#7d3cff,#c957ff);
-      font-size:9.5px;
-      font-weight:950;
-      white-space:nowrap;
-      box-shadow:0 10px 22px rgba(125,60,255,.26);
-    }
-
-    /* ── SECTION HEADING ── */
-    .vl-section-label{
-      margin:22px 14px 10px;
-      font-size:13px;
-      font-weight:900;
-      letter-spacing:-.02em;
-      color:#9a8a96;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      font-size:10.5px;
-    }
-
-    /* ── MENU CARD ── */
-    .vl-card{
-      margin:0 14px;
-      border-radius:24px;
-      background:rgba(255,255,255,.94);
-      border:1px solid rgba(255,255,255,.84);
-      box-shadow:var(--shadow-soft);
-      overflow:hidden;
-    }
-
-    .vl-card + .vl-card{ margin-top:10px; }
-
-    .vl-menu-row{
-      min-height:60px;
-      padding:0 18px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      border-bottom:1px solid var(--line);
-      transition:.15s ease;
-      text-decoration:none;
-      color:inherit;
-      cursor:pointer;
-    }
-
-    .vl-menu-row:last-child{ border-bottom:0; }
-    .vl-menu-row:hover{ background:rgba(125,60,255,.035); }
-
-    .vl-menu-left{
-      display:flex;
-      align-items:center;
-      gap:13px;
-      min-width:0;
-    }
-
-    .vl-menu-icon{
-      width:38px;
-      height:38px;
-      border-radius:15px;
-      display:grid;
-      place-items:center;
-      flex:0 0 auto;
-    }
-
-    .vl-menu-icon svg{ width:18px; height:18px; }
-
-    .vl-menu-icon.purple{ background:rgba(125,60,255,.10); color:var(--purple); }
-    .vl-menu-icon.gold{ background:rgba(255,181,46,.14); color:#b07000; }
-    .vl-menu-icon.green{ background:rgba(24,201,122,.12); color:#0d9155; }
-    .vl-menu-icon.blue{ background:rgba(56,132,255,.12); color:#2060dd; }
-    .vl-menu-icon.pink{ background:rgba(232,74,100,.10); color:#c02040; }
-    .vl-menu-icon.teal{ background:rgba(6,182,212,.10); color:#0682a0; }
-
-    .vl-menu-copy{ min-width:0; }
-
-    .vl-menu-title{
-      font-size:14px;
-      font-weight:800;
-      color:var(--ink);
-      line-height:1.1;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .vl-menu-sub{
-      margin-top:3px;
-      color:var(--muted);
-      font-size:10.5px;
-      font-weight:700;
-    }
-
-    .vl-menu-badge{
-      min-height:20px;
-      padding:0 8px;
-      border-radius:999px;
-      background:rgba(125,60,255,.10);
-      color:var(--purple);
-      font-size:9.5px;
-      font-weight:950;
-      display:inline-flex;
-      align-items:center;
-    }
-
-    .vl-menu-arrow{
-      color:#d0c6ce;
-      flex:0 0 auto;
-      display:grid;
-      place-items:center;
-    }
-
-    .vl-menu-arrow svg{ width:17px; height:17px; }
-
-    /* ── LOGOUT ── */
-    .vl-logout-wrap{
-      margin:10px 14px 0;
-      border-radius:22px;
-      overflow:hidden;
-      background:rgba(255,255,255,.90);
-      border:1px solid rgba(255,255,255,.80);
-      box-shadow:var(--shadow-soft);
-      padding:10px;
-    }
-
-    .vl-logout-btn{
-      width:100%;
-      min-height:50px;
-      border:0;
-      border-radius:16px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:9px;
-      color:#d12e4c;
-      background:rgba(239,68,68,.08);
-      border:1px solid rgba(239,68,68,.14);
-      cursor:pointer;
-      font-size:13.5px;
-      font-weight:900;
-      letter-spacing:-.01em;
-      transition:.18s ease;
-    }
-
-    .vl-logout-btn:hover{ background:rgba(239,68,68,.14); transform:translateY(-1px); }
-    .vl-logout-btn svg{ width:18px; height:18px; }
-
-    /* ── APP VERSION ── */
-    .vl-version{
-      text-align:center;
-      margin:18px 0 4px;
-      color:var(--muted);
-      font-size:10.5px;
-      font-weight:700;
-      opacity:.7;
-    }
-
-    /* ── TOAST ── */
-    .vl-toast{
-      position:fixed;
-      left:50%;
-      bottom:100px;
-      transform:translateX(-50%) translateY(10px);
-      z-index:10000;
-      min-height:40px;
-      padding:0 18px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      gap:8px;
-      color:#fff;
-      background:rgba(38,16,26,.88);
-      backdrop-filter:blur(14px);
-      -webkit-backdrop-filter:blur(14px);
-      font-size:12px;
-      font-weight:850;
-      opacity:0;
-      pointer-events:none;
-      transition:.22s ease;
-      box-shadow:0 18px 40px rgba(38,16,26,.20);
-      white-space:nowrap;
-    }
-
-    .vl-toast.show{
-      opacity:1;
-      transform:translateX(-50%) translateY(0);
-    }
-
-    /* ── COMING SOON MODAL ── */
-    .ac-overlay{
-      position:fixed;
-      inset:0;
-      z-index:9999;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      background:rgba(38,16,26,.40);
-      backdrop-filter:blur(16px);
-      -webkit-backdrop-filter:blur(16px);
-    }
-
-    .ac-overlay.show{ display:flex; }
-
-    .ac-modal{
-      width:100%;
-      max-width:340px;
-      border-radius:28px;
-      background:
-        radial-gradient(260px 130px at 96% 0%, rgba(201,87,255,.12), transparent 62%),
-        rgba(255,255,255,.98);
-      border:1px solid rgba(255,255,255,.72);
-      box-shadow:0 32px 80px rgba(38,16,26,.22);
-      padding:22px;
-      text-align:center;
-      animation:acIn .24s ease both;
-      position:relative;
-    }
-
-    .ac-close{
-      position:absolute;
-      top:12px;
-      right:12px;
-      width:34px;
-      height:34px;
-      border-radius:13px;
-      border:1px solid var(--line);
-      background:#fbf8ff;
-      color:var(--ink);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-    }
-
-    .ac-close svg{ width:17px; height:17px; }
-
-    .ac-icon{
-      width:60px;
-      height:60px;
-      border-radius:22px;
-      margin:0 auto 16px;
-      display:grid;
-      place-items:center;
-      background:linear-gradient(135deg,#ffb52e,#ffd45c 28%,#c957ff 68%,#7d3cff);
-      box-shadow:0 18px 36px rgba(125,60,255,.22);
-      color:#fff;
-    }
-
-    .ac-icon svg{ width:28px; height:28px; }
-
-    .ac-title{
-      margin:0;
-      font-size:20px;
-      font-weight:950;
-      letter-spacing:-.045em;
-      color:var(--ink);
-    }
-
-    .ac-desc{
-      margin:9px 0 20px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.5;
-      font-weight:650;
-    }
-
-    .ac-ok{
-      width:100%;
-      min-height:46px;
-      border:0;
-      border-radius:999px;
-      background:linear-gradient(135deg,#7d3cff,#c957ff);
-      color:#fff;
-      font-size:13px;
-      font-weight:950;
-      cursor:pointer;
-      box-shadow:0 14px 28px rgba(125,60,255,.26);
-    }
-
-    @keyframes acIn{
-      from{ opacity:0; transform:translateY(14px) scale(.96); }
-      to{ opacity:1; transform:translateY(0) scale(1); }
-    }
-
-    /* ── BOTTOM NAV COMPAT ── */
     .rb-bottom-spacer{ height:94px; }
-    .rb-bottom-nav{ background:rgba(255,255,255,.92)!important; border:1px solid rgba(38,16,26,.08)!important; box-shadow:0 -18px 40px rgba(38,16,26,.10), inset 0 1px 0 rgba(255,255,255,.84)!important; backdrop-filter:blur(22px)!important; -webkit-backdrop-filter:blur(22px)!important; }
-    .rb-bottom-nav__item{ color:#aa8f9f!important; }
-    .rb-bottom-nav__item:hover{ color:#2d1620!important; }
-    .rb-bottom-nav__item.is-active{ color:#111!important; text-shadow:none!important; }
-    .rb-bottom-nav__item.is-active .rb-bottom-nav__icon{ filter:drop-shadow(0 8px 12px rgba(125,60,255,.20)); }
 
-    @media (max-width:370px){
-      .vl-bal-amount{ font-size:28px; }
-      .vl-stats{ grid-template-columns:repeat(3,1fr); gap:8px; }
-      .vl-stat{ padding:12px 8px; }
-      .vl-stat strong{ font-size:11px; }
-      .vl-boost{ padding:12px 14px; }
+    @media (max-width:360px){
+      .ak-phone{ padding:18px 12px 112px; }
+      .ak-balance{ font-size:29px; }
+      .ak-grid{ gap:9px; }
+      .ak-quick{ padding:12px 11px; gap:9px; }
+      .ak-quick-tx b{ font-size:12.5px; }
     }
-
-    @media (prefers-reduced-motion:reduce){
-      *,*::before,*::after{ animation:none!important; transition:none!important; }
-    }
+    @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } }
   </style>
 </head>
 
 <body>
-  <main class="vl-page">
-    <div class="vl-phone">
+  <main class="ak-page">
+    <div class="ak-phone">
 
-      {{-- ── HERO ── --}}
-      <div class="vl-hero">
-        <div class="vl-hero-topbar">
-          <button
-            type="button"
-            class="vl-ghost-btn"
-            onclick="history.length > 1 ? history.back() : location.href='/'"
-            aria-label="Kembali"
-          >
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
-          <a href="{{ route('saldo.rincian') }}" class="vl-ghost-btn" aria-label="Rincian saldo">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="1" fill="currentColor"/>
-              <circle cx="19" cy="12" r="1" fill="currentColor"/>
-              <circle cx="5" cy="12" r="1" fill="currentColor"/>
-            </svg>
-          </a>
+      {{-- PROFILE HEAD --}}
+      <header class="ak-head">
+        <span class="ak-avatar" data-i="{{ $initial }}" aria-hidden="true"></span>
+        <div class="ak-id">
+          <h1>{{ $user->name ?: 'Capital Wave Member' }}</h1>
+          <span class="ak-id-row"><b>ID</b><span>{{ $accountId }}</span></span>
         </div>
+        <button type="button" class="ak-head-btn" id="akSoonBtn" aria-label="Tema">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </button>
+      </header>
 
-        <div class="vl-profile-center">
-          <div class="vl-avatar-ring">
-            <div class="vl-avatar-inner">{{ $initials }}</div>
+      {{-- PORTFOLIO --}}
+      <section class="ak-porto">
+        <div class="ak-porto-top">
+          <span class="ak-eyebrow">Total Portofolio</span>
+          <span class="ak-vip">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6 6.1.9-4.5 4.3 1.1 6L12 16.9 6.4 19.2l1.1-6L3 8.9 9.1 8 12 2Z"/></svg>
+            VIP {{ $vipLevel }}
+          </span>
+        </div>
+        <h2 class="ak-balance"><span class="rp">Rp</span>{{ number_format($totalPorto, 0, ',', '.') }}</h2>
+        <div class="ak-sub">
+          <div class="ak-sub-box">
+            <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.8"/></svg> Saldo Utama</span>
+            <strong><span class="rp">Rp</span>{{ number_format($saldoUtama, 0, ',', '.') }}</strong>
           </div>
-
-          <h1 class="vl-profile-name">{{ $user->name ?? 'Velora Member' }}</h1>
-
-          <button
-            type="button"
-            class="vl-profile-id"
-            id="copyIdBtn"
-            data-real-id="{{ $user->id }}"
-            id-text="{{ $maskedIdView }}"
-            aria-label="Salin ID member"
-          >
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            <span id="userIdDisplay">{{ $maskedIdView }}</span>
-          </button>
-
-          <div class="vl-vip-badge">
-            ⭐ VIP {{ $user->vip_level ?? 0 }} Member
+          <div class="ak-sub-box">
+            <span><svg viewBox="0 0 24 24" fill="none"><path d="M4 10 12 4l8 6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 10v9h14v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> Saldo Bank</span>
+            <strong><span class="rp">Rp</span>{{ number_format($saldoBank, 0, ',', '.') }}</strong>
           </div>
         </div>
-      </div>
+      </section>
 
-      {{-- ── BALANCE CARD ── --}}
-      <div class="vl-balance-card">
-        <div class="vl-bal-label">
-          <span>Total Aset</span>
-          <button type="button" class="vl-bal-eye" id="toggleAmount" aria-label="Tampilkan saldo">
-            <svg id="eyeIcon" viewBox="0 0 24 24" fill="none">
-              <path d="M3 12s3.4-6 9-6 9 6 9 6-3.4 6-9 6-9-6-9-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-            </svg>
-          </button>
-        </div>
+      {{-- QUICK GRID --}}
+      <section class="ak-grid">
+        <a href="{{ route('saldo.rincian') }}" class="ak-quick">
+          <span class="ak-quick-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4v13M7 17l-3-3M7 17l3-3M17 20V7M17 7l-3 3M17 7l3 3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="ak-quick-tx"><b>Mutasi</b><span>Semua transaksi</span></span>
+          <span class="ak-quick-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+        <a href="{{ url('/deposit') }}" class="ak-quick gold">
+          <span class="ak-quick-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4v11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 11l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span class="ak-quick-tx"><b>Deposit</b><span>Dana masuk</span></span>
+          <span class="ak-quick-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+        <a href="{{ url('/ui/withdrawals') }}" class="ak-quick">
+          <span class="ak-quick-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 4h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span class="ak-quick-tx"><b>Penarikan</b><span>Dana keluar</span></span>
+          <span class="ak-quick-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+        <a href="{{ url('/ui/payout-accounts') }}" class="ak-quick gold">
+          <span class="ak-quick-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10 12 4l8 6" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M5 10v8h14v-8" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M9 18v-4h6v4" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></span>
+          <span class="ak-quick-tx"><b>Bank</b><span>Rekening saya</span></span>
+          <span class="ak-quick-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+      </section>
 
-        <h2
-          class="vl-bal-amount hidden"
-          id="amountText"
-          data-amount="Rp {{ number_format($totalAset, 0, ',', '.') }}"
-        >••••••••</h2>
-
-<div class="vl-bal-split">
-  <div class="vl-bal-item">
-    <span>Saldo Utama</span>
-    <strong>Rp {{ number_format($saldoUtama, 0, ',', '.') }}</strong>
-  </div>
-
-  <div class="vl-bal-item">
-    <span>Saldo Penarikan</span>
-    <strong>Rp {{ number_format($saldoPenarikan, 0, ',', '.') }}</strong>
-  </div>
-</div>
-
-      </div>
-
-      {{-- ── ACTION BUTTONS ── --}}
-      <div class="vl-actions">
-        <a href="/deposit" class="vl-btn vl-btn-gold">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-            <path d="M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-          </svg>
-          Deposit
+      {{-- MENU LIST --}}
+      <section class="ak-menu">
+        <a href="{{ route('referral.index') }}" class="ak-row">
+          <span class="ak-row-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3.8 20a5.2 5.2 0 0 1 10.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 8h4M19 6v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span class="ak-row-tx"><b>Undangan & Bonus</b><span>Ajak teman, dapat komisi</span></span>
+          <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </a>
 
-        <a href="/ui/withdrawals" class="vl-btn vl-btn-purple">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 4v13" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-            <path d="M7 12l5 5 5-5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Withdraw
-        </a>
-      </div>
-
-      {{-- ── STATS ── --}}
-      <div class="vl-stats">
-        <div class="vl-stat">
-          <div class="vl-stat-icon gold">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <strong>{{ $interestRate }}%</strong>
-          <span>Bunga p.a.</span>
-        </div>
-
-        <div class="vl-stat">
-          <div class="vl-stat-icon purple">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M8 7V6a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M4 8h16a1.5 1.5 0 0 1 1.5 1.5v8A2.5 2.5 0 0 1 19 20H5a2.5 2.5 0 0 1-2.5-2.5v-8A1.5 1.5 0 0 1 4 8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <strong>VIP {{ $user->vip_level ?? 0 }}</strong>
-          <span>Level</span>
-        </div>
-
-        <div class="vl-stat">
-          <div class="vl-stat-icon green">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <strong>Aktif</strong>
-          <span>Status</span>
-        </div>
-      </div>
-
-      {{-- ── BOOST BANNER ── --}}
-      <a href="{{ route('investasi.index') }}" class="vl-boost">
-        <div class="vl-boost-left">
-          <div class="vl-boost-emoji">💰</div>
-          <div class="vl-boost-copy">
-            <h3>Boost bunga kamu</h3>
-            <p>Investasi Velora untuk yield lebih tinggi</p>
-          </div>
-        </div>
-        <div class="vl-boost-pill">Up to 15%</div>
-      </a>
-
-      {{-- ── MENU AKUN ── --}}
-      <div class="vl-section-label">Akun Saya</div>
-
-      <div class="vl-card">
-        <a href="{{ route('saldo.rincian') }}" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon purple">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M20 21a8 8 0 0 0-16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Detail Akun</div>
-              <div class="vl-menu-sub">Lihat info lengkap profil</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
+        <a href="{{ route('investasi.index') }}" class="ak-row">
+          <span class="ak-row-ic gold"><svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 17v-6M12 17V8M16 17v-3M20 17V6" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>
+          <span class="ak-row-tx"><b>Portofolio Investasi</b><span>Paket aktif kamu</span></span>
+          <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </a>
 
-        <a href="{{ route('investasi.index') }}" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon gold">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Portofolio</div>
-              <div class="vl-menu-sub">Investasi aktif kamu</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
+        <button type="button" class="ak-row" id="akEditBtn" style="width:100%; text-align:left; border:0; background:transparent;">
+          <span class="ak-row-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span class="ak-row-tx"><b>Ubah Profil</b><span>Nama & foto profil</span></span>
+          <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+
+        <button type="button" class="ak-row" id="akSecurityBtn" style="width:100%; text-align:left; border:0; background:transparent;">
+          <span class="ak-row-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 4.4-3.2 7.2-8 8.5C7.2 19.2 4 16.4 4 12V7l8-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.5 12 2.2 2.2 4.8-4.8" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="ak-row-tx"><b>Keamanan & Kata Sandi</b><span>Lindungi akun kamu</span></span>
+          <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+
+        <a href="https://t.me/goveloracs" target="_blank" rel="noopener noreferrer" class="ak-row">
+          <span class="ak-row-ic gold"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="3.5" y="13" width="4" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8"/><rect x="16.5" y="13" width="4" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8"/></svg></span>
+          <span class="ak-row-tx"><b>Pusat Bantuan</b><span>Support 24/7</span></span>
+          <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </a>
 
-        <a href="{{ route('referral.index') }}" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon green">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Referral</div>
-              <div class="vl-menu-sub">Ajak teman, raih komisi</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </a>
-      </div>
+        <button type="button" class="ak-row" id="akApkBtn" style="width:100%; text-align:left; border:0; background:transparent;">
+          <span class="ak-row-ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4v10" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19h14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span>
+          <span class="ak-row-tx"><b>Unduh Aplikasi (APK)</b><span>Versi terbaru</span></span>
+          <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+      </section>
 
-      {{-- ── MENU TRANSAKSI ── --}}
-      <div class="vl-section-label">Transaksi</div>
+      {{-- LOGOUT --}}
+      <form action="{{ url('/logout') }}" method="POST" style="margin:0;">
+        @csrf
+        <button type="submit" class="ak-logout" onclick="return confirm('Keluar dari akun?')">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Keluar Akun
+        </button>
+      </form>
 
-      <div class="vl-card">
-        <a href="/deposit/history" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon blue">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Riwayat Deposit</div>
-              <div class="vl-menu-sub">Semua transaksi masuk</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </a>
-
-        <a href="/withdraw/history" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon purple">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 4v13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M7 12l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Riwayat Penarikan</div>
-              <div class="vl-menu-sub">Semua transaksi keluar</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </a>
-
-        <a href="/ui/payout-accounts" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon teal">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="2.5" y="6" width="19" height="12" rx="2.2" stroke="currentColor" stroke-width="2"/>
-                <path d="M2.5 10h19" stroke="currentColor" stroke-width="2"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Rekening Penarikan</div>
-              <div class="vl-menu-sub">Kelola rekening bank</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </a>
-      </div>
-
-      {{-- ── MENU LAINNYA ── --}}
-      <div class="vl-section-label">Lainnya</div>
-
-      <div class="vl-card">
-        <a href="https://t.me/velorafinance" target="_blank" rel="noopener noreferrer" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon green">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M8 10h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M8 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Layanan CS</div>
-              <div class="vl-menu-sub">Chat support via Telegram</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </a>
-
-        <a href="/tentang" class="vl-menu-row">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon blue">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                <path d="M12 10a2 2 0 0 1 2 2c0 1-1 1.5-2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Tentang Velora</div>
-              <div class="vl-menu-sub">Versi 1.0 · Kebijakan privasi</div>
-            </div>
-          </div>
-          <div class="vl-menu-arrow">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </a>
-
-        <a href="javascript:void(0)" class="vl-menu-row" id="comingSoonBtn">
-          <div class="vl-menu-left">
-            <div class="vl-menu-icon pink">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 3v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M5 21h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="vl-menu-copy">
-              <div class="vl-menu-title">Unduh Aplikasi</div>
-              <div class="vl-menu-sub">Segera hadir di App Store & Play</div>
-            </div>
-          </div>
-          <div class="vl-menu-badge">Soon</div>
-        </a>
-      </div>
-
-      {{-- ── LOGOUT ── --}}
-      <div class="vl-logout-wrap">
-        <form action="/logout" method="POST" style="margin:0;">
-          @csrf
-          <button class="vl-logout-btn" type="submit">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M16 17l5-5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            Keluar dari Akun
-          </button>
-        </form>
-      </div>
-
-      <div class="vl-version">Velora Finance v1.0 · &copy; 2025</div>
+      <p class="ak-version">Capital Wave · v1.0.0</p>
 
       <div class="rb-bottom-spacer"></div>
+      @include('partials.bottom-nav')
     </div>
   </main>
 
-  <div class="vl-toast" id="copyToast">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-      <path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    ID member tersalin
+  <div class="ak-toast" id="akToast">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg>
+    <span id="akToastTx">Segera hadir</span>
   </div>
-
-  <div class="ac-overlay" id="comingSoonOverlay" role="dialog" aria-modal="true">
-    <div class="ac-modal">
-      <button type="button" class="ac-close" id="comingSoonClose" aria-label="Tutup">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-      </button>
-
-      <div class="ac-icon">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M12 3v12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-          <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M5 21h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-        </svg>
-      </div>
-
-      <h3 class="ac-title">Fitur Mendatang</h3>
-      <p class="ac-desc">Aplikasi Velora versi mobile sedang disiapkan dan akan segera tersedia di App Store & Google Play.</p>
-      <button type="button" class="ac-ok" id="comingSoonOk">Oke, Mengerti</button>
-    </div>
-  </div>
-
-  @include('partials.bottom-nav')
 
   <script>
     (function(){
-      const copyBtn   = document.getElementById('copyIdBtn');
-      const toast     = document.getElementById('copyToast');
-      const amountBtn = document.getElementById('toggleAmount');
-      const amountEl  = document.getElementById('amountText');
-      const eyeIcon   = document.getElementById('eyeIcon');
-      let shown = false;
-
-      function showToast(msg){
+      const toast = document.getElementById('akToast');
+      const toastTx = document.getElementById('akToastTx');
+      let t;
+      function soon(msg){
         if(!toast) return;
-        toast.querySelector('span') && (toast.lastChild.textContent = ' ' + msg);
+        toastTx.textContent = msg || 'Fitur segera hadir';
         toast.classList.add('show');
-        clearTimeout(window.__vlToast);
-        window.__vlToast = setTimeout(() => toast.classList.remove('show'), 1400);
+        clearTimeout(t);
+        t = setTimeout(() => toast.classList.remove('show'), 2200);
       }
-
-      async function copyText(val){
-        try{ await navigator.clipboard.writeText(val); }
-        catch(e){
-          const t = document.createElement('textarea');
-          t.value = val;
-          t.style.cssText = 'position:fixed;opacity:0;';
-          document.body.appendChild(t);
-          t.select();
-          document.execCommand('copy');
-          t.remove();
-        }
-      }
-
-      if(copyBtn){
-        copyBtn.addEventListener('click', async function(){
-          await copyText(this.dataset.realId || this.textContent.trim());
-          showToast('ID member tersalin');
-        });
-      }
-
-      if(amountBtn && amountEl){
-        amountBtn.addEventListener('click', function(){
-          shown = !shown;
-          if(shown){
-            amountEl.textContent = amountEl.dataset.amount;
-            amountEl.classList.remove('hidden');
-            eyeIcon.innerHTML = `
-              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M1 1l22 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
-          } else {
-            amountEl.textContent = '••••••••';
-            amountEl.classList.add('hidden');
-            eyeIcon.innerHTML = `
-              <path d="M3 12s3.4-6 9-6 9 6 9 6-3.4 6-9 6-9-6-9-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>`;
-          }
-        });
-      }
-
-      const btn     = document.getElementById('comingSoonBtn');
-      const overlay = document.getElementById('comingSoonOverlay');
-      const closeBtn= document.getElementById('comingSoonClose');
-      const okBtn   = document.getElementById('comingSoonOk');
-
-      function openPopup(e){ if(e) e.preventDefault(); overlay.classList.add('show'); document.body.style.overflow='hidden'; }
-      function closePopup(){ overlay.classList.remove('show'); document.body.style.overflow=''; }
-
-      if(btn) btn.addEventListener('click', openPopup);
-      if(closeBtn) closeBtn.addEventListener('click', closePopup);
-      if(okBtn) okBtn.addEventListener('click', closePopup);
-      if(overlay) overlay.addEventListener('click', e => e.target === overlay && closePopup());
-      document.addEventListener('keydown', e => e.key === 'Escape' && overlay.classList.contains('show') && closePopup());
+      ['akSoonBtn','akEditBtn','akSecurityBtn','akApkBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.addEventListener('click', () => soon('Fitur segera hadir'));
+      });
     })();
   </script>
 </body>

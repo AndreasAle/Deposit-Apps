@@ -77,10 +77,14 @@ Route::middleware('guest')->group(function () {
         if ($request->attributes->get('is_bot') === true) {
             return response('Not Found', 404);
         }
-        
-        // Jika manusia, lempar ke Controller
-        return app(AuthController::class)->referralEntry($request, $code);
+
+        // Tampilkan gate verifikasi Cloudflare Turnstile (anti-bot) sebelum lanjut
+        return app(AuthController::class)->referralGate($request, $code);
     })->where('code', '[A-Za-z0-9]+')->name('referral.entry');
+
+    // Verifikasi Turnstile lalu simpan kode referral + lanjut ke form daftar
+    Route::post('/r-verify', [AuthController::class, 'referralVerify'])
+        ->name('referral.verify');
 
     /*
     |--------------------------------------------------------------------------
@@ -276,11 +280,8 @@ Route::middleware('auth')->group(function () {
 
 
 });
-Route::post('/payment/jayapay/deposit/callback', [DepositController::class, 'callback'])
-    ->name('payment.jayapay.deposit.callback');
-
-Route::post('/payment/jayapay/withdrawal/callback', [WithdrawalController::class, 'jayaPayCallback'])
-    ->name('payment.jayapay.withdrawal.callback');
+Route::post('/api/bayarpro-webhook', [\App\Http\Controllers\BayarProWebhookController::class, 'handle'])
+    ->name('payment.bayarpro.webhook');
 
 /*
 |--------------------------------------------------------------------------

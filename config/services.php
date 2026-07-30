@@ -18,6 +18,11 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'turnstile' => [
+        'site_key'   => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
@@ -51,6 +56,18 @@ return [
     // KEYS
     'private_key' => env('JAYAPAY_PRIVATE_KEY'),
     'platform_public_key' => env('JAYAPAY_PLATFORM_PUBLIC_KEY'),
+],
+
+'bayarpro' => [
+    'base_url' => env('BAYARPRO_BASE_URL', 'https://bayar-pro.com/api/v1'),
+    'api_key' => env('BAYARPRO_API_KEY'),
+    'secret_key' => env('BAYARPRO_SECRET_KEY'),
+
+    // Satu Webhook URL untuk semua event (didaftarkan di dashboard BayarPro).
+    'webhook_url' => env('BAYARPRO_WEBHOOK_URL'),
+
+    // Invoice deposit kedaluwarsa (menit) — dipakai untuk expired_at lokal.
+    'expiry_period' => env('BAYARPRO_EXPIRY_PERIOD', 1440),
 ],
 
 ];

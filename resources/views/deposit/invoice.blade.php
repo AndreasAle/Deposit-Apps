@@ -708,13 +708,19 @@
                     @if(!empty($deposit->pay_url))
                         <div class="pay-panel-head">
                             <div>
-                                <h2 class="pay-panel-title">Scan QR Pembayaran</h2>
+                                <h2 class="pay-panel-title">
+                                    {{ !empty($qrImageSrc) ? 'Scan QR Pembayaran' : 'Lanjutkan Pembayaran' }}
+                                </h2>
                                 <p class="pay-panel-note">
-                                    Scan QR berikut, lalu tunggu status pembayaran diperbarui otomatis.
+                                    @if(!empty($qrImageSrc))
+                                        Scan QR berikut, lalu tunggu status pembayaran diperbarui otomatis.
+                                    @else
+                                        Klik tombol di bawah untuk menyelesaikan pembayaran via {{ $displayMethod }}.
+                                    @endif
                                 </p>
                             </div>
 
-                            <span class="pay-pill">JayaPay</span>
+                            <span class="pay-pill">{{ $displayMethod }}</span>
                         </div>
 
                         <div class="qr-card">
@@ -733,15 +739,19 @@
                                     >
                                 @else
                                     <div class="qr-empty">
-                                        QR pembayaran belum berhasil dimuat.
+                                        Pembayaran via {{ $displayMethod }} dilakukan di halaman pembayaran.
                                         <br>
-                                        Silakan refresh halaman atau buka halaman asli.
+                                        Klik "Buka Halaman Pembayaran" di bawah.
                                     </div>
                                 @endif
                             </div>
 
                             <div class="qr-footer">
-                                Gunakan e-wallet atau mobile banking yang mendukung QRIS.
+                                @if(!empty($qrImageSrc))
+                                    Gunakan e-wallet atau mobile banking yang mendukung QRIS.
+                                @else
+                                    Selesaikan pembayaran melalui aplikasi {{ $displayMethod }} Anda.
+                                @endif
                             </div>
                         </div>
 
@@ -760,7 +770,7 @@
                                 </button>
                             @else
                                 <a href="{{ $displayPayUrl ?? $deposit->pay_url }}" target="_blank" rel="noopener" class="pay-btn pay-btn-secondary">
-                                    Buka Halaman Asli
+                                    Buka Halaman Pembayaran
                                 </a>
                             @endif
                         </div>
