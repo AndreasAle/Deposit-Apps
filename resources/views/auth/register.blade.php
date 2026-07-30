@@ -118,6 +118,11 @@
     .vl-security{ margin-top:20px; padding:16px; border-radius:18px; background:var(--tint); border:1px solid var(--line); }
     .vl-security-heading{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--navy); }
     .vl-security-dot{ width:22px; height:22px; border-radius:8px; display:grid; place-items:center; color:#0b2740; background:var(--gold-metal); font-size:12px; }
+    /* Cloudflare Turnstile box */
+    .vl-ts-box{ margin-top:14px; border-radius:16px; background:var(--card); border:1px solid var(--line); padding:14px; }
+    .vl-ts-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .vl-ts-head span:first-child{ font-size:11px; font-weight:600; color:var(--ink-soft); letter-spacing:-.01em; }
+    .vl-ts{ margin-top:12px; display:flex; justify-content:center; min-height:66px; }
     .vl-puzzle{ margin-top:14px; border-radius:16px; background:var(--card); border:1px solid var(--line); padding:14px; }
     .vl-puzzle-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
     .vl-puzzle-head h3{ font-size:12.5px; font-weight:700; color:var(--navy); letter-spacing:-.01em; }
@@ -170,6 +175,10 @@
     @keyframes vlSheen{ 0%,55%{ left:-70%; } 100%{ left:130%; } }
     @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } .vl-stat{ opacity:1; transform:none; } }
   </style>
+  <script>
+    window.onTurnstileLoad = function(){ if (typeof window.__tsTryRender === 'function') window.__tsTryRender(); };
+  </script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
 </head>
 <body>
   <div class="vl-wrap"><div class="vl-phone">
@@ -254,7 +263,8 @@
     isReferralLocked:   @json($isReferralLocked),
     oldName:  @json(old('name')),
     oldPhone: @json(old('phone')),
-    errors:   @json($errors->any() ? $errors->all() : [])
+    errors:   @json($errors->any() ? $errors->all() : []),
+    turnstileSiteKey: @json(config('services.turnstile.site_key'))
   };
 
   (function(){
@@ -282,6 +292,40 @@
       const refValue   = esc(_bd.referralInputValue || '');
       const nameValue  = esc(_bd.oldName || '');
       const phoneValue = esc(_bd.oldPhone || '');
+
+      const tsKey = _bd.turnstileSiteKey || '';
+      const securityHtml = tsKey
+        ? `<div class="vl-ts-box">
+              <div class="vl-ts-head">
+                <span>Centang untuk memverifikasi kamu bukan robot</span>
+                <span class="vl-puzzle-badge" id="puzzleBadge">PERLU</span>
+              </div>
+              <div id="tsWidget" class="vl-ts"></div>
+            </div>`
+        : `<div class="vl-puzzle" id="puzzleCard">
+              <div class="vl-puzzle-head">
+                <div>
+                  <h3>Geser untuk melengkapi puzzle</h3>
+                  <p>Geser ke kanan sampai potongan masuk ke slot.</p>
+                </div>
+                <div class="vl-puzzle-badge" id="puzzleBadge">PERLU</div>
+              </div>
+
+              <div class="vl-puzzle-stage" id="puzzleStage">
+                <div class="vl-puzzle-chip vl-puzzle-chip-l">Akun</div>
+                <div class="vl-puzzle-chip vl-puzzle-chip-r">Aman</div>
+                <div class="vl-puzzle-piece" id="puzzlePiece"></div>
+                <div class="vl-puzzle-slot" id="puzzleSlot"></div>
+              </div>
+
+              <div class="vl-puzzle-slider" id="puzzleSlider">
+                <button type="button" class="vl-puzzle-handle" id="puzzleHandle" aria-label="Geser verifikasi">»</button>
+                <div class="vl-puzzle-slider-text" id="puzzleSliderText">Geser untuk menyelesaikan verifikasi</div>
+              </div>
+
+              <p class="vl-puzzle-note">✦ Verifikasi cepat untuk menjaga keamanan pendaftaran.</p>
+              <button type="button" class="vl-puzzle-reset" id="puzzleResetBtn">↺ Ulangi</button>
+            </div>`;
 
       const fragment = document.createRange().createContextualFragment(`
         ${buildErrorHtml()}
@@ -380,30 +424,7 @@
               Verifikasi Keamanan
             </div>
 
-            <div class="vl-puzzle" id="puzzleCard">
-              <div class="vl-puzzle-head">
-                <div>
-                  <h3>Geser untuk melengkapi puzzle</h3>
-                  <p>Geser ke kanan sampai potongan masuk ke slot.</p>
-                </div>
-                <div class="vl-puzzle-badge" id="puzzleBadge">PERLU</div>
-              </div>
-
-              <div class="vl-puzzle-stage" id="puzzleStage">
-                <div class="vl-puzzle-chip vl-puzzle-chip-l">Akun</div>
-                <div class="vl-puzzle-chip vl-puzzle-chip-r">Aman</div>
-                <div class="vl-puzzle-piece" id="puzzlePiece"></div>
-                <div class="vl-puzzle-slot" id="puzzleSlot"></div>
-              </div>
-
-              <div class="vl-puzzle-slider" id="puzzleSlider">
-                <button type="button" class="vl-puzzle-handle" id="puzzleHandle" aria-label="Geser verifikasi">»</button>
-                <div class="vl-puzzle-slider-text" id="puzzleSliderText">Geser untuk menyelesaikan verifikasi</div>
-              </div>
-
-              <p class="vl-puzzle-note">✦ Verifikasi cepat untuk menjaga keamanan pendaftaran.</p>
-              <button type="button" class="vl-puzzle-reset" id="puzzleResetBtn">↺ Ulangi</button>
-            </div>
+            ${securityHtml}
 
             <label class="vl-confirm" for="security_confirm">
               <input id="security_confirm" type="checkbox" name="security_confirm" value="1">
@@ -463,111 +484,135 @@
         });
       }
 
-      const handle    = document.getElementById('puzzleHandle');
-      const slider    = document.getElementById('puzzleSlider');
-      const piece     = document.getElementById('puzzlePiece');
-      const slot      = document.getElementById('puzzleSlot');
       const badge     = document.getElementById('puzzleBadge');
-      const sliderTxt = document.getElementById('puzzleSliderText');
       const verField  = document.getElementById('puzzleVerified');
-      const resetBtn  = document.getElementById('puzzleResetBtn');
       const confirmCk = document.getElementById('security_confirm');
       const submitBtn = document.getElementById('registerSubmit');
       const form      = document.getElementById('registerForm');
 
-      if(!handle || !slider || !piece) return;
-
-      let dragging = false, startX = 0, curX = 0, verified = false;
-
-      function maxX(){ return Math.max(0, slider.clientWidth - handle.clientWidth); }
-
-      function setX(x){
-        const mx = maxX();
-        curX = Math.max(0, Math.min(x, mx));
-        handle.style.transform = `translateX(${curX}px)`;
-        const pieceTarget = slot ? Math.max(0, slot.offsetLeft - 18 + 4) : 220;
-        piece.style.transform = `translateX(${mx > 0 ? (curX / mx) * pieceTarget : 0}px)`;
-      }
+      let verified = false;
 
       function updateBtn(){
         const ok = verified && confirmCk && confirmCk.checked;
         if(submitBtn) submitBtn.disabled = !ok;
       }
-
       function markVerified(){
         verified = true;
         if(verField) verField.value = '1';
-        setX(maxX());
         if(badge){ badge.textContent = 'AMAN'; badge.classList.add('is-ok'); }
-        if(sliderTxt) sliderTxt.textContent = '✓ Verifikasi berhasil';
-        if(handle){ handle.textContent = '✓'; handle.style.cursor = 'default'; }
         updateBtn();
       }
-
-      function resetPuzzle(){
+      function unverify(){
         verified = false;
         if(verField) verField.value = '0';
         if(badge){ badge.textContent = 'PERLU'; badge.classList.remove('is-ok'); }
-        if(sliderTxt) sliderTxt.textContent = 'Geser untuk menyelesaikan verifikasi';
-        if(handle){ handle.textContent = '»'; handle.style.cursor = 'grab'; }
-        setX(0);
         updateBtn();
       }
 
-      function pX(e){ return e.touches?.[0]?.clientX ?? e.clientX; }
-
-      handle.addEventListener('pointerdown', e => {
-        if(verified) return;
-        dragging = true; startX = pX(e) - curX;
-        if(handle.setPointerCapture) handle.setPointerCapture(e.pointerId);
-        e.preventDefault();
-      });
-
-      window.addEventListener('pointermove', e => {
-        if(!dragging || verified) return;
-        setX(pX(e) - startX);
-        if(maxX() > 0 && curX >= maxX() * 0.92){ dragging = false; markVerified(); }
-        e.preventDefault();
-      });
-
-      window.addEventListener('pointerup', () => {
-        if(!dragging || verified) return;
-        dragging = false;
-        if(maxX() > 0 && curX >= maxX() * 0.82){ markVerified(); return; }
-        setX(0);
-      });
-
-      handle.addEventListener('touchstart', e => {
-        if(verified) return;
-        dragging = true; startX = pX(e) - curX; e.preventDefault();
-      }, { passive:false });
-
-      window.addEventListener('touchmove', e => {
-        if(!dragging || verified) return;
-        setX(pX(e) - startX);
-        if(maxX() > 0 && curX >= maxX() * 0.92){ dragging = false; markVerified(); }
-        e.preventDefault();
-      }, { passive:false });
-
-      window.addEventListener('touchend', () => {
-        if(!dragging || verified) return;
-        dragging = false;
-        if(maxX() > 0 && curX >= maxX() * 0.82){ markVerified(); return; }
-        setX(0);
-      });
-
-      if(resetBtn) resetBtn.addEventListener('click', resetPuzzle);
       if(confirmCk) confirmCk.addEventListener('change', updateBtn);
-      window.addEventListener('resize', () => { verified ? setX(maxX()) : setX(0); });
 
       if(form){
         form.addEventListener('submit', e => {
-          if(!verified){ e.preventDefault(); alert('Selesaikan verifikasi puzzle terlebih dahulu.'); return; }
+          if(!verified){ e.preventDefault(); alert('Selesaikan verifikasi keamanan terlebih dahulu.'); return; }
           if(!confirmCk?.checked){ e.preventDefault(); alert('Centang konfirmasi keamanan akun terlebih dahulu.'); }
         });
       }
 
-      resetPuzzle();
+      if(_bd.turnstileSiteKey){
+        /* ===== Cloudflare Turnstile ===== */
+        const renderTs = function(){
+          const el = document.getElementById('tsWidget');
+          if(!el || el.dataset.rendered) return;
+          if(window.turnstile && typeof window.turnstile.render === 'function'){
+            el.dataset.rendered = '1';
+            window.turnstile.render(el, {
+              sitekey: _bd.turnstileSiteKey,
+              theme: 'light',
+              callback: function(){ markVerified(); },
+              'error-callback': function(){ unverify(); },
+              'expired-callback': function(){ unverify(); }
+            });
+          } else {
+            window.__tsTryRender = renderTs;
+          }
+        };
+        unverify();
+        renderTs();
+      } else {
+        /* ===== Fallback: slider puzzle ===== */
+        const handle    = document.getElementById('puzzleHandle');
+        const slider    = document.getElementById('puzzleSlider');
+        const piece     = document.getElementById('puzzlePiece');
+        const slot      = document.getElementById('puzzleSlot');
+        const sliderTxt = document.getElementById('puzzleSliderText');
+        const resetBtn  = document.getElementById('puzzleResetBtn');
+
+        if(!handle || !slider || !piece){ unverify(); return; }
+
+        let dragging = false, startX = 0, curX = 0;
+
+        function maxX(){ return Math.max(0, slider.clientWidth - handle.clientWidth); }
+        function setX(x){
+          const mx = maxX();
+          curX = Math.max(0, Math.min(x, mx));
+          handle.style.transform = `translateX(${curX}px)`;
+          const pieceTarget = slot ? Math.max(0, slot.offsetLeft - 18 + 4) : 220;
+          piece.style.transform = `translateX(${mx > 0 ? (curX / mx) * pieceTarget : 0}px)`;
+        }
+        function sMark(){
+          setX(maxX());
+          if(sliderTxt) sliderTxt.textContent = '✓ Verifikasi berhasil';
+          if(handle){ handle.textContent = '✓'; handle.style.cursor = 'default'; }
+          markVerified();
+        }
+        function sReset(){
+          if(sliderTxt) sliderTxt.textContent = 'Geser untuk menyelesaikan verifikasi';
+          if(handle){ handle.textContent = '»'; handle.style.cursor = 'grab'; }
+          setX(0);
+          unverify();
+        }
+        function pX(e){ return e.touches?.[0]?.clientX ?? e.clientX; }
+
+        handle.addEventListener('pointerdown', e => {
+          if(verified) return;
+          dragging = true; startX = pX(e) - curX;
+          if(handle.setPointerCapture) handle.setPointerCapture(e.pointerId);
+          e.preventDefault();
+        });
+        window.addEventListener('pointermove', e => {
+          if(!dragging || verified) return;
+          setX(pX(e) - startX);
+          if(maxX() > 0 && curX >= maxX() * 0.92){ dragging = false; sMark(); }
+          e.preventDefault();
+        });
+        window.addEventListener('pointerup', () => {
+          if(!dragging || verified) return;
+          dragging = false;
+          if(maxX() > 0 && curX >= maxX() * 0.82){ sMark(); return; }
+          setX(0);
+        });
+        handle.addEventListener('touchstart', e => {
+          if(verified) return;
+          dragging = true; startX = pX(e) - curX; e.preventDefault();
+        }, { passive:false });
+        window.addEventListener('touchmove', e => {
+          if(!dragging || verified) return;
+          setX(pX(e) - startX);
+          if(maxX() > 0 && curX >= maxX() * 0.92){ dragging = false; sMark(); }
+          e.preventDefault();
+        }, { passive:false });
+        window.addEventListener('touchend', () => {
+          if(!dragging || verified) return;
+          dragging = false;
+          if(maxX() > 0 && curX >= maxX() * 0.82){ sMark(); return; }
+          setX(0);
+        });
+
+        if(resetBtn) resetBtn.addEventListener('click', sReset);
+        window.addEventListener('resize', () => { verified ? setX(maxX()) : setX(0); });
+
+        sReset();
+      }
     }
 
     setTimeout(injectForm, 2000);

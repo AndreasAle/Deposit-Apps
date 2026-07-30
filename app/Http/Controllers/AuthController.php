@@ -181,6 +181,33 @@ public function showLogin(Request $request)
                 return response('Not Found', 404);
             }
 
+            // Verifikasi Cloudflare Turnstile (anti-bot form pendaftaran).
+            // Dilewati kalau secret key belum dikonfigurasi (fallback perilaku lama).
+            $secretKey = config('services.turnstile.secret_key');
+            if (!empty($secretKey)) {
+                $token = (string) $request->input('cf-turnstile-response');
+                if ($token === '') {
+                    return back()->withErrors(['phone' => 'Verifikasi keamanan belum selesai. Silakan ulangi.'])->withInput();
+                }
+
+                try {
+                    $resp = Http::asForm()->timeout(15)->post(
+                        'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+                        [
+                            'secret'   => $secretKey,
+                            'response' => $token,
+                            'remoteip' => $request->ip(),
+                        ]
+                    );
+                } catch (\Throwable $e) {
+                    return back()->withErrors(['phone' => 'Gagal menghubungi server verifikasi. Coba lagi.'])->withInput();
+                }
+
+                if (!($resp->successful() && $resp->json('success') === true)) {
+                    return back()->withErrors(['phone' => 'Verifikasi keamanan gagal. Silakan ulangi.'])->withInput();
+                }
+            }
+
       $normalizedPhone = $this->normalizePhone($request->input('phone'));
 
 $request->merge([
