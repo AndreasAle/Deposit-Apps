@@ -353,33 +353,33 @@
     /* ============ CS POPUP ============ */
     .vl-cs-popup{ position:fixed; inset:0; z-index:100000; display:none; align-items:center; justify-content:center; padding:20px 16px; background:rgba(11,39,64,.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
     .vl-cs-popup.show{ display:flex; }
-    .vl-cs-card{ width:100%; max-width:404px; overflow:hidden; border-radius:26px; background:var(--card); box-shadow:var(--sh-lg); animation:vlIn .3s cubic-bezier(.22,.8,.22,1) both; }
-    .vl-cs-inner{ padding:22px; }
-    .vl-cs-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }
-    .vl-cs-brand{ display:flex; align-items:center; gap:12px; min-width:0; }
-    .vl-cs-logo{ width:48px; height:48px; border-radius:14px; display:grid; place-items:center; overflow:hidden; flex:0 0 auto; background:linear-gradient(160deg,#ffffff,#eef4fb); border:1px solid var(--line); }
-    .vl-cs-logo img{ width:32px; height:32px; object-fit:contain; display:block; }
-    .vl-cs-brand span{ display:block; margin-bottom:4px; font-size:9px; font-weight:600; letter-spacing:.16em; color:var(--gold-deep); text-transform:uppercase; }
-    .vl-cs-brand strong{ display:block; color:var(--navy); font-size:17px; font-weight:700; letter-spacing:-.02em; }
-    .vl-cs-close{ width:38px; height:38px; border:0; border-radius:12px; color:var(--ink-soft); background:var(--tint); display:grid; place-items:center; cursor:pointer; }
-    .vl-cs-badge{ display:inline-flex; align-items:center; gap:7px; padding:6px 12px; border-radius:999px; color:var(--gold-deep); background:var(--gold-soft); border:1px solid rgba(201,148,51,.22); font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
-    .vl-cs-title{ margin-top:14px; color:var(--navy); font-size:22px; font-weight:700; line-height:1.15; letter-spacing:-.03em; }
+    .vl-cs-card{ width:100%; max-width:340px; overflow:hidden; border-radius:22px; background:var(--card); box-shadow:var(--sh-lg); animation:vlIn .3s cubic-bezier(.22,.8,.22,1) both; }
+    .vl-cs-inner{ padding:16px 16px 15px; }
+    .vl-cs-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .vl-cs-brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+    .vl-cs-logo{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; overflow:hidden; flex:0 0 auto; background:linear-gradient(160deg,#ffffff,#eef4fb); border:1px solid var(--line); }
+    .vl-cs-logo img{ width:26px; height:26px; object-fit:contain; display:block; }
+    .vl-cs-brand span{ display:block; margin-bottom:3px; font-size:8.5px; font-weight:600; letter-spacing:.16em; color:var(--gold-deep); text-transform:uppercase; }
+    .vl-cs-brand strong{ display:block; color:var(--navy); font-size:15px; font-weight:700; letter-spacing:-.02em; }
+    .vl-cs-close{ width:34px; height:34px; border:0; border-radius:11px; color:var(--ink-soft); background:var(--tint); display:grid; place-items:center; cursor:pointer; }
+    .vl-cs-badge{ display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; color:var(--gold-deep); background:var(--gold-soft); border:1px solid rgba(201,148,51,.22); font-size:9px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+    .vl-cs-title{ margin-top:10px; color:var(--navy); font-size:17px; font-weight:700; line-height:1.15; letter-spacing:-.03em; }
     .vl-cs-title span{ color:var(--blue); }
-    .vl-cs-desc{ margin-top:9px; max-width:330px; color:var(--ink-soft); font-size:12.5px; line-height:1.55; font-weight:500; }
-    .vl-cs-info{ margin-top:18px; display:grid; gap:9px; }
-    .vl-cs-info-item{ display:flex; align-items:center; gap:12px; padding:12px; border-radius:14px; background:var(--tint); border:1px solid var(--line); }
-    .vl-cs-info-icon{ width:36px; height:36px; border-radius:11px; display:grid; place-items:center; color:var(--blue); background:var(--blue-soft); flex:0 0 auto; }
-    .vl-cs-info-icon svg{ width:18px; height:18px; }
-    .vl-cs-info-text span{ display:block; margin-bottom:3px; color:var(--muted); font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; }
-    .vl-cs-info-text strong{ display:block; color:var(--navy); font-size:13px; font-weight:600; }
-    .vl-cs-actions{ margin-top:18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .vl-cs-btn{ min-height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:12.5px; font-weight:600; transition:.16s ease; }
-    .vl-cs-btn svg{ width:17px; height:17px; }
+    .vl-cs-desc{ margin-top:6px; max-width:290px; color:var(--ink-soft); font-size:11px; line-height:1.5; font-weight:500; }
+    .vl-cs-info{ margin-top:12px; display:grid; gap:6px; }
+    .vl-cs-info-item{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:12px; background:var(--tint); border:1px solid var(--line); }
+    .vl-cs-info-icon{ width:31px; height:31px; border-radius:10px; display:grid; place-items:center; color:var(--blue); background:var(--blue-soft); flex:0 0 auto; }
+    .vl-cs-info-icon svg{ width:16px; height:16px; }
+    .vl-cs-info-text span{ display:block; margin-bottom:2px; color:var(--muted); font-size:9px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; }
+    .vl-cs-info-text strong{ display:block; color:var(--navy); font-size:12px; font-weight:600; }
+    .vl-cs-actions{ margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .vl-cs-btn{ min-height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:7px; font-size:11.5px; font-weight:600; transition:.16s ease; }
+    .vl-cs-btn svg{ width:16px; height:16px; }
     .vl-cs-btn.cs{ color:var(--navy); background:var(--gold-soft); border:1px solid rgba(201,148,51,.28); }
     .vl-cs-btn.channel{ color:#fff; background:linear-gradient(135deg,#123457,#0b2740); }
     .vl-cs-btn.wa{ grid-column:1 / -1; color:#fff; background:linear-gradient(135deg,#25d366,#1aa251); box-shadow:0 10px 22px rgba(37,211,102,.3); }
     .vl-cs-info-icon.wa{ color:#1aa251; background:#e7f9ef; }
-    .vl-cs-foot{ margin-top:14px; display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10.5px; font-weight:500; }
+    .vl-cs-foot{ margin-top:11px; display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; font-weight:500; }
     .vl-cs-foot svg{ width:13px; height:13px; color:var(--gold); }
 
     /* ============ MODAL ============ */

@@ -60,7 +60,7 @@
     .wd-header-btn{ width:42px; height:42px; flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:13px; display:grid; place-items:center; box-shadow:var(--sh-sm); }
     .wd-header-btn svg{ width:19px; height:19px; }
 
-    .wd-hero{ position:relative; overflow:hidden; border-radius:26px; padding:20px; color:#fff;
+    .wd-hero{ position:relative; overflow:hidden; border-radius:20px; padding:14px 16px; color:#fff;
       background:
         radial-gradient(420px 240px at 90% -20%, rgba(232,200,116,.18), transparent 62%),
         radial-gradient(360px 220px at 5% 120%, rgba(47,127,212,.22), transparent 60%),
@@ -72,12 +72,12 @@
     .wd-hero > *{ position:relative; z-index:1; }
     .wd-eyebrow{ display:inline-flex; align-items:center; gap:8px; color:rgba(255,255,255,.62); font-size:9.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; }
     .wd-eyebrow::before{ content:""; width:6px; height:6px; border-radius:999px; background:var(--gold-lite); box-shadow:0 0 10px rgba(232,200,116,.8); }
-    .wd-hero-big{ margin-top:12px; font-size:32px; font-weight:700; letter-spacing:-.035em; line-height:1; }
-    .wd-hero-boxes{ margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .wd-hbox{ border-radius:16px; padding:12px 13px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); }
-    .wd-hbox span{ display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:500; color:rgba(255,255,255,.6); }
+    .wd-hero-big{ margin-top:8px; font-size:25px; font-weight:700; letter-spacing:-.035em; line-height:1; }
+    .wd-hero-boxes{ margin-top:11px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .wd-hbox{ border-radius:13px; padding:9px 11px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); }
+    .wd-hbox span{ display:flex; align-items:center; gap:6px; font-size:10px; font-weight:500; color:rgba(255,255,255,.6); }
     .wd-hbox span svg{ width:13px; height:13px; color:var(--gold-lite); }
-    .wd-hbox strong{ display:block; margin-top:7px; font-size:14px; font-weight:700; letter-spacing:-.02em; }
+    .wd-hbox strong{ display:block; margin-top:5px; font-size:13px; font-weight:700; letter-spacing:-.02em; }
 
     .wd-sec-label{ margin:18px 0 11px; font-size:13.5px; font-weight:700; color:var(--navy); letter-spacing:-.02em; }
 
