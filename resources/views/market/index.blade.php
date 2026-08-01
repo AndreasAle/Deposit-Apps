@@ -321,7 +321,7 @@
       <div class="cwm-tabs" id="marketTabs">
         @foreach($categories as $i => $cat)
           <button type="button" class="cwm-tab {{ $i === 0 ? 'active' : '' }}" data-tab="market-cat-{{ $cat->id }}">
-            {{ str_ireplace('Rubik', 'Capital Wave', $cat->name) }}
+            {{ str_ireplace(['Rubik', 'Velora'], 'Capital Wave', $cat->name) }}
           </button>
         @endforeach
       </div>
@@ -333,7 +333,7 @@
             @forelse($cat->products as $product)
               @php
                 $catName = strtolower($cat->name ?? '');
-                $productName = str_ireplace('Rubik', 'Capital Wave', $product->name ?? 'Capital Asset');
+                $productName = str_ireplace(['Rubik', 'Velora'], 'Capital Wave', $product->name ?? 'Capital Asset');
 
                 if(str_contains($catName, 'saham')) { $assetLabel = 'Saham Capital Wave'; $tokenIcon = 'chart'; }
                 elseif(str_contains($catName, 'pro')) { $assetLabel = 'Capital Wave Pro'; $tokenIcon = 'diamond'; }

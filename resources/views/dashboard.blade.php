@@ -625,7 +625,7 @@
               @else
                 <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7.4v9.2L12 21l-8-4.4V7.4L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
               @endif
-              {{ str_ireplace('Rubik', 'Capital Wave', $cat->name) }}
+              {{ str_ireplace(['Rubik', 'Velora'], 'Capital Wave', $cat->name) }}
               <span class="count">{{ count($catProducts) }}</span>
             </button>
           @endforeach
@@ -637,7 +637,7 @@
               @forelse(($cat->products ?? []) as $product)
                 @php
                   $catName = strtolower($cat->name ?? '');
-                  $productName = str_ireplace('Rubik', 'Capital Wave', $product->name ?? 'Capital Wave Asset');
+                  $productName = str_ireplace(['Rubik', 'Velora'], 'Capital Wave', $product->name ?? 'Capital Wave Asset');
 
                   if(str_contains($catName, 'saham')) { $tokenSymbol = 'SV'; }
                   elseif(str_contains($catName, 'pro')) { $tokenSymbol = 'VP'; }
