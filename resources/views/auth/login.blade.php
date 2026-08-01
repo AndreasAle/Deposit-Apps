@@ -1,3 +1,4 @@
+@php $tsKey = config('services.turnstile.site_key'); @endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -130,7 +131,20 @@
     @keyframes lgSheet{ from{ transform:translateY(40px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
     @keyframes lgSheen{ 0%,55%{ left:-70%; } 100%{ left:130%; } }
     @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } .lg-chip{ opacity:1; transform:none; } }
+
+    /* Turnstile human check */
+    .lg-ts-box{ margin:0 0 14px; padding:12px; border-radius:14px; background:var(--tint,#f5f8fc); border:1px solid var(--line,#e9edf4); }
+    .lg-ts-head{ margin-bottom:10px; font-size:11.5px; font-weight:600; color:var(--ink-soft,#46586c); }
+    .lg-ts-box .cf-turnstile{ display:flex; justify-content:center; min-height:66px; }
+    .lg-submit:disabled{ opacity:.5; cursor:not-allowed; filter:grayscale(.2); }
   </style>
+@if($tsKey)
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    function lgTsOk(){ var b=document.getElementById('lgSubmit'); if(b) b.disabled=false; }
+    function lgTsReset(){ var b=document.getElementById('lgSubmit'); if(b) b.disabled=true; }
+  </script>
+@endif
 </head>
 
 <body>
@@ -217,7 +231,19 @@
             <a href="https://t.me/Capitalwavecs" target="_blank" rel="noopener" class="lg-forgot">Lupa sandi?</a>
           </div>
 
-          <button type="submit" class="lg-submit">
+          @if($tsKey)
+          <div class="lg-ts-box">
+            <div class="lg-ts-head">Verifikasi kamu bukan robot</div>
+            <div class="cf-turnstile"
+                 data-sitekey="{{ $tsKey }}"
+                 data-callback="lgTsOk"
+                 data-error-callback="lgTsReset"
+                 data-expired-callback="lgTsReset"
+                 data-theme="light"></div>
+          </div>
+          @endif
+
+          <button type="submit" class="lg-submit" id="lgSubmit" @if($tsKey) disabled @endif>
             <svg viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M10 17l5-5-5-5M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Masuk Sekarang
           </button>
