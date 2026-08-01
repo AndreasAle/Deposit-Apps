@@ -87,9 +87,25 @@ class DepositController extends Controller
 
             $data = $result['data'] ?? [];
 
-            $deposit->plat_order_num = $data['reference_id'] ?? null;
-            $deposit->pay_url = $data['checkout_url'] ?? null;
-            $deposit->pay_data = $data['qris_data'] ?? null;
+            // BayarPro bisa menamai field checkout/QR berbeda antar mode (live/sandbox).
+            // Tangkap beberapa kemungkinan nama agar invoice selalu punya link/QR.
+            $checkoutUrl = $data['checkout_url']
+                ?? $data['payment_url']
+                ?? $data['pay_url']
+                ?? $data['redirect_url']
+                ?? $data['url']
+                ?? null;
+
+            $qrisData = $data['qris_data']
+                ?? $data['qr_string']
+                ?? $data['qr_content']
+                ?? $data['qris']
+                ?? $data['qr_data']
+                ?? null;
+
+            $deposit->plat_order_num = $data['reference_id'] ?? $data['id'] ?? null;
+            $deposit->pay_url = $checkoutUrl;
+            $deposit->pay_data = $qrisData;
             $deposit->pay_fee = isset($data['fee']) ? (float) $data['fee'] : 0;
             // Yang dibayar user = amount penuh (fee BayarPro dipotong dari sisi merchant).
             $deposit->real_amount = $amount;
