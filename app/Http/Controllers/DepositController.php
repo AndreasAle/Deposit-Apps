@@ -126,7 +126,7 @@ class DepositController extends Controller
 
         // Render QR lokal dari qris_data (string EMV) selama BayarPro mengirimnya,
         // apa pun channel-nya. DANA pun dibayar lewat scan QRIS, jadi user tetap
-        // menyelesaikan pembayaran di dalam Velora tanpa dilempar ke BayarPro.
+        // menyelesaikan pembayaran di dalam Capital Wave tanpa dilempar ke BayarPro.
         if ($deposit->status !== 'PAID' && !empty($deposit->pay_data)) {
             try {
                 $qrSvg = QrCode::format('svg')

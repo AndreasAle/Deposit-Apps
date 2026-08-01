@@ -29,7 +29,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice Deposit | Velora Finance</title>
+    <title>Invoice Deposit | Capital Wave</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -682,7 +682,7 @@
             <section class="pay-hero">
                 <div class="pay-hero-top">
                     <div>
-                        <span class="pay-kicker">Velora Invoice</span>
+                        <span class="pay-kicker">Capital Wave Invoice</span>
                         <p class="pay-label">Total Bayar</p>
                         <h2 class="pay-amount">Rp {{ number_format($payAmount, 0, ',', '.') }}</h2>
                     </div>
@@ -725,7 +725,7 @@
 
                         <div class="qr-card">
                             <div class="qr-brand">
-                                <strong>VELORA</strong>
+                                <strong>CAPITAL WAVE</strong>
                                 <span>Secure Payment</span>
                             </div>
 
@@ -844,7 +844,7 @@
 
                     <h2 class="success-title">Deposit Berhasil</h2>
                     <p class="success-text">
-                        Pembayaran telah diverifikasi dan saldo sudah masuk otomatis ke akun Velora Anda.
+                        Pembayaran telah diverifikasi dan saldo sudah masuk otomatis ke akun Capital Wave Anda.
                     </p>
 
                     <a href="{{ route('deposit.index') }}" class="pay-btn pay-btn-primary">

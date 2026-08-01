@@ -240,7 +240,7 @@
           <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
         </button>
 
-        <a href="https://t.me/goveloracs" target="_blank" rel="noopener noreferrer" class="ak-row">
+        <a href="https://t.me/Capitalwavecs" target="_blank" rel="noopener noreferrer" class="ak-row">
           <span class="ak-row-ic gold"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="3.5" y="13" width="4" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8"/><rect x="16.5" y="13" width="4" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8"/></svg></span>
           <span class="ak-row-tx"><b>Pusat Bantuan</b><span>Support 24/7</span></span>
           <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>

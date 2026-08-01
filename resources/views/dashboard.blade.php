@@ -599,7 +599,7 @@
             <span class="bar"></span>
             <div>
               <h2>Produk Investasi AI</h2>
-              <p>Pasar Investasi Velora</p>
+              <p>Pasar Investasi Capital Wave</p>
             </div>
           </div>
           <a href="{{ route('market.index') }}" class="vl-see-all">
@@ -625,7 +625,7 @@
               @else
                 <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7.4v9.2L12 21l-8-4.4V7.4L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
               @endif
-              {{ str_ireplace('Rubik', 'Velora', $cat->name) }}
+              {{ str_ireplace('Rubik', 'Capital Wave', $cat->name) }}
               <span class="count">{{ count($catProducts) }}</span>
             </button>
           @endforeach
@@ -637,7 +637,7 @@
               @forelse(($cat->products ?? []) as $product)
                 @php
                   $catName = strtolower($cat->name ?? '');
-                  $productName = str_ireplace('Rubik', 'Velora', $product->name ?? 'Velora Asset');
+                  $productName = str_ireplace('Rubik', 'Capital Wave', $product->name ?? 'Capital Wave Asset');
 
                   if(str_contains($catName, 'saham')) { $tokenSymbol = 'SV'; }
                   elseif(str_contains($catName, 'pro')) { $tokenSymbol = 'VP'; }
@@ -749,7 +749,7 @@
       <div class="vl-cs-inner">
         <div class="vl-cs-top">
           <div class="vl-cs-brand">
-            <div class="vl-cs-logo"><img src="{{ asset('logo.png') }}" alt="Velora"></div>
+            <div class="vl-cs-logo"><img src="{{ asset('logo.png') }}" alt="Capital Wave"></div>
             <div><span>Official Support</span><strong>Capital Wave</strong></div>
           </div>
           <button type="button" class="vl-cs-close" id="vlCsPopupClose" aria-label="Tutup">
@@ -763,29 +763,28 @@
         <div class="vl-cs-info">
           <div class="vl-cs-info-item">
             <div class="vl-cs-info-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-            <div class="vl-cs-info-text"><span>Customer Service</span><strong>@goveloracs</strong></div>
+            <div class="vl-cs-info-text"><span>Customer Service</span><strong>@Capitalwavecs</strong></div>
           </div>
           <div class="vl-cs-info-item">
             <div class="vl-cs-info-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-            <div class="vl-cs-info-text"><span>Official Channel</span><strong>t.me/velorafinance</strong></div>
+            <div class="vl-cs-info-text"><span>Official Channel</span><strong>t.me/capitalwavee</strong></div>
           </div>
           <div class="vl-cs-info-item">
             <div class="vl-cs-info-icon wa"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1-1.4-1-2.6 0-1.3.6-1.9.9-2.1.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.1.3.7 1.1 1.4 1.8.9.8 1.7 1 2 1.2.2.1.4.1.5-.1l.7-.8c.2-.2.3-.2.6-.1l1.8.9c.3.1.4.2.5.3 0 .2 0 .8-.1 1.5Z"/></svg></div>
-            <div class="vl-cs-info-text"><span>WhatsApp CS</span><strong>+62 8xx-xxxx-xxxx</strong></div>
+            <div class="vl-cs-info-text"><span>WhatsApp Channel</span><strong>Saluran Resmi Capital Wave</strong></div>
           </div>
         </div>
 
         <div class="vl-cs-actions">
-          {{-- WA_LINK: ganti 62XXXXXXXXXX dengan nomor WhatsApp valid (format 62..., tanpa 0/+) --}}
-          <a href="https://wa.me/62XXXXXXXXXX?text=Halo%20Capital%20Wave%2C%20saya%20butuh%20bantuan" target="_blank" rel="noopener noreferrer" class="vl-cs-btn wa">
+          <a href="https://whatsapp.com/channel/0029VbDNrP0CxoB4eZyy5907" target="_blank" rel="noopener noreferrer" class="vl-cs-btn wa">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1-1.4-1-2.6 0-1.3.6-1.9.9-2.1.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.1.3.7 1.1 1.4 1.8.9.8 1.7 1 2 1.2.2.1.4.1.5-.1l.7-.8c.2-.2.3-.2.6-.1l1.8.9c.3.1.4.2.5.3 0 .2 0 .8-.1 1.5Z"/></svg>
             Channel WhatsApp
           </a>
-          <a href="https://t.me/goveloracs" target="_blank" rel="noopener noreferrer" class="vl-cs-btn cs">
+          <a href="https://t.me/Capitalwavecs" target="_blank" rel="noopener noreferrer" class="vl-cs-btn cs">
             <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
             Hubungi CS
           </a>
-          <a href="https://t.me/velorafinance" target="_blank" rel="noopener noreferrer" class="vl-cs-btn channel">
+          <a href="https://t.me/capitalwavee" target="_blank" rel="noopener noreferrer" class="vl-cs-btn channel">
             <svg viewBox="0 0 24 24" fill="none"><path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
             Join Channel
           </a>
@@ -898,7 +897,7 @@
           const vipKurang = this.dataset.vipKurang === '1', saldoKurang = this.dataset.saldoKurang === '1';
           if(vipKurang || saldoKurang){
             e.preventDefault();
-            const name = this.dataset.productName || 'Produk Velora';
+            const name = this.dataset.productName || 'Produk Capital Wave';
             const price = this.dataset.productPrice || '-';
             const productVip = this.dataset.productVip || '0', userVip = this.dataset.userVip || '0';
             if(vipKurang){

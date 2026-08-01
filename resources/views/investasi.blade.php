@@ -352,7 +352,7 @@
             <div class="iv-card-top">
               <div class="iv-product-icon" data-i="{{ $init }}"></div>
               <div class="iv-product-info">
-                <h3 class="iv-product-name">{{ str_ireplace('Rubik', 'Velora', $pName) }}</h3>
+                <h3 class="iv-product-name">{{ str_ireplace('Rubik', 'Capital Wave', $pName) }}</h3>
                 <p class="iv-product-meta">Durasi {{ (int)($inv->duration_days ?? 0) }} Hari · Capital Wave</p>
               </div>
               @if($isActive)

@@ -60,7 +60,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Riwayat Deposit | Velora Finance</title>
+  <title>Riwayat Deposit | Capital Wave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -722,7 +722,7 @@
 
           <div class="dh-title">
             <h1>Riwayat Deposit</h1>
-            <p>Transaksi pengisian saldo Velora</p>
+            <p>Transaksi pengisian saldo Capital Wave</p>
           </div>
         </div>
 

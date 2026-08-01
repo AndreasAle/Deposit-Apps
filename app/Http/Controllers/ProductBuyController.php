@@ -23,12 +23,12 @@ class ProductBuyController extends Controller
     | - TIDAK masuk profit harian
     | - Dapat referral
     |
-    | category_id = 2 / Saham Velora
+    | category_id = 2 / Saham Capital Wave
     | - Masuk profit harian
     | - Hanya bisa dibeli 1 kali per produk
     | - Tidak dapat referral
     |
-    | category_id = 3 / Velora Pro
+    | category_id = 3 / Capital Wave Pro
     | - Masuk profit harian
     | - Hanya bisa dibeli 1 kali per produk
     | - Tidak dapat referral
@@ -38,7 +38,7 @@ class ProductBuyController extends Controller
 
     private const NON_PROFIT_CATEGORY_IDS = [1]; // Semua / All Asset
 
-    private const PROFIT_CATEGORY_IDS = [2, 3]; // Saham Velora + Velora Pro
+    private const PROFIT_CATEGORY_IDS = [2, 3]; // Saham Capital Wave + Capital Wave Pro
 
     private const VIP_CATEGORY_IDS = [2, 3]; // Untuk rule 1 kali beli per produk
 
@@ -101,7 +101,7 @@ class ProductBuyController extends Controller
             |--------------------------------------------------------------------------
             | Rule produk VIP: hanya bisa dibeli 1 kali per produk
             |--------------------------------------------------------------------------
-            | Saham Velora / Velora Pro:
+            | Saham Capital Wave / Capital Wave Pro:
             | - Kalau user pernah beli produk ini, status apapun, tidak boleh beli lagi.
             | - Jadi walaupun sudah completed, tetap tidak bisa beli produk yang sama.
             |
@@ -149,8 +149,8 @@ class ProductBuyController extends Controller
             |--------------------------------------------------------------------------
             | Rule profit:
             | - category_id 1 / Semua        => tidak masuk profit
-            | - category_id 2 / Saham Velora => masuk profit
-            | - category_id 3 / Velora Pro   => masuk profit
+            | - category_id 2 / Saham Capital Wave => masuk profit
+            | - category_id 3 / Capital Wave Pro   => masuk profit
             */
             $isProfitProduct = $this->isProfitProduct($product);
 
@@ -185,7 +185,7 @@ class ProductBuyController extends Controller
             | Sync VIP berdasarkan total pembelian produk
             |--------------------------------------------------------------------------
             | Deposit tidak dihitung.
-            | Produk Semua, Saham Velora, dan Velora Pro tetap dihitung ke akumulasi VIP.
+            | Produk Semua, Saham Capital Wave, dan Capital Wave Pro tetap dihitung ke akumulasi VIP.
             */
             $this->syncUserVipByInvestment($user);
 
@@ -198,7 +198,7 @@ class ProductBuyController extends Controller
             | - Level 2
             | - Level 3
             |
-            | Saham Velora / Velora Pro:
+            | Saham Capital Wave / Capital Wave Pro:
             | - Tidak dapat referral
             */
             if ($this->isReferralAllowedProduct($product)) {
@@ -230,8 +230,8 @@ class ProductBuyController extends Controller
         |--------------------------------------------------------------------------
         | Semua pembelian produk dihitung:
         | - Semua / All Asset
-        | - Saham Velora
-        | - Velora Pro
+        | - Saham Capital Wave
+        | - Capital Wave Pro
         |
         | Deposit tidak dihitung.
         */

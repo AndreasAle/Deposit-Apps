@@ -36,8 +36,8 @@ class MarketController extends Controller
         |--------------------------------------------------------------------------
         | Rule client terbaru:
         | - category_id 1 / Semua       => tidak masuk profit harian
-        | - category_id 2 / Saham Velora => masuk profit harian
-        | - category_id 3 / Velora Pro   => masuk profit harian
+        | - category_id 2 / Saham Capital Wave => masuk profit harian
+        | - category_id 3 / Capital Wave Pro   => masuk profit harian
         */
         $todayProfit = (int) UserInvestment::query()
             ->join('products', 'products.id', '=', 'user_investments.product_id')

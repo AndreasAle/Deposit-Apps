@@ -3,7 +3,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Detail Post | Velora Finance</title>
+  <title>Detail Post | Capital Wave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <style>
@@ -745,7 +745,7 @@
             </div>
             <div class="titleBlock">
               <h1 class="title">Detail Forum</h1>
-              <p class="subtitle">Velora Community Discussion</p>
+              <p class="subtitle">Capital Wave Community Discussion</p>
             </div>
           </div>
 
@@ -761,8 +761,8 @@
         </header>
 
 
-        <section class="detailHero" aria-label="Detail diskusi Velora">
-          <span class="detailKicker">Velora Forum</span>
+        <section class="detailHero" aria-label="Detail diskusi Capital Wave">
+          <span class="detailKicker">Capital Wave Forum</span>
           <h2>Detail diskusi komunitas.</h2>
           <p>Baca postingan, lihat lampiran, dan lanjutkan percakapan dengan komentar yang rapi dan profesional.</p>
         </section>
@@ -844,7 +844,7 @@
           </div>
           <form method="POST" action="{{ route('team.comments.store', $post) }}">
             @csrf
-            <textarea class="input" name="content" rows="3" placeholder="Tulis komentar kamu di forum Velora..." required></textarea>
+            <textarea class="input" name="content" rows="3" placeholder="Tulis komentar kamu di forum Capital Wave..." required></textarea>
             <div class="mediaWrap">
               <button class="btnPrimary" type="submit" aria-label="Kirim Komentar">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"

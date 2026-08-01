@@ -214,7 +214,7 @@
 
           <div class="lg-row">
             <label class="lg-check"><input type="checkbox" name="remember"><span>Ingat akun</span></label>
-            <a href="https://t.me/goveloracs" target="_blank" rel="noopener" class="lg-forgot">Lupa sandi?</a>
+            <a href="https://t.me/Capitalwavecs" target="_blank" rel="noopener" class="lg-forgot">Lupa sandi?</a>
           </div>
 
           <button type="submit" class="lg-submit">

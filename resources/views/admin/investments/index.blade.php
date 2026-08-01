@@ -20,8 +20,8 @@
     function investmentCategoryLabel($categoryId) {
         return match ((int) $categoryId) {
             1 => 'Semua',
-            2 => 'Saham Velora',
-            3 => 'Velora Pro',
+            2 => 'Saham Capital Wave',
+            3 => 'Capital Wave Pro',
             default => 'Unknown',
         };
     }
@@ -423,8 +423,8 @@
             <select name="category">
                 <option value="all" {{ $category === 'all' ? 'selected' : '' }}>Semua Kategori</option>
                 <option value="1" {{ $category === '1' ? 'selected' : '' }}>Semua</option>
-                <option value="2" {{ $category === '2' ? 'selected' : '' }}>Saham Velora</option>
-                <option value="3" {{ $category === '3' ? 'selected' : '' }}>Velora Pro</option>
+                <option value="2" {{ $category === '2' ? 'selected' : '' }}>Saham Capital Wave</option>
+                <option value="3" {{ $category === '3' ? 'selected' : '' }}>Capital Wave Pro</option>
             </select>
 
             <button type="submit">Filter</button>
