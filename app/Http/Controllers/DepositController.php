@@ -129,13 +129,21 @@ class DepositController extends Controller
         }
     }
 
-    public function invoice($id)
+    public function invoice($id, BayarProService $bayarPro)
     {
         $user = User::findOrFail(Auth::id());
 
         $deposit = Deposit::where('user_id', $user->id)
             ->where('id', $id)
             ->firstOrFail();
+
+        // Fallback anti webhook-gagal: tanya status langsung ke BayarPro.
+        // Kalau transaksi sudah SUCCESS tapi belum tercatat PAID (webhook tidak
+        // sampai), kreditkan saldo sekarang. Aman dobel karena dikunci + idempoten.
+        if (!in_array($deposit->status, ['PAID', 'FAILED'], true) && $deposit->plat_order_num) {
+            $this->syncBayarProStatus($deposit, $bayarPro);
+            $deposit->refresh();
+        }
 
         $displayPayUrl = $deposit->pay_url ?: null;
         $qrImageSrc = null;
@@ -243,6 +251,61 @@ class DepositController extends Controller
             ]);
 
             return response('ERROR', 500);
+        }
+    }
+
+    /**
+     * Sinkronkan status deposit langsung dari BayarPro (polling).
+     * Dipakai sebagai cadangan kalau webhook BayarPro tidak sampai.
+     * Idempoten: pakai lockForUpdate + cek status sebelum kredit saldo.
+     */
+    private function syncBayarProStatus(Deposit $deposit, BayarProService $bayarPro): void
+    {
+        $ref = $deposit->plat_order_num;
+        if (!$ref) {
+            return;
+        }
+
+        $result = $bayarPro->checkStatus($ref);
+
+        if (empty($result['success'])) {
+            return;
+        }
+
+        $status = strtoupper((string) ($result['data']['status'] ?? ''));
+
+        if ($status !== 'SUCCESS') {
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $fresh = Deposit::where('id', $deposit->id)
+                ->lockForUpdate()
+                ->first();
+
+            if ($fresh && $fresh->status !== 'PAID') {
+                $fresh->status = 'PAID';
+                $fresh->paid_at = now();
+                $fresh->gateway_response = $result['response'] ?: $fresh->gateway_response;
+                $fresh->save();
+
+                $this->processPaidDeposit($fresh);
+
+                Log::info('BayarPro deposit settled via status-sync', [
+                    'order_id' => $fresh->order_id,
+                    'reference_id' => $ref,
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('BayarPro status-sync error', [
+                'deposit_id' => $deposit->id,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
