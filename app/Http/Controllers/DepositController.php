@@ -38,7 +38,7 @@ class DepositController extends Controller
     public function store(Request $request, BayarProService $bayarPro)
     {
         $request->validate([
-            'amount' => 'required|integer|min:50000|max:10000000',
+            'amount' => 'required|integer|min:1000|max:10000000',
             'method' => 'nullable|string|max:32',
             'selected_channel' => 'nullable|string|max:32',
         ]);
