@@ -158,7 +158,7 @@
         <h2>Isi saldo untuk mulai berinvestasi</h2>
         <p>Pilih metode pembayaran, masukkan nominal, lalu lanjutkan pembayaran dengan aman.</p>
         <div class="dp-hero-minis">
-          <div class="dp-hero-mini"><span>Minimal Deposit</span><strong>Rp 10.000</strong></div>
+          <div class="dp-hero-mini"><span>Minimal Deposit</span><strong>Rp 50.000</strong></div>
           <div class="dp-hero-mini"><span>Maksimal Deposit</span><strong>Rp 10.000.000</strong></div>
         </div>
       </section>
@@ -202,7 +202,7 @@
           <input type="hidden" name="amount" id="amount" value="{{ old('amount') }}">
 
           <div class="dp-presets" aria-label="Pilihan nominal cepat">
-            <button type="button" class="dp-preset" data-amount="10000">Rp 10.000</button>
+            <button type="button" class="dp-preset" data-amount="50000">Rp 50.000</button>
             <button type="button" class="dp-preset" data-amount="100000">Rp 100.000</button>
             <button type="button" class="dp-preset" data-amount="500000">Rp 500.000</button>
             <button type="button" class="dp-preset" data-amount="1000000">Rp 1.000.000</button>
@@ -211,7 +211,7 @@
           </div>
 
           <div class="dp-limit">
-            <span>Min: Rp 10.000</span>
+            <span>Min: Rp 50.000</span>
             <span>Max: Rp 10.000.000</span>
           </div>
           <div class="dp-error-text" id="amountError">@error('amount') {{ $message }} @enderror</div>
@@ -226,7 +226,7 @@
 
   <script>
     (function(){
-      const MIN = 10000;
+      const MIN = 50000;
       const MAX = 10000000;
 
       const form = document.getElementById('depositForm');
@@ -287,7 +287,7 @@
         if(!number){
           message = 'Masukkan jumlah deposit';
         }else if(number < MIN){
-          message = 'Minimal deposit Rp 10.000';
+          message = 'Minimal deposit Rp 50.000';
         }else if(number > MAX){
           message = 'Maksimal deposit Rp 10.000.000';
         }
