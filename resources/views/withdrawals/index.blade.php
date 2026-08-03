@@ -155,7 +155,10 @@
           <a href="{{ url('/dashboard') }}" class="wd-back" aria-label="Kembali"><svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
           <div class="t"><span class="name">Penarikan</span><span class="tag">Cairkan Saldo</span></div>
         </div>
-        <a href="{{ url('/ui/payout-accounts') }}" class="wd-header-btn" aria-label="Kelola Rekening"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10 12 4l8 6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 10v9h14v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></a>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <a href="{{ route('withdrawals.history') }}" class="wd-header-btn" aria-label="Riwayat Penarikan"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <a href="{{ url('/ui/payout-accounts') }}" class="wd-header-btn" aria-label="Kelola Rekening"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10 12 4l8 6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 10v9h14v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></a>
+        </div>
       </header>
 
       <section class="wd-hero">
@@ -201,7 +204,13 @@
         <div class="wd-error" id="amountError"></div>
       </form>
 
-      <p class="wd-sec-label">Riwayat Penarikan</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 11px;">
+        <p class="wd-sec-label" style="margin:0;">Riwayat Penarikan</p>
+        <a href="{{ route('withdrawals.history') }}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;">
+          Lihat Semua
+          <svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
       <div class="wd-history" id="history"></div>
     </div>
   </main>
