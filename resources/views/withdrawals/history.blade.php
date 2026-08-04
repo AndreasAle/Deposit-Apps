@@ -277,17 +277,24 @@
       position:relative;
       overflow:hidden;
       border-radius:18px;
-      background:var(--card);
-      border:1px solid var(--line);
-      box-shadow:var(--sh-sm);
+      background:
+        radial-gradient(300px 160px at 90% -20%, rgba(232,200,116,.14), transparent 62%),
+        linear-gradient(150deg,#0f3255 0%,#0b2740 55%,#07182a 100%);
+      box-shadow:var(--sh-navy);
       animation:whFadeUp .42s ease both;
     }
 
+    /* garis emas mengikuti bentuk kotak (outline penuh) */
     .wh-card::before{
       content:"";
       position:absolute;
-      top:0; left:0; right:0; height:3px;
+      inset:0;
+      border-radius:inherit;
+      padding:1.5px;
       background:var(--gold-metal);
+      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite:xor; mask-composite:exclude;
+      pointer-events:none;
     }
 
     .wh-card > *{position:relative;z-index:1}
@@ -317,11 +324,11 @@
     .wh-bank-logo-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;color:#2b0b16;font-size:11px;font-weight:900;line-height:1}
 
     .wh-card-info{flex:1;min-width:0}
-    .wh-card-provider{color:var(--vl-maroon);font-size:14px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .wh-card-number{margin-top:3px;color:var(--vl-soft);font-size:11px;font-weight:700}
+    .wh-card-provider{color:#fff;font-size:14px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .wh-card-number{margin-top:3px;color:rgba(255,255,255,.58);font-size:11px;font-weight:500}
 
     .wh-card-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex:0 0 auto}
-    .wh-card-amount{color:var(--vl-maroon);font-size:15px;font-weight:900;letter-spacing:-.04em;white-space:nowrap}
+    .wh-card-amount{color:#fff;font-size:15px;font-weight:700;letter-spacing:-.03em;white-space:nowrap}
 
     .wh-status{
       min-height:24px;
@@ -344,29 +351,29 @@
     .wh-status.is-rejected,.wh-status.is-cancelled{color:#d9435c;background:#fff0f3;border-color:rgba(226,74,100,.16)}
 
     .wh-card-footer{
-      border-top:1px solid var(--line);
+      border-top:1px solid rgba(255,255,255,.10);
       padding:11px 16px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      background:var(--tint);
+      background:rgba(255,255,255,.04);
     }
 
     .wh-card-footer-left{
       display:flex;
       align-items:center;
       gap:6px;
-      color:var(--vl-soft);
+      color:rgba(255,255,255,.56);
       font-size:10.5px;
-      font-weight:700;
+      font-weight:500;
     }
 
     .wh-card-footer-left svg{width:13px;height:13px;opacity:.7}
 
     .wh-card-fee{
-      color:var(--vl-red);
+      color:#ff9a9a;
       font-size:10.5px;
-      font-weight:800;
+      font-weight:700;
     }
 
     .wh-proof{
