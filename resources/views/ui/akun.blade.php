@@ -216,6 +216,12 @@
 
       {{-- MENU LIST --}}
       <section class="ak-menu">
+        <a href="{{ route('withdrawals.history') }}" class="ak-row">
+          <span class="ak-row-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="ak-row-tx"><b>Riwayat Penarikan</b><span>Semua transaksi penarikan</span></span>
+          <span class="ak-row-ch"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
         <a href="{{ route('referral.index') }}" class="ak-row">
           <span class="ak-row-ic"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3.8 20a5.2 5.2 0 0 1 10.4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 8h4M19 6v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
           <span class="ak-row-tx"><b>Undangan & Bonus</b><span>Ajak teman, dapat komisi</span></span>
