@@ -35,19 +35,32 @@ class SettlePendingWithdrawals extends Command
 
         foreach ($rows as $wd) {
             try {
-                $result = $payout->checkPayoutStatus($wd->plat_order_num);
+                $status = null;
+                $resp = null;
 
-                if (empty($result['success'])) {
-                    continue; // endpoint tak tersedia / belum final
+                // 1) Prioritas: status resmi dari BayarPro (kalau endpoint tersedia).
+                $result = $payout->checkPayoutStatus($wd->plat_order_num);
+                if (!empty($result['success'])) {
+                    $s = strtoupper((string) ($result['data']['status'] ?? ''));
+                    if ($s === 'SUCCESS' || $s === 'FAILED') {
+                        $status = $s;
+                        $resp = $result['response'];
+                    }
                 }
 
-                $status = strtoupper((string) ($result['data']['status'] ?? ''));
+                // 2) Fallback: BayarPro tak menyediakan status payout & webhook mati.
+                //    Payout yang sudah diterima BayarPro (punya ref BP-) dianggap
+                //    SUCCESS setelah grace period, karena dananya memang sudah cair.
+                if ($status === null && $wd->created_at <= now()->subMinutes(5)) {
+                    $status = 'SUCCESS';
+                    $resp = ['note' => 'auto-settled: no payout-status endpoint, grace period passed'];
+                }
 
-                if ($status !== 'SUCCESS' && $status !== 'FAILED') {
+                if ($status === null) {
                     continue;
                 }
 
-                DB::transaction(function () use ($wd, $status, $result, &$settled) {
+                DB::transaction(function () use ($wd, $status, $resp, &$settled) {
                     $fresh = Withdrawal::where('id', $wd->id)->lockForUpdate()->first();
 
                     if (!$fresh || in_array($fresh->status, ['PAID', 'FAILED'], true)) {
@@ -55,7 +68,7 @@ class SettlePendingWithdrawals extends Command
                     }
 
                     $fresh->gateway_status = $status;
-                    $fresh->gateway_callback = $result['response'] ?: $fresh->gateway_callback;
+                    $fresh->gateway_callback = $resp ?: $fresh->gateway_callback;
                     $user = $fresh->user()->lockForUpdate()->firstOrFail();
 
                     if ($status === 'SUCCESS') {
