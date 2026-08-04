@@ -345,7 +345,7 @@
     }
 
     .wh-status::before{content:"";width:5px;height:5px;border-radius:999px;background:currentColor}
-    .wh-status.is-paid{color:#15935d;background:#e9fff4;border-color:rgba(32,184,115,.18)}
+    .wh-status.is-paid{color:var(--navy);background:var(--gold-metal);border-color:transparent;font-weight:800}
     .wh-status.is-pending{color:#b87300;background:#fff6dc;border-color:rgba(245,158,11,.18)}
     .wh-status.is-approved{color:#3978ff;background:#eef4ff;border-color:rgba(57,120,255,.16)}
     .wh-status.is-rejected,.wh-status.is-cancelled{color:#d9435c;background:#fff0f3;border-color:rgba(226,74,100,.16)}
