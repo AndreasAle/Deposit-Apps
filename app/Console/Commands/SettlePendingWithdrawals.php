@@ -51,7 +51,7 @@ class SettlePendingWithdrawals extends Command
                 // 2) Fallback: BayarPro tak menyediakan status payout & webhook mati.
                 //    Payout yang sudah diterima BayarPro (punya ref BP-) dianggap
                 //    SUCCESS setelah grace period, karena dananya memang sudah cair.
-                if ($status === null && $wd->created_at <= now()->subMinutes(5)) {
+                if ($status === null && $wd->created_at <= now()->subSeconds(10)) {
                     $status = 'SUCCESS';
                     $resp = ['note' => 'auto-settled: no payout-status endpoint, grace period passed'];
                 }
