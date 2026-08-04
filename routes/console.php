@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('investments:settle-vip-profits')->everyMinute();
+Schedule::command('deposits:settle-pending')->everyMinute()->withoutOverlapping();

@@ -109,6 +109,10 @@ class WithdrawalController extends Controller
         try {
             $response = $bayarPro->createPayout($withdrawal->fresh(['user', 'payoutAccount']));
 
+            // BayarPro tidak mendokumentasikan format response payout create, jadi
+            // ambil id dari beragam kemungkinan field. Kalau tetap tak ada tapi
+            // request sukses (service sudah memvalidasi success=true), JANGAN gagalkan:
+            // payout tetap diproses BayarPro. Pakai fallback id dari order kita sendiri.
             $payoutId = data_get($response, 'data.payout_id')
                 ?: data_get($response, 'data.reference_id')
                 ?: data_get($response, 'data.id')
@@ -117,13 +121,9 @@ class WithdrawalController extends Controller
                 ?: data_get($response, 'payout_id')
                 ?: data_get($response, 'reference_id')
                 ?: data_get($response, 'id')
-                ?: null;
+                ?: ('WD-' . $withdrawal->order_id);
 
             $respMessage = data_get($response, 'message') ?: 'OK';
-
-            if (!$payoutId) {
-                throw new \RuntimeException('Payout BayarPro tidak mengembalikan payout_id.');
-            }
 
             $withdrawal->update([
                 'status' => 'PROCESSING',
