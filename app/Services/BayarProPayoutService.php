@@ -123,6 +123,33 @@ class BayarProPayoutService
     }
 
     /**
+     * Cek status payout (best-effort — endpoint tidak terdokumentasi resmi).
+     * Dipakai poller cadangan karena webhook payout BayarPro tidak andal.
+     * Mengembalikan success=false bila endpoint tidak tersedia -> poller skip.
+     */
+    public function checkPayoutStatus(string $payoutId): array
+    {
+        try {
+            $response = Http::timeout(20)
+                ->withHeaders($this->headers())
+                ->post($this->baseUrl . '/payout/status', [
+                    'payout_id' => $payoutId,
+                    'reference_id' => $payoutId,
+                ]);
+        } catch (\Throwable $e) {
+            return ['success' => false, 'data' => [], 'response' => []];
+        }
+
+        $json = $response->json();
+
+        return [
+            'success' => $response->successful() && is_array($json) && !empty($json['success']),
+            'data' => is_array($json) ? ($json['data'] ?? []) : [],
+            'response' => is_array($json) ? $json : [],
+        ];
+    }
+
+    /**
      * Verifikasi HMAC SHA256 signature webhook payout.
      */
     public function verifyWebhookSignature(string $rawBody, string $incomingSignature): bool

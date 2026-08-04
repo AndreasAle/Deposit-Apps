@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('investments:settle-vip-profits')->everyMinute();
 Schedule::command('deposits:settle-pending')->everyMinute()->withoutOverlapping();
+Schedule::command('withdrawals:settle-pending')->everyMinute()->withoutOverlapping();
