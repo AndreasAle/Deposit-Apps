@@ -110,8 +110,13 @@ class WithdrawalController extends Controller
             $response = $bayarPro->createPayout($withdrawal->fresh(['user', 'payoutAccount']));
 
             $payoutId = data_get($response, 'data.payout_id')
-                ?: data_get($response, 'payout_id')
                 ?: data_get($response, 'data.reference_id')
+                ?: data_get($response, 'data.id')
+                ?: data_get($response, 'data.payoutId')
+                ?: data_get($response, 'data.payout_ref_id')
+                ?: data_get($response, 'payout_id')
+                ?: data_get($response, 'reference_id')
+                ?: data_get($response, 'id')
                 ?: null;
 
             $respMessage = data_get($response, 'message') ?: 'OK';
