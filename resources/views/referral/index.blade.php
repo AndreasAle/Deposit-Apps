@@ -384,21 +384,35 @@
         </div>
         <div class="rf-card-list">
           @forelse ($commissions as $c)
+            @php
+              $lvlNum = (int) ($c->level ?? 1);
+              $lvlLabel = $lvlNum === 1 ? 'Referral langsung' : ($lvlNum === 2 ? 'Jaringan kedua' : 'Jaringan ketiga');
+              $lvlHex = $lvlNum === 1 ? '#a9772a' : ($lvlNum === 2 ? '#5b6b7d' : '#9c6b3b');
+            @endphp
             <article class="rf-commission-card">
               <div class="rf-row-head">
                 <div class="rf-user-left">
                   <div class="rf-avatar" style="background:var(--gold-metal);color:#3d2b06;">%</div>
                   <div class="rf-user-meta">
                     <strong class="rf-user-name">{{ $c->source_type === 'deposit' ? 'Deposit' : 'Beli Produk' }}</strong>
-                    <span class="rf-user-sub">{{ optional($c->created_at)->format('d-m-Y H:i') ?? '-' }}</span>
+                    <span class="rf-user-sub">{{ optional($c->created_at)->format('d-m-Y H:i') ?? '-' }} · {{ $lvlLabel }}</span>
                   </div>
                 </div>
-                <span class="rf-small-badge">{{ (float) $c->rate * 100 }}%</span>
+                <span class="rf-small-badge" style="background:{{ $lvlHex }};color:#fff;">Level {{ $lvlNum }}</span>
               </div>
               <div class="rf-commission-grid">
                 <div class="rf-mini-info"><span>Dasar</span><strong>Rp {{ number_format($c->base_amount, 0, ',', '.') }}</strong></div>
-                <div class="rf-mini-info"><span>Rate</span><strong>{{ (float) $c->rate * 100 }}%</strong></div>
+                <div class="rf-mini-info"><span>Rate (L{{ $lvlNum }})</span><strong>{{ rtrim(rtrim(number_format((float) $c->rate * 100, 2, '.', ''), '0'), '.') }}%</strong></div>
                 <div class="rf-mini-info"><span>Komisi</span><strong class="is-accent">Rp {{ number_format($c->commission_amount, 0, ',', '.') }}</strong></div>
+              </div>
+              <div style="margin-top:10px; padding:9px 11px; border-radius:10px; background:var(--tint); border:1px solid var(--line); font-size:10.5px; font-weight:500; color:var(--ink-soft); line-height:1.5;">
+                @if($lvlNum === 1)
+                  Kamu <b>referral langsung</b> pembeli → dapat <b>32%</b> dari harga produk.
+                @elseif($lvlNum === 2)
+                  Pembeli ada di <b>jaringan tingkat 2</b>-mu (downline dari downline) → dapat <b>2%</b>.
+                @else
+                  Pembeli ada di <b>jaringan tingkat 3</b>-mu → dapat <b>1%</b>.
+                @endif
               </div>
             </article>
           @empty
