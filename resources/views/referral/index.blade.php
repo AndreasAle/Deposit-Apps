@@ -15,6 +15,16 @@
       ? url('/r/' . urlencode($referralCode))
       : route('home');
 
+  // QR code dari link referral (biar gampang disebar tanpa harus followers banyak)
+  $referralQr = null;
+  try {
+      $qrSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+          ->size(260)->margin(1)->errorCorrection('M')->generate($referralLink);
+      $referralQr = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+  } catch (\Throwable $e) {
+      $referralQr = null;
+  }
+
   // Struktur komisi 3 tingkat (display)
   $levels = [
     ['n' => 1, 'pct' => 32, 'label' => 'Referral langsung', 'tag' => 'Direct', 'anggota' => $totalReferral, 'komisi' => $totalCommission, 'investasi' => 0],
@@ -259,6 +269,30 @@
           </button>
         </div>
       </section>
+
+      {{-- QR CODE --}}
+      @if($referralQr)
+      <section style="margin-top:14px; background:var(--card,#fff); border:1px solid var(--line,#e9edf4); border-radius:20px; box-shadow:0 6px 16px rgba(11,39,64,.06); padding:18px; text-align:center;">
+        <h3 style="margin:0; color:var(--navy,#0b2740); font-size:15px; font-weight:800; letter-spacing:-.02em;">Scan QR Referral</h3>
+        <p style="margin:6px 0 14px; color:var(--ink-soft,#46586c); font-size:11.5px; font-weight:500; line-height:1.5;">Suruh calon anggota scan QR ini — langsung ke halaman daftar pakai kodemu. Cocok disebar di story/status.</p>
+        <div style="display:inline-block; padding:14px 14px 12px; background:#fff; border:1px solid var(--line,#e9edf4); border-radius:16px; position:relative; overflow:hidden;">
+          <span style="position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(135deg,#a9772a,#e8c874,#c99433);"></span>
+          <img src="{{ $referralQr }}" alt="QR Referral {{ $referralCode }}" id="referralQrImg" style="width:200px; height:200px; display:block;">
+        </div>
+        <div style="margin-top:12px; font-size:13px; font-weight:800; letter-spacing:.08em; color:var(--navy,#0b2740);">{{ $referralCode }}</div>
+        <button type="button" onclick="downloadQr()" style="margin-top:12px; min-height:44px; padding:0 22px; border:1px solid var(--line,#e9edf4); border-radius:12px; background:var(--card,#fff); color:var(--navy,#0b2740); font-size:12.5px; font-weight:700; cursor:pointer;">⬇ Download QR</button>
+      </section>
+      <script>
+        function downloadQr(){
+          var img = document.getElementById('referralQrImg');
+          if(!img || !img.src) return;
+          var a = document.createElement('a');
+          a.href = img.src;
+          a.download = 'QR-Referral-{{ $referralCode }}.svg';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        }
+      </script>
+      @endif
 
       {{-- SOCIAL --}}
       <section class="rf-social">
