@@ -4,13 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\Deposit;
 use App\Models\User;
-use App\Services\BayarProService;
+use App\Services\BankPay\BankPayDepositService;
+use App\Services\DepositChannels;
+use App\Services\DepositQrisService;
+use App\Services\DepositSettlementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
+/**
+ * Deposit berjalan di atas dua saluran yang bisa dipilih user (lihat
+ * config/deposit.php):
+ *
+ *   bankpay      Payment gateway. Invoice dibuat lewat API, pembayaran
+ *                dikonfirmasi OTOMATIS oleh notifikasi server gateway.
+ *   qris_statis  QRIS statis milik sendiri + nominal unik, tanpa gateway.
+ *                Konfirmasi lewat notification listener di HP
+ *                (ListenerController + MutationMatcher).
+ *
+ * Saluran yang dipakai disimpan per deposit di kolom `payment_channel`,
+ * karena itulah yang menentukan bagaimana sebuah invoice boleh dilunasi.
+ */
 class DepositController extends Controller
 {
     public function index()
@@ -21,7 +36,9 @@ class DepositController extends Controller
             ->latest()
             ->get();
 
-        return view('deposit.index', compact('deposits', 'user'));
+        $channels = DepositChannels::enabled();
+
+        return view('deposit.index', compact('deposits', 'user', 'channels'));
     }
 
     public function history()
@@ -35,10 +52,11 @@ class DepositController extends Controller
         return view('deposit.history', compact('deposits', 'user'));
     }
 
-    public function store(Request $request, BayarProService $bayarPro)
+    public function store(Request $request, BankPayDepositService $bankPay)
     {
         $request->validate([
             'amount' => 'required|integer|min:50000|max:10000000',
+            'payment_channel' => 'nullable|string|max:32',
             'method' => 'nullable|string|max:32',
             'selected_channel' => 'nullable|string|max:32',
         ]);
@@ -46,108 +64,95 @@ class DepositController extends Controller
         $user = User::findOrFail(Auth::id());
 
         $amount = (int) $request->amount;
-        $channel = strtoupper($request->selected_channel ?: $request->method ?: 'QRIS');
 
-        if (!in_array($channel, BayarProService::CHANNELS, true)) {
-            return back()->with('error', 'Metode pembayaran tidak tersedia. Pilih QRIS atau DANA.');
+        // Pilihan user divalidasi ulang di sini: saluran yang dimatikan lewat
+        // .env tidak boleh bisa dipakai hanya karena form-nya dipalsukan.
+        $channel = DepositChannels::resolve($request->input('payment_channel'));
+
+        if ($channel === null) {
+            return back()->with('error', 'Deposit sedang tidak tersedia. Coba lagi nanti.');
         }
 
+        // Metode pembayaran (QRIS/DANA) hanya label tampilan; yang menentukan
+        // alur teknis adalah $channel di atas.
+        $method = strtoupper($request->selected_channel ?: $request->method ?: 'QRIS');
+
+        // Wajib unik dan 16-32 karakter (ketentuan gateway). Ini 23 karakter.
         $orderId = 'DEP' . now()->format('YmdHis') . strtoupper(substr(md5($user->id . microtime(true)), 0, 6));
 
-        // Driver qris_statis: QRIS sendiri + nominal unik, tanpa gateway.
-        if (config('deposit.driver') === 'qris_statis') {
-            return $this->storeViaQrisStatis($user, $amount, $channel, $orderId);
+        if ($channel === DepositChannels::QRIS_STATIS) {
+            return $this->storeViaQrisStatis($user, $amount, $method, $orderId);
         }
 
-        DB::beginTransaction();
-
-        try {
-            $deposit = Deposit::create([
-                'user_id' => $user->id,
-                'order_id' => $orderId,
-                'amount' => $amount,
-                'method' => $channel,
-                'selected_channel' => $channel,
-                'status' => 'UNPAID',
-            ]);
-
-            $result = $bayarPro->createInvoice([
-                'amount' => $amount,
-                'merchant_ref_id' => $orderId,
-                'channel' => $channel,
-                'customer_name' => $user->name ?: 'Customer',
-                'idempotency_key' => 'dep_' . $orderId,
-            ]);
-
-            $deposit->gateway_response = $result['response'] ?? [];
-
-            if (empty($result['success'])) {
-                $deposit->status = 'FAILED';
-                $deposit->save();
-
-                DB::commit();
-
-                return back()->with('error', $result['message'] ?? 'Gagal membuat pembayaran');
-            }
-
-            $data = $result['data'] ?? [];
-
-            // BayarPro bisa menamai field checkout/QR berbeda antar mode (live/sandbox).
-            // Tangkap beberapa kemungkinan nama agar invoice selalu punya link/QR.
-            $checkoutUrl = $data['checkout_url']
-                ?? $data['payment_url']
-                ?? $data['pay_url']
-                ?? $data['redirect_url']
-                ?? $data['url']
-                ?? null;
-
-            $qrisData = $data['qris_data']
-                ?? $data['qr_string']
-                ?? $data['qr_content']
-                ?? $data['qris']
-                ?? $data['qr_data']
-                ?? null;
-
-            $deposit->plat_order_num = $data['reference_id'] ?? $data['id'] ?? null;
-            $deposit->pay_url = $checkoutUrl;
-            $deposit->pay_data = $qrisData;
-            $deposit->pay_fee = isset($data['fee']) ? (float) $data['fee'] : 0;
-            // Yang dibayar user = amount penuh (fee BayarPro dipotong dari sisi merchant).
-            $deposit->real_amount = $amount;
-            $deposit->expired_at = now()->addMinutes((int) config('services.bayarpro.expiry_period', 1440));
-            $deposit->save();
-
-            DB::commit();
-
-            return redirect()
-                ->route('deposit.invoice', $deposit->id)
-                ->with('success', 'Invoice deposit berhasil dibuat');
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            Log::error('Deposit BayarPro store error', [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return back()->with('error', 'Terjadi kesalahan saat membuat deposit');
-        }
+        return $this->storeViaBankPay($user, $amount, $method, $orderId, $bankPay);
     }
 
     /**
-     * Alur deposit tanpa gateway: QRIS statis milik sendiri dibuat dinamis
-     * dengan nominal unik per deposit, lalu dikonfirmasi oleh notification
-     * listener (lihat ListenerController + MutationMatcher).
+     * Alur gateway: buat invoice di BankPay, simpan tautan bayar + isi QR-nya.
      *
-     * Tidak ada perubahan tampilan: invoice.blade.php sudah menampilkan
-     * `real_amount ?: amount` sebagai nominal bayar, dan me-render QR dari
-     * `pay_data`. Keduanya diisi di sini.
+     * Baris deposit sengaja dibuat lebih dulu supaya panggilan HTTP ke gateway
+     * tidak menahan transaksi database, dan supaya percobaan yang gagal tetap
+     * meninggalkan jejak (status FAILED) untuk ditelusuri.
      */
-    private function storeViaQrisStatis(User $user, int $amount, string $channel, string $orderId)
+    private function storeViaBankPay(
+        User $user,
+        int $amount,
+        string $method,
+        string $orderId,
+        BankPayDepositService $bankPay
+    ) {
+        $deposit = Deposit::create([
+            'user_id' => $user->id,
+            'order_id' => $orderId,
+            'amount' => $amount,
+            'method' => $method,
+            'selected_channel' => $method,
+            'payment_channel' => DepositChannels::BANKPAY,
+            'status' => 'UNPAID',
+            'pay_fee' => 0,
+            // Yang dibayar user = nominal penuh; biaya gateway ditanggung merchant.
+            'real_amount' => $amount,
+            'expired_at' => now()->addMinutes((int) config('services.bankpay.expiry_minutes', 60)),
+        ]);
+
+        try {
+            $result = $bankPay->createInvoice($deposit);
+        } catch (\Throwable $e) {
+            $deposit->status = 'FAILED';
+            $deposit->gateway_response = ['error' => $e->getMessage()];
+            $deposit->save();
+
+            Log::error('Deposit BankPay gagal dibuat', [
+                'deposit_id' => $deposit->id,
+                'order_id' => $orderId,
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+        }
+
+        $deposit->pay_url = $result['pay_url'];
+        // Kalau gateway mengirim isi QR, QR dirender lokal di halaman invoice
+        // sehingga user menyelesaikan pembayaran tanpa keluar dari aplikasi.
+        $deposit->pay_data = $result['qr_content'];
+        $deposit->gateway_response = $result['response'];
+        $deposit->save();
+
+        return redirect()
+            ->route('deposit.invoice', $deposit->id)
+            ->with('success', 'Invoice deposit berhasil dibuat');
+    }
+
+    /**
+     * Alur tanpa gateway: QRIS statis milik sendiri dibuat dinamis dengan
+     * nominal unik per deposit, lalu dikonfirmasi oleh notification listener
+     * (lihat ListenerController + MutationMatcher).
+     */
+    private function storeViaQrisStatis(User $user, int $amount, string $method, string $orderId)
     {
         try {
-            $deposit = app(\App\Services\DepositQrisService::class)
-                ->createInvoice($user, $amount, $channel, $orderId);
+            $deposit = app(DepositQrisService::class)
+                ->createInvoice($user, $amount, $method, $orderId);
         } catch (\RuntimeException $e) {
             Log::warning('Deposit QRIS statis gagal', [
                 'user_id' => $user->id,
@@ -170,7 +175,7 @@ class DepositController extends Controller
             ->with('success', 'Invoice deposit berhasil dibuat');
     }
 
-    public function invoice($id, BayarProService $bayarPro)
+    public function invoice($id, BankPayDepositService $bankPay)
     {
         $user = User::findOrFail(Auth::id());
 
@@ -178,22 +183,18 @@ class DepositController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
-        // Fallback anti webhook-gagal: tanya status langsung ke BayarPro.
-        // Kalau transaksi sudah SUCCESS tapi belum tercatat PAID (webhook tidak
-        // sampai), kreditkan saldo sekarang. Aman dobel karena dikunci + idempoten.
-        // Dilewati untuk driver qris_statis: deposit-nya tidak pernah ada di BayarPro.
-        if (config('deposit.driver') !== 'qris_statis'
-            && !in_array($deposit->status, ['PAID', 'FAILED'], true) && $deposit->plat_order_num) {
-            $this->syncBayarProStatus($deposit, $bayarPro);
+        // Cadangan anti notifikasi-gagal: tanya status langsung ke gateway.
+        // Kalau ternyata sudah dibayar tapi belum tercatat PAID, lunasi
+        // sekarang. Aman dobel karena penyelesaiannya dikunci + idempoten.
+        // Hanya untuk saluran gateway — QRIS statis tidak dikenal BankPay.
+        if ($deposit->isBankPay() && !in_array($deposit->status, ['PAID', 'FAILED'], true)) {
+            $this->syncBankPayStatus($deposit, $bankPay);
             $deposit->refresh();
         }
 
         $displayPayUrl = $deposit->pay_url ?: null;
         $qrImageSrc = null;
 
-        // Render QR lokal dari qris_data (string EMV) selama BayarPro mengirimnya,
-        // apa pun channel-nya. DANA pun dibayar lewat scan QRIS, jadi user tetap
-        // menyelesaikan pembayaran di dalam Capital Wave tanpa dilempar ke BayarPro.
         if ($deposit->status !== 'PAID' && !empty($deposit->pay_data)) {
             try {
                 $qrSvg = QrCode::format('svg')
@@ -203,7 +204,7 @@ class DepositController extends Controller
 
                 $qrImageSrc = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
             } catch (\Throwable $e) {
-                Log::error('Gagal generate QR BayarPro', [
+                Log::error('Gagal generate QR deposit', [
                     'deposit_id' => $deposit->id,
                     'message' => $e->getMessage(),
                 ]);
@@ -219,152 +220,29 @@ class DepositController extends Controller
     }
 
     /**
-     * Webhook notifikasi pembayaran dari BayarPro.
-     * Verifikasi HMAC SHA256 memakai raw body + secret key.
+     * Sinkronkan status deposit langsung dari BankPay (polling).
      */
-    public function bayarProCallback(Request $request, BayarProService $bayarPro)
+    private function syncBankPayStatus(Deposit $deposit, BankPayDepositService $bankPay): void
     {
-        $rawBody = $request->getContent();
-        $signature = (string) $request->header('X-Bayarpro-Signature', '');
-
-        if (!$bayarPro->verifyWebhookSignature($rawBody, $signature)) {
-            Log::warning('BayarPro deposit callback invalid signature', [
-                'body' => $rawBody,
-            ]);
-
-            return response('Invalid Webhook Signature', 401);
-        }
-
-        $payload = json_decode($rawBody, true) ?: [];
-
-        Log::info('BayarPro deposit callback received', $payload);
-
-        $event = $payload['event'] ?? null;
-        $data = $payload['data'] ?? [];
-        $status = strtoupper((string) ($data['status'] ?? ''));
-
-        if ($event !== 'payment.success' || $status !== 'SUCCESS') {
-            // Event lain diabaikan tapi tetap dibalas 200 supaya tidak di-retry terus.
-            return response()->json(['status' => 'ignored']);
-        }
-
-        $orderId = $data['merchant_ref_id'] ?? null;
-
-        if (!$orderId) {
-            return response('merchant_ref_id empty', 400);
-        }
-
         try {
-            DB::beginTransaction();
+            $result = $bankPay->queryOrder($deposit->order_id);
 
-            $deposit = Deposit::where('order_id', $orderId)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$deposit) {
-                DB::rollBack();
-                Log::warning('BayarPro callback deposit not found', $payload);
-                return response('Order not found', 404);
+            if (empty($result['success']) || empty($result['paid'])) {
+                return;
             }
 
-            if ($deposit->status === 'PAID') {
-                DB::commit();
-                return response()->json(['status' => 'ok']);
-            }
-
-            $deposit->status = 'PAID';
-            $deposit->plat_order_num = $data['reference_id'] ?? $deposit->plat_order_num;
-            $deposit->pay_fee = isset($data['fee']) ? (float) $data['fee'] : $deposit->pay_fee;
-            $deposit->gateway_response = $payload;
-            $deposit->paid_at = now();
-            $deposit->save();
-
-            $this->processPaidDeposit($deposit);
-
-            DB::commit();
-
-            return response()->json(['status' => 'ok']);
+            app(DepositSettlementService::class)->settle(
+                $deposit->id,
+                $result['amount'],
+                $result['transaction_id'],
+                $result['response'],
+                'status-sync'
+            );
         } catch (\Throwable $e) {
-            DB::rollBack();
-
-            Log::error('BayarPro deposit callback error', [
-                'message' => $e->getMessage(),
-                'payload' => $payload,
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response('ERROR', 500);
-        }
-    }
-
-    /**
-     * Sinkronkan status deposit langsung dari BayarPro (polling).
-     * Dipakai sebagai cadangan kalau webhook BayarPro tidak sampai.
-     * Idempoten: pakai lockForUpdate + cek status sebelum kredit saldo.
-     */
-    private function syncBayarProStatus(Deposit $deposit, BayarProService $bayarPro): void
-    {
-        $ref = $deposit->plat_order_num;
-        if (!$ref) {
-            return;
-        }
-
-        $result = $bayarPro->checkStatus($ref);
-
-        if (empty($result['success'])) {
-            return;
-        }
-
-        $status = strtoupper((string) ($result['data']['status'] ?? ''));
-
-        if ($status !== 'SUCCESS') {
-            return;
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $fresh = Deposit::where('id', $deposit->id)
-                ->lockForUpdate()
-                ->first();
-
-            if ($fresh && $fresh->status !== 'PAID') {
-                $fresh->status = 'PAID';
-                $fresh->paid_at = now();
-                $fresh->gateway_response = $result['response'] ?: $fresh->gateway_response;
-                $fresh->save();
-
-                $this->processPaidDeposit($fresh);
-
-                Log::info('BayarPro deposit settled via status-sync', [
-                    'order_id' => $fresh->order_id,
-                    'reference_id' => $ref,
-                ]);
-            }
-
-            DB::commit();
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            Log::error('BayarPro status-sync error', [
+            Log::error('BankPay status-sync error', [
                 'deposit_id' => $deposit->id,
                 'message' => $e->getMessage(),
             ]);
         }
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Deposit hanya menambah saldo utama
-    |--------------------------------------------------------------------------
-    | Deposit tidak menaikkan VIP.
-    | Deposit tidak memberi komisi referral.
-    | Komisi referral hanya dari pembelian produk BASIC.
-    |
-    | Logikanya dipindah ke DepositCreditService supaya jalur webhook BayarPro,
-    | listener QRIS, dan aksi manual admin memakai aturan yang sama persis.
-    */
-    private function processPaidDeposit(Deposit $deposit): void
-    {
-        app(\App\Services\DepositCreditService::class)->credit($deposit);
     }
 }

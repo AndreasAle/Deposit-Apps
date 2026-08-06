@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Deposit;
 use App\Models\Mutation;
+use App\Services\DepositChannels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -69,7 +70,8 @@ class MutationMatcher
                 $status = 'needs_review';
                 $note = $note ?: 'nominal tidak diketahui';
             } else {
-                $hit = Deposit::where('status', 'UNPAID')
+                $hit = $this->qrisDeposits()
+                    ->where('status', 'UNPAID')
                     ->where('real_amount', $amount)
                     ->lockForUpdate()
                     ->first();
@@ -80,7 +82,8 @@ class MutationMatcher
                 } else {
                     $grace = (int) config('deposit.qris.late_grace_minutes', 60);
 
-                    $late = Deposit::whereIn('status', ['EXPIRED', 'FAILED'])
+                    $late = $this->qrisDeposits()
+                        ->whereIn('status', ['EXPIRED', 'FAILED'])
                         ->where('real_amount', $amount)
                         ->where('expired_at', '>', now()->subMinutes($grace))
                         ->latest('id')
@@ -149,6 +152,22 @@ class MutationMatcher
         }
 
         throw new \RuntimeException('Tidak bisa membuat ext_id unik untuk mutasi ini.');
+    }
+
+    /**
+     * Hanya deposit QRIS statis yang boleh dicocokkan dengan notifikasi HP.
+     *
+     * Deposit saluran gateway punya `real_amount` = nominal bulat yang diminta,
+     * sehingga gampang kebetulan sama dengan mutasi masuk. Tanpa penyaringan
+     * ini, satu notifikasi bisa melunasi invoice gateway milik orang lain.
+     * Penanda yang dipakai adalah `unique_code`, sama seperti cakupan unique
+     * index nominal unik, jadi deposit warisan pun ikut tersaring dengan benar.
+     */
+    private function qrisDeposits()
+    {
+        return Deposit::query()
+            ->where('payment_channel', DepositChannels::QRIS_STATIS)
+            ->whereNotNull('unique_code');
     }
 
     private function settle(int $depositId, Mutation $mutation): void

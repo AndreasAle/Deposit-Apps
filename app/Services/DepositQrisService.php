@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Deposit;
 use App\Models\User;
+use App\Services\DepositChannels;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -54,6 +55,7 @@ class DepositQrisService
                     'amount' => $amount,
                     'method' => $channel,
                     'selected_channel' => $channel,
+                    'payment_channel' => DepositChannels::QRIS_STATIS,
                     'status' => 'UNPAID',
                     'unique_code' => $code,
                     'real_amount' => $payAmount,
@@ -62,7 +64,7 @@ class DepositQrisService
                     'pay_data' => $this->qris->toDynamic($statis, $payAmount),
                     'expired_at' => now()->addMinutes($ttl),
                     'gateway_response' => [
-                        'driver' => 'qris_statis',
+                        'channel' => DepositChannels::QRIS_STATIS,
                         'unique_code' => $code,
                         'pay_amount' => $payAmount,
                     ],

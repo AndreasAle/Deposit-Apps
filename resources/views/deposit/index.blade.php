@@ -17,6 +17,23 @@
     ],
   ];
 
+  /*
+    Saluran pembayaran (config/deposit.php). Dikirim controller lewat $channels.
+    Kalau cuma satu saluran yang aktif, pemilihnya disembunyikan dan saluran
+    itu tetap ikut terkirim sebagai input hidden.
+  */
+  $depositChannels = collect($channels ?? []);
+  $selectedChannelKey = old('payment_channel', config('deposit.default_channel'));
+
+  if (!$depositChannels->has($selectedChannelKey)) {
+    $selectedChannelKey = $depositChannels->keys()->first();
+  }
+
+  $channelIcons = [
+    'bankpay' => 'M13 2 4.5 13.5H11l-1 8.5L19.5 10H13l0-8Z',
+    'qris_statis' => 'M12 2.5 4.5 5.5v6c0 4.6 3.2 8.9 7.5 10 4.3-1.1 7.5-5.4 7.5-10v-6L12 2.5Z',
+  ];
+
   $selectedMethodCode = old('selected_channel', old('method', 'QRIS'));
   $selectedMethod = collect($paymentMethods)->firstWhere('code', $selectedMethodCode)
       ?? collect($paymentMethods)->firstWhere('api_code', $selectedMethodCode)
@@ -112,6 +129,21 @@
     .dp-method-card.is-selected .dp-method-check{ border-color:var(--blue); background:var(--blue); color:#fff; }
     .dp-method-check svg{ width:13px; height:13px; }
 
+    /* Pemilih saluran pembayaran: dua kartu berdampingan */
+    .dp-channel-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; }
+    .dp-channel-card{ position:relative; width:100%; text-align:left; display:block; padding:15px; border-radius:18px; cursor:pointer;
+      background:var(--card, #fff); border:1.6px solid var(--line); transition:.16s ease; }
+    .dp-channel-card.is-selected{ border-color:var(--blue); box-shadow:0 8px 20px rgba(10,87,163,.12); }
+    .dp-channel-icon{ width:42px; height:42px; border-radius:13px; display:grid; place-items:center; background:var(--tint); color:var(--blue); transition:.16s ease; }
+    .dp-channel-card.is-selected .dp-channel-icon{ background:var(--blue); color:#fff; }
+    .dp-channel-icon svg{ width:21px; height:21px; }
+    .dp-channel-card b{ display:block; margin-top:13px; font-size:13.5px; font-weight:700; color:var(--navy); letter-spacing:-.01em; }
+    .dp-channel-card small{ display:block; margin-top:5px; font-size:10.5px; font-weight:500; color:var(--muted); line-height:1.45; }
+    .dp-channel-check{ position:absolute; top:14px; right:14px; width:21px; height:21px; border-radius:999px;
+      border:2px solid var(--line-2); display:grid; place-items:center; color:transparent; transition:.16s ease; }
+    .dp-channel-card.is-selected .dp-channel-check{ border-color:var(--blue); background:var(--blue); color:#fff; }
+    .dp-channel-check svg{ width:11px; height:11px; }
+
     .dp-amount-box{ display:flex; align-items:center; gap:10px; padding:16px 18px; border-radius:18px; background:var(--card); border:1.5px solid var(--line); box-shadow:var(--sh-sm); }
     .dp-amount-box:focus-within{ border-color:var(--blue); box-shadow:0 0 0 3px rgba(10,87,163,.1); }
     .dp-rp{ font-size:20px; font-weight:700; color:var(--muted); }
@@ -176,6 +208,27 @@
         @csrf
         <input type="hidden" name="method" id="paymentMethod" value="{{ $selectedMethod['api_code'] }}">
         <input type="hidden" name="selected_channel" id="selectedChannel" value="{{ $selectedMethod['code'] }}">
+        <input type="hidden" name="payment_channel" id="paymentChannel" value="{{ $selectedChannelKey }}">
+
+        @if($depositChannels->count() > 1)
+          <div class="dp-fieldset">
+            <div class="dp-fieldset-label"><span>Pilih Saluran Pembayaran</span><small>Pilih saluran</small></div>
+            <div class="dp-channel-grid">
+              @foreach($depositChannels as $code => $channel)
+                <button type="button"
+                  class="dp-channel-card {{ $selectedChannelKey === $code ? 'is-selected' : '' }}"
+                  data-channel="{{ $code }}">
+                  <span class="dp-channel-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ $channelIcons[$code] ?? $channelIcons['bankpay'] }}"/></svg>
+                  </span>
+                  <b>{{ $channel['name'] }}</b>
+                  <small>{{ $channel['desc'] }}</small>
+                  <span class="dp-channel-check"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                </button>
+              @endforeach
+            </div>
+          </div>
+        @endif
 
         <div class="dp-fieldset">
           <div class="dp-fieldset-label"><span>Metode Pembayaran</span><small>Pilih channel</small></div>
@@ -236,6 +289,18 @@
       const errorEl = document.getElementById('amountError');
       const submitBtn = document.getElementById('submitBtn');
       const presetButtons = Array.from(document.querySelectorAll('.dp-preset'));
+
+      const channelInput = document.getElementById('paymentChannel');
+      const channelOptions = Array.from(document.querySelectorAll('.dp-channel-card'));
+
+      channelOptions.forEach(option => {
+        option.addEventListener('click', function(){
+          if(channelInput) channelInput.value = this.dataset.channel || '';
+
+          channelOptions.forEach(btn => btn.classList.remove('is-selected'));
+          this.classList.add('is-selected');
+        });
+      });
 
       const methodInput = document.getElementById('paymentMethod');
       const selectedChannelInput = document.getElementById('selectedChannel');

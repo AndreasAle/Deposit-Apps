@@ -280,8 +280,22 @@ Route::middleware('auth')->group(function () {
 
 
 });
-Route::post('/api/bayarpro-webhook', [\App\Http\Controllers\BayarProWebhookController::class, 'handle'])
-    ->name('payment.bayarpro.webhook');
+/*
+|--------------------------------------------------------------------------
+| Notifikasi Server Payment Gateway (BankPay)
+|--------------------------------------------------------------------------
+| Ditembak langsung oleh gateway, bukan oleh browser user — tanpa session,
+| tanpa CSRF (lihat pengecualian di bootstrap/app.php). Keasliannya dijamin
+| tanda tangan MD5, dan kedua endpoint wajib membalas string "OK".
+|
+| URL ini harus didaftarkan di dashboard BankPay, atau dikirim otomatis lewat
+| parameter pay_notifyurl / notifyurl pada setiap permintaan.
+*/
+Route::post('/api/bankpay/deposit-notify', [\App\Http\Controllers\BankPayCallbackController::class, 'deposit'])
+    ->name('payment.bankpay.deposit.notify');
+
+Route::post('/api/bankpay/payout-notify', [\App\Http\Controllers\BankPayCallbackController::class, 'payout'])
+    ->name('payment.bankpay.payout.notify');
 
 /*
 |--------------------------------------------------------------------------

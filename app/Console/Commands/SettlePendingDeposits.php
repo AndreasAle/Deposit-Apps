@@ -3,27 +3,39 @@
 namespace App\Console\Commands;
 
 use App\Models\Deposit;
-use App\Models\User;
-use App\Services\BayarProService;
+use App\Services\BankPay\BankPayDepositService;
+use App\Services\DepositChannels;
+use App\Services\DepositSettlementService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Poller cadangan: karena webhook BayarPro tidak andal, tiap menit kita
- * tanya status deposit yang masih pending. Kalau sudah SUCCESS, deposit
- * ditandai PAID dan saldo user dikreditkan. Idempoten via lockForUpdate.
+ * Poller cadangan untuk saluran gateway: notifikasi server bisa saja tidak
+ * sampai (jaringan putus, aplikasi sedang deploy), jadi status deposit yang
+ * masih menggantung ditanyakan ulang ke BankPay secara berkala.
+ *
+ * Hanya menyentuh deposit saluran bankpay. Deposit QRIS statis tidak dikenal
+ * gateway dan dikonfirmasi lewat notification listener.
+ *
+ * Idempoten: penyelesaiannya lewat DepositSettlementService yang mengunci
+ * baris dan menolak melunasi deposit yang sudah PAID.
  */
 class SettlePendingDeposits extends Command
 {
     protected $signature = 'deposits:settle-pending';
 
-    protected $description = 'Cek status deposit pending ke BayarPro lalu kreditkan saldo (fallback webhook).';
+    protected $description = 'Cek status deposit gateway yang masih menggantung lalu kreditkan saldo (cadangan notifikasi).';
 
-    public function handle(BayarProService $bayarPro): int
+    public function handle(BankPayDepositService $bankPay, DepositSettlementService $settlement): int
     {
-        $pending = Deposit::whereNotIn('status', ['PAID', 'FAILED'])
-            ->whereNotNull('plat_order_num')
+        if (!$bankPay->isConfigured()) {
+            return self::SUCCESS;
+        }
+
+        $pending = Deposit::where('payment_channel', DepositChannels::BANKPAY)
+            ->whereNotIn('status', ['PAID', 'FAILED'])
+            // Termasuk yang sudah EXPIRED: pembayaran telat tetap harus diakui
+            // selama gateway mencatatnya sukses.
             ->where('created_at', '>=', now()->subDays(2))
             ->orderBy('id')
             ->limit(100)
@@ -33,41 +45,23 @@ class SettlePendingDeposits extends Command
 
         foreach ($pending as $deposit) {
             try {
-                $result = $bayarPro->checkStatus($deposit->plat_order_num);
+                $result = $bankPay->queryOrder($deposit->order_id);
 
-                if (empty($result['success'])) {
+                if (empty($result['success']) || empty($result['paid'])) {
                     continue;
                 }
 
-                $status = strtoupper((string) ($result['data']['status'] ?? ''));
+                $justSettled = $settlement->settle(
+                    $deposit->id,
+                    $result['amount'],
+                    $result['transaction_id'],
+                    $result['response'],
+                    'poller'
+                );
 
-                if ($status !== 'SUCCESS') {
-                    continue;
-                }
-
-                DB::transaction(function () use ($deposit, $result, &$settled) {
-                    $fresh = Deposit::where('id', $deposit->id)->lockForUpdate()->first();
-
-                    if (!$fresh || $fresh->status === 'PAID') {
-                        return;
-                    }
-
-                    $fresh->status = 'PAID';
-                    $fresh->paid_at = now();
-                    $fresh->gateway_response = $result['response'] ?: $fresh->gateway_response;
-                    $fresh->save();
-
-                    $user = User::lockForUpdate()->findOrFail($fresh->user_id);
-                    $user->saldo = (float) $user->saldo + (float) $fresh->amount;
-                    $user->save();
-
+                if ($justSettled) {
                     $settled++;
-
-                    Log::info('Deposit settled via cron poller', [
-                        'order_id' => $fresh->order_id,
-                        'reference_id' => $fresh->plat_order_num,
-                    ]);
-                });
+                }
             } catch (\Throwable $e) {
                 Log::error('Deposit poller error', [
                     'deposit_id' => $deposit->id,

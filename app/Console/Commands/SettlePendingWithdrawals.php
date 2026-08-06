@@ -3,29 +3,36 @@
 namespace App\Console\Commands;
 
 use App\Models\Withdrawal;
-use App\Services\BayarProPayoutService;
+use App\Services\BankPay\BankPayPayoutService;
+use App\Services\WithdrawalSettlementService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Poller cadangan payout: karena webhook payout BayarPro tidak andal, tiap
- * menit kita cek status payout yang masih PROCESSING. Kalau SUCCESS -> PAID
- * (lepas hold), kalau FAILED -> refund saldo penarikan. Best-effort: kalau
- * BayarPro tidak menyediakan endpoint status payout, withdrawal dibiarkan
- * PROCESSING untuk dikonfirmasi admin (tombol Set PAID).
+ * Poller cadangan pencairan: kalau notifikasi server tidak sampai, status
+ * penarikan yang masih diproses ditanyakan ulang ke BankPay lewat endpoint
+ * dfquery.
+ *
+ * SUCCESS -> PAID (hold dilepas), REFUSE -> FAILED (dana dikembalikan).
+ * Status "WAIT PAY" dibiarkan apa adanya sampai gateway memberi keputusan;
+ * penarikan TIDAK pernah dianggap sukses hanya karena sudah lama menunggu —
+ * itu satu-satunya cara memastikan saldo tidak dihapus untuk dana yang
+ * sebenarnya tidak pernah cair. Kalau gateway macet, admin bisa memutuskan
+ * manual lewat tombol Set PAID / Set FAILED.
  */
 class SettlePendingWithdrawals extends Command
 {
     protected $signature = 'withdrawals:settle-pending';
 
-    protected $description = 'Cek status payout PROCESSING ke BayarPro lalu selesaikan (fallback webhook).';
+    protected $description = 'Cek status pencairan yang masih diproses ke BankPay lalu selesaikan (cadangan notifikasi).';
 
-    public function handle(BayarProPayoutService $payout): int
+    public function handle(BankPayPayoutService $bankPay, WithdrawalSettlementService $settlement): int
     {
-        $rows = Withdrawal::where('status', 'PROCESSING')
-            ->whereNotNull('plat_order_num')
-            ->where('plat_order_num', 'like', 'BP-%') // hanya yang punya reference BayarPro asli
+        if (!$bankPay->isConfigured()) {
+            return self::SUCCESS;
+        }
+
+        $rows = Withdrawal::whereIn('status', ['PROCESSING', 'APPROVED'])
             ->where('created_at', '>=', now()->subDays(3))
             ->orderBy('id')
             ->limit(100)
@@ -33,75 +40,32 @@ class SettlePendingWithdrawals extends Command
 
         $settled = 0;
 
-        foreach ($rows as $wd) {
+        foreach ($rows as $withdrawal) {
             try {
-                $status = null;
-                $resp = null;
+                $result = $bankPay->queryPayout($withdrawal->order_id);
 
-                // 1) Prioritas: status resmi dari BayarPro (kalau endpoint tersedia).
-                $result = $payout->checkPayoutStatus($wd->plat_order_num);
-                if (!empty($result['success'])) {
-                    $s = strtoupper((string) ($result['data']['status'] ?? ''));
-                    if ($s === 'SUCCESS' || $s === 'FAILED') {
-                        $status = $s;
-                        $resp = $result['response'];
-                    }
-                }
-
-                // 2) Fallback: BayarPro tak menyediakan status payout & webhook mati.
-                //    Payout yang sudah diterima BayarPro (punya ref BP-) dianggap
-                //    SUCCESS setelah grace period, karena dananya memang sudah cair.
-                if ($status === null && $wd->created_at <= now()->subSeconds(10)) {
-                    $status = 'SUCCESS';
-                    $resp = ['note' => 'auto-settled: no payout-status endpoint, grace period passed'];
-                }
-
-                if ($status === null) {
+                if (empty($result['success'])) {
                     continue;
                 }
 
-                DB::transaction(function () use ($wd, $status, $resp, &$settled) {
-                    $fresh = Withdrawal::where('id', $wd->id)->lockForUpdate()->first();
+                $changed = match ($result['state']) {
+                    'SUCCESS' => $settlement->markPaid($withdrawal->id, $result['response'], 'poller'),
+                    'REFUSE' => $settlement->markFailed(
+                        $withdrawal->id,
+                        $result['message'] ?: 'Pencairan ditolak gateway',
+                        $result['response'],
+                        'poller'
+                    ),
+                    // "WAIT PAY" atau status lain: belum ada keputusan.
+                    default => false,
+                };
 
-                    if (!$fresh || in_array($fresh->status, ['PAID', 'FAILED'], true)) {
-                        return;
-                    }
-
-                    $fresh->gateway_status = $status;
-                    $fresh->gateway_callback = $resp ?: $fresh->gateway_callback;
-                    $user = $fresh->user()->lockForUpdate()->firstOrFail();
-
-                    if ($status === 'SUCCESS') {
-                        // Dana keluar: lepas hold.
-                        $user->saldo_hold = max(0, (float) $user->saldo_hold - (float) $fresh->amount);
-                        $user->save();
-
-                        $fresh->status = 'PAID';
-                        $fresh->paid_at = now();
-                        $fresh->save();
-                    } else {
-                        // Gagal: kembalikan saldo penarikan dari hold.
-                        $user->saldo_penarikan = (float) $user->saldo_penarikan + (float) $fresh->amount;
-                        $user->saldo_hold = max(0, (float) $user->saldo_hold - (float) $fresh->amount);
-                        $user->save();
-
-                        $fresh->status = 'FAILED';
-                        $fresh->failed_reason = 'Payout gagal dari gateway';
-                        $fresh->failed_at = now();
-                        $fresh->save();
-                    }
-
+                if ($changed) {
                     $settled++;
-
-                    Log::info('Withdrawal settled via cron poller', [
-                        'order_id' => $fresh->order_id,
-                        'plat_order_num' => $fresh->plat_order_num,
-                        'status' => $status,
-                    ]);
-                });
+                }
             } catch (\Throwable $e) {
                 Log::error('Withdrawal poller error', [
-                    'withdrawal_id' => $wd->id,
+                    'withdrawal_id' => $withdrawal->id,
                     'message' => $e->getMessage(),
                 ]);
             }

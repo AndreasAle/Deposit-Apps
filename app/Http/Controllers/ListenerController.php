@@ -100,7 +100,12 @@ class ListenerController extends Controller
             });
 
         return response()->json([
-            'driver' => config('deposit.driver'),
+            // Listener hanya relevan untuk saluran QRIS statis; kalau saluran
+            // itu dimatikan, admin perlu tahu bahwa antrian ini tidak terpakai.
+            'channel' => \App\Services\DepositChannels::QRIS_STATIS,
+            'channel_enabled' => \App\Services\DepositChannels::isEnabled(
+                \App\Services\DepositChannels::QRIS_STATIS
+            ),
             'online' => $devices->contains('online', true),
             'never_connected' => $devices->isEmpty(),
             'timeout' => $timeout,

@@ -28,6 +28,7 @@ class DepositQrisListenerTest extends TestCase
         '2026_08_06_100002_add_unique_pending_amount_to_deposits.php',
         '2026_08_06_100003_create_mutations_table.php',
         '2026_08_06_100004_align_pending_unique_amount_scope.php',
+        '2026_08_07_100000_add_payment_channel_to_deposits.php',
     ];
 
     protected function setUp(): void
@@ -35,7 +36,7 @@ class DepositQrisListenerTest extends TestCase
         parent::setUp();
 
         config([
-            'deposit.driver' => 'qris_statis',
+            'deposit.default_channel' => 'qris_statis',
             'deposit.qris.statis' => self::STATIS,
             'deposit.listener.token' => 'token-tes-rahasia',
         ]);

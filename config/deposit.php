@@ -4,15 +4,42 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Driver Deposit
+    | Saluran Pembayaran Deposit
     |--------------------------------------------------------------------------
-    | 'bayarpro'     : alur lama, invoice dibuat lewat gateway BayarPro.
-    | 'qris_statis'  : QRIS statis milik sendiri + nominal unik + notification
-    |                  listener. Tidak ada gateway, tidak ada MDR.
+    | User memilih sendiri saluran mana yang dipakai setiap kali deposit.
+    | Dua saluran berjalan berdampingan:
     |
-    | Bisa dibalik kapan saja lewat .env tanpa mengubah kode.
+    | 'bankpay'      : payment gateway BankPay. Invoice dibuat lewat API,
+    |                  pembayaran dikonfirmasi OTOMATIS lewat notify server
+    |                  (dan poller status sebagai cadangan). Mendukung
+    |                  deposit maupun withdraw.
+    |
+    | 'qris_statis'  : QRIS statis milik sendiri + nominal unik, tanpa gateway
+    |                  dan tanpa MDR. Dikonfirmasi lewat notification listener
+    |                  di HP (MacroDroid) — lihat ListenerController +
+    |                  MutationMatcher. Deposit saja, tidak bisa withdraw.
+    |
+    | Saluran bisa dimatikan lewat .env tanpa mengubah kode. Kalau hanya satu
+    | yang aktif, pemilih saluran di halaman deposit otomatis disembunyikan.
     */
-    'driver' => env('DEPOSIT_DRIVER', 'bayarpro'),
+    'default_channel' => env('DEPOSIT_DEFAULT_CHANNEL', 'bankpay'),
+
+    'channels' => [
+
+        'bankpay' => [
+            'enabled' => (bool) env('DEPOSIT_CHANNEL_BANKPAY', true),
+            'name' => 'Saluran Pembayaran 1',
+            'desc' => 'Pembayaran otomatis, cepat, dan aman',
+            'auto_confirm' => true,
+        ],
+
+        'qris_statis' => [
+            'enabled' => (bool) env('DEPOSIT_CHANNEL_QRIS_STATIS', true),
+            'name' => 'Saluran Pembayaran 2',
+            'desc' => 'Saluran alternatif pembayaran otomatis',
+            'auto_confirm' => false,
+        ],
+    ],
 
     'qris' => [
 

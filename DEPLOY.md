@@ -81,15 +81,21 @@ composer install --no-dev --optimize-autoloader
 ## 4. Konfigurasi `.env`
 ```bash
 cp deploy/.env.production.example .env
-nano .env                    # isi DB_PASSWORD, BAYARPRO_*, dll
+nano .env                    # isi DB_PASSWORD, BANKPAY_*, dll
 php artisan key:generate
 ```
 Poin penting `.env`:
 - `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://capitalwavee.com`
 - `DB_*` sesuai step 2
-- `BAYARPRO_API_KEY` / `BAYARPRO_SECRET_KEY` (dari dashboard BayarPro)
-- `BAYARPRO_WEBHOOK_URL=https://capitalwavee.com/api/bayarpro-webhook`
-  → **daftarkan URL ini di dashboard BayarPro** sebagai Webhook Notification URL.
+- `BANKPAY_MEMBER_ID` / `BANKPAY_KEY` (dari dashboard BankPay)
+- Notifikasi server BankPay:
+  - deposit  → `https://capitalwavee.com/api/bankpay/deposit-notify`
+  - withdraw → `https://capitalwavee.com/api/bankpay/payout-notify`
+  Keduanya dikirim otomatis sebagai `pay_notifyurl`/`notifyurl` di tiap request,
+  jadi cukup pastikan **URL-nya bisa diakses publik** (tidak diblokir WAF).
+- Saluran deposit: `DEPOSIT_CHANNEL_BANKPAY`, `DEPOSIT_CHANNEL_QRIS_STATIS`,
+  `DEPOSIT_DEFAULT_CHANNEL`. Saluran QRIS statis butuh `QRIS_STATIS` +
+  `LISTENER_TOKEN`; withdraw selalu lewat BankPay.
 
 ---
 
@@ -166,11 +172,12 @@ sudo systemctl reload php8.3-fpm
 - [ ] DNS capitalwavee.com → 202.155.13.29
 - [ ] PHP 8.3-fpm + ekstensi, Composer, MySQL, Nginx terpasang
 - [ ] DB `capitalwave` dibuat + `deposit.sql` diimport
-- [ ] `.env` diisi (APP_KEY, DB, BayarPro) + `APP_DEBUG=false`
+- [ ] `.env` diisi (APP_KEY, DB, BankPay) + `APP_DEBUG=false`
 - [ ] storage:link + cache + permission www-data
 - [ ] Nginx aktif + `nginx -t` OK
 - [ ] SSL certbot terpasang
 - [ ] Cron `schedule:run` tiap menit aktif
-- [ ] Webhook BayarPro diarahkan ke `/api/bayarpro-webhook`
+- [ ] Notify BankPay `/api/bankpay/deposit-notify` & `/api/bankpay/payout-notify` bisa diakses publik
+- [ ] `php artisan migrate` dijalankan (kolom `deposits.payment_channel`)
 - [ ] Ganti `public/logo.png` dengan logo Capital Wave
 - [ ] Test: buka https://capitalwavee.com/login → login user dari DB
