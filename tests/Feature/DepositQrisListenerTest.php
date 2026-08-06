@@ -27,6 +27,7 @@ class DepositQrisListenerTest extends TestCase
         '2026_08_06_100001_sync_deposits_columns.php',
         '2026_08_06_100002_add_unique_pending_amount_to_deposits.php',
         '2026_08_06_100003_create_mutations_table.php',
+        '2026_08_06_100004_align_pending_unique_amount_scope.php',
     ];
 
     protected function setUp(): void
@@ -101,6 +102,38 @@ class DepositQrisListenerTest extends TestCase
 
         $this->assertStringContainsString('540550001', $deposit->pay_data);
         $this->assertStringStartsWith('000201010212', $deposit->pay_data);
+    }
+
+    /**
+     * Skenario produksi: database masih punya invoice BayarPro aktif dengan
+     * nominal kembar (banyak orang deposit 50.000 bersamaan). Itu wajar dan
+     * tidak boleh menghalangi deposit driver baru.
+     */
+    public function test_deposit_warisan_bernominal_kembar_tidak_menghalangi(): void
+    {
+        $user = $this->user();
+
+        // Tiru deposit lama BayarPro: unique_code NULL, real_amount kembar.
+        foreach (range(1, 3) as $i) {
+            Deposit::forceCreate([
+                'user_id' => $user->id,
+                'order_id' => 'LAMA' . $i,
+                'amount' => 50000,
+                'method' => 'QRIS',
+                'status' => 'UNPAID',
+                'real_amount' => 50000,
+                'unique_code' => null,
+                'expired_at' => now()->addDay(),
+            ]);
+        }
+
+        $this->assertSame(3, Deposit::whereNull('unique_code')->count());
+
+        // Deposit driver baru tetap bisa dibuat.
+        $baru = $this->buatDeposit($user, 50000);
+
+        $this->assertSame(50001, (int) $baru->real_amount);
+        $this->assertNotNull($baru->unique_code);
     }
 
     public function test_nominal_unik_dibebaskan_setelah_kedaluwarsa(): void

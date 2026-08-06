@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Kunci anti-tertukar untuk deposit QRIS statis.
@@ -14,6 +15,13 @@ use Illuminate\Support\Facades\DB;
  * Efeknya: DUA DEPOSIT UNPAID TIDAK MUNGKIN punya nominal bayar yang sama.
  * Bukan sekadar "diusahakan beda" - dijamin oleh database. Kalau ada race
  * condition, INSERT-nya yang gagal, bukan uangnya yang tertukar.
+ *
+ * Cakupannya sengaja dibatasi ke deposit driver qris_statis saja, yaitu yang
+ * punya unique_code. Deposit warisan BayarPro (unique_code NULL) dikecualikan
+ * karena identitasnya dari reference_id gateway, bukan dari nominal - dan
+ * memang wajar kalau nominalnya kembar (banyak orang deposit 50.000). Tanpa
+ * pengecualian ini, index tidak bisa dipasang di database yang masih punya
+ * invoice BayarPro aktif.
  */
 return new class extends Migration
 {
@@ -22,11 +30,17 @@ return new class extends Migration
         $driver = DB::getDriverName();
 
         if ($driver === 'mysql' || $driver === 'mariadb') {
+            // Idempoten: kalau migrasi sebelumnya gagal di tengah (kolom sudah
+            // dibuat tapi index belum), sisa kolomnya dibersihkan dulu.
+            if (Schema::hasColumn('deposits', 'pending_unique_amount')) {
+                DB::statement("ALTER TABLE deposits DROP COLUMN pending_unique_amount");
+            }
+
             DB::statement("
                 ALTER TABLE deposits
                 ADD COLUMN pending_unique_amount BIGINT UNSIGNED
                     GENERATED ALWAYS AS (
-                        CASE WHEN status = 'UNPAID'
+                        CASE WHEN status = 'UNPAID' AND unique_code IS NOT NULL
                              THEN CAST(real_amount AS UNSIGNED)
                              ELSE NULL
                         END
@@ -43,10 +57,12 @@ return new class extends Migration
 
         // SQLite & Postgres punya partial unique index, jadi tidak butuh
         // generated column. Efeknya sama persis. (SQLite dipakai test suite.)
+        DB::statement("DROP INDEX IF EXISTS ux_deposits_pending_unique_amount");
+
         DB::statement("
             CREATE UNIQUE INDEX ux_deposits_pending_unique_amount
             ON deposits (real_amount)
-            WHERE status = 'UNPAID'
+            WHERE status = 'UNPAID' AND unique_code IS NOT NULL
         ");
     }
 
