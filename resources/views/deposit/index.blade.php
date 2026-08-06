@@ -23,7 +23,10 @@
     itu tetap ikut terkirim sebagai input hidden.
   */
   $depositChannels = collect($channels ?? []);
-  $selectedChannelKey = old('payment_channel', config('deposit.default_channel'));
+  $depositNotice = \App\Services\DepositChannels::notice();
+
+  $selectedChannelKey = old('payment_channel')
+      ?: \App\Services\DepositChannels::resolve(null);
 
   if (!$depositChannels->has($selectedChannelKey)) {
     $selectedChannelKey = $depositChannels->keys()->first();
@@ -167,6 +170,17 @@
     .dp-submit::after{ content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; background:linear-gradient(135deg, rgba(232,200,116,.7), transparent 55%); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:.6; }
     .dp-submit:disabled{ opacity:.5; cursor:default; box-shadow:none; }
 
+    /* Pengumuman gangguan saluran pembayaran */
+    .dp-notice{ display:flex; gap:11px; align-items:flex-start; margin-bottom:14px; padding:13px 15px; border-radius:16px;
+      background:#fff8e6; border:1px solid #f2dfae; color:#7a5a12; font-size:12.5px; font-weight:500; line-height:1.5; }
+    .dp-notice svg{ width:17px; height:17px; flex:0 0 auto; margin-top:1px; color:#c69214; }
+    .dp-notice b{ display:block; margin-bottom:2px; color:var(--navy); font-weight:700; }
+
+    /* Label kecil di kartu saluran yang sedang bermasalah */
+    .dp-channel-flag{ display:inline-block; margin-top:7px; padding:3px 8px; border-radius:999px;
+      background:#fdeaea; border:1px solid #f5cfcf; color:#a33; font-size:9.5px; font-weight:700; letter-spacing:.02em; }
+    .dp-channel-card.is-degraded{ opacity:.72; }
+
     .dp-errors{ margin-bottom:14px; padding:13px 15px; border-radius:16px; background:var(--red-soft); border:1px solid #f7d4d4; color:#a33; font-size:12.5px; font-weight:500; }
     .dp-errors b{ color:var(--navy); font-weight:700; }
     @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } }
@@ -204,6 +218,13 @@
         </div>
       @endif
 
+      @if($depositNotice)
+        <div class="dp-notice" role="status">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 9v4.5M12 17h.01M10.3 3.9 2.5 17.4A2 2 0 0 0 4.2 20.5h15.6a2 2 0 0 0 1.7-3.1L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span><b>Pemberitahuan</b>{{ $depositNotice }}</span>
+        </div>
+      @endif
+
       <form method="POST" action="{{ route('deposit.store') }}" id="depositForm" novalidate>
         @csrf
         <input type="hidden" name="method" id="paymentMethod" value="{{ $selectedMethod['api_code'] }}">
@@ -216,13 +237,16 @@
             <div class="dp-channel-grid">
               @foreach($depositChannels as $code => $channel)
                 <button type="button"
-                  class="dp-channel-card {{ $selectedChannelKey === $code ? 'is-selected' : '' }}"
+                  class="dp-channel-card {{ $selectedChannelKey === $code ? 'is-selected' : '' }} {{ !empty($channel['degraded']) ? 'is-degraded' : '' }}"
                   data-channel="{{ $code }}">
                   <span class="dp-channel-icon">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="{{ $channelIcons[$code] ?? $channelIcons['bankpay'] }}"/></svg>
                   </span>
                   <b>{{ $channel['name'] }}</b>
-                  <small>{{ $channel['desc'] }}</small>
+                  <small>{{ !empty($channel['degraded']) ? 'Sedang bermasalah, gunakan saluran lain' : $channel['desc'] }}</small>
+                  @if(!empty($channel['degraded']))
+                    <span class="dp-channel-flag">GANGGUAN</span>
+                  @endif
                   <span class="dp-channel-check"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6 9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </button>
               @endforeach

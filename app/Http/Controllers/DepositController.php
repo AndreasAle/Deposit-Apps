@@ -128,7 +128,7 @@ class DepositController extends Controller
                 'message' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
+            return back()->with('error', $this->pesanGagalGateway());
         }
 
         $deposit->pay_url = $result['pay_url'];
@@ -151,6 +151,30 @@ class DepositController extends Controller
         return redirect()
             ->route('deposit.invoice', $deposit->id)
             ->with('success', 'Invoice deposit berhasil dibuat');
+    }
+
+    /**
+     * Pesan yang dilihat user saat gateway menolak membuat pembayaran.
+     *
+     * Pesan mentah dari gateway sengaja TIDAK ditampilkan: bunyinya seperti
+     * "Get payurl error, please try again later" - berbahasa Inggris, tidak
+     * bisa ditindaklanjuti user, dan terdengar seperti aplikasi kita yang
+     * rusak. Yang dibutuhkan user cuma satu: harus berbuat apa sekarang.
+     * Rincian teknisnya tetap lengkap di log untuk ditelusuri admin.
+     */
+    private function pesanGagalGateway(): string
+    {
+        $alternatif = array_filter(
+            DepositChannels::healthy(),
+            fn (array $c) => $c['code'] !== DepositChannels::BANKPAY
+        );
+
+        if ($alternatif !== []) {
+            return 'Saluran Pembayaran 1 sedang bermasalah. Silakan pilih '
+                . implode(' atau ', array_column($alternatif, 'name')) . ' untuk melanjutkan deposit.';
+        }
+
+        return 'Pembayaran sedang bermasalah. Silakan coba beberapa saat lagi.';
     }
 
     /**

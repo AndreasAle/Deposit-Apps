@@ -31,6 +31,20 @@ return [
             'name' => 'Saluran Pembayaran 1',
             'desc' => 'Pembayaran otomatis, cepat, dan aman',
             'auto_confirm' => true,
+
+            /*
+            | Tandai saluran sebagai SEDANG BERMASALAH tanpa mematikannya.
+            |
+            | Bedanya dengan enabled=false: saluran tetap bisa dipilih user
+            | (siapa tahu sudah pulih), tapi tidak lagi jadi pilihan default,
+            | kartunya diberi label gangguan, dan pengumuman muncul di atas
+            | halaman deposit. Dipakai saat gateway mengalami gangguan agar
+            | user langsung diarahkan ke saluran yang sehat.
+            |
+            | Bisa dinyalakan/dimatikan lewat .env tanpa deploy - cukup
+            | `php artisan config:cache` sesudahnya.
+            */
+            'degraded' => (bool) env('DEPOSIT_CHANNEL_BANKPAY_DEGRADED', false),
         ],
 
         'qris_statis' => [
@@ -38,8 +52,22 @@ return [
             'name' => 'Saluran Pembayaran 2',
             'desc' => 'Saluran alternatif pembayaran otomatis',
             'auto_confirm' => false,
+            'degraded' => (bool) env('DEPOSIT_CHANNEL_QRIS_STATIS_DEGRADED', false),
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pengumuman di Halaman Deposit
+    |--------------------------------------------------------------------------
+    | Teks bebas yang muncul sebagai spanduk di atas halaman deposit.
+    | Kosongkan untuk menyembunyikannya.
+    |
+    | Kalau dikosongkan TAPI ada saluran yang ditandai bermasalah, pengumuman
+    | otomatis disusun sendiri - jadi saat gangguan Anda cukup menyalakan satu
+    | tanda saja, tidak perlu mengarang kalimat di tengah malam.
+    */
+    'notice' => env('DEPOSIT_NOTICE'),
 
     'qris' => [
 
