@@ -18,6 +18,11 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    'turnstile' => [
+        'site_key'   => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],
@@ -53,16 +58,34 @@ return [
     'platform_public_key' => env('JAYAPAY_PLATFORM_PUBLIC_KEY'),
 ],
 
-'bayarpro' => [
-    'base_url' => env('BAYARPRO_BASE_URL', 'https://bayar-pro.com/api/v1'),
-    'api_key' => env('BAYARPRO_API_KEY'),
-    'secret_key' => env('BAYARPRO_SECRET_KEY'),
+/*
+| Payment gateway "BankPay" — dipakai untuk deposit (collection) sekaligus
+| withdraw (payment on behalf / pembayaran atas nama).
+|
+| Semua request memakai POST form-urlencoded dan ditandatangani MD5 uppercase
+| dengan aturan: parameter tidak kosong diurutkan ASCII, digabung
+| key1=value1&key2=value2, lalu ditambah &key=<secret> sebelum di-hash.
+*/
+'bankpay' => [
+    'base_url' => env('BANKPAY_BASE_URL', 'https://pay.bankpay.cfd'),
 
-    // Satu Webhook URL untuk semua event (didaftarkan di dashboard BayarPro).
-    'webhook_url' => env('BAYARPRO_WEBHOOK_URL'),
+    // ID pedagang + kunci rahasia dari dashboard BankPay.
+    'member_id' => env('BANKPAY_MEMBER_ID'),
+    'key' => env('BANKPAY_KEY'),
+
+    'currency' => env('BANKPAY_CURRENCY', 'IDR'),
+
+    // Kode jenis pembayaran (lihat "Jenis pembayaran yang tersedia saat ini").
+    'bank_code' => env('BANKPAY_BANK_CODE', 'bank'),
 
     // Invoice deposit kedaluwarsa (menit) — dipakai untuk expired_at lokal.
-    'expiry_period' => env('BAYARPRO_EXPIRY_PERIOD', 1440),
+    'expiry_minutes' => (int) env('BANKPAY_EXPIRY_MINUTES', 60),
+
+    // Kosongkan untuk memakai route() bawaan aplikasi. Isi hanya kalau URL
+    // publik berbeda dari APP_URL (mis. di balik WAF / domain terpisah).
+    'deposit_notify_url' => env('BANKPAY_DEPOSIT_NOTIFY_URL'),
+    'deposit_return_url' => env('BANKPAY_DEPOSIT_RETURN_URL'),
+    'payout_notify_url' => env('BANKPAY_PAYOUT_NOTIFY_URL'),
 ],
 
 ];

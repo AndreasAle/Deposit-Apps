@@ -21,11 +21,29 @@ return Application::configure(basePath: dirname(__DIR__))
 
         /*
         |--------------------------------------------------------------------------
+        | Trusted Proxies (di belakang Alibaba WAF)
+        |--------------------------------------------------------------------------
+        | Supaya Laravel membaca IP user asli & skema (https) dari header
+        | X-Forwarded-* yang dikirim WAF — penting untuk remoteip Turnstile
+        | dan mencegah salah-deteksi http/https. Origin server WAJIB difirewall
+        | agar hanya bisa diakses lewat WAF (kalau tidak, header bisa dipalsukan).
+        */
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+        );
+
+        /*
+        |--------------------------------------------------------------------------
         | Middleware Alias
         |--------------------------------------------------------------------------
         */
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'listener.token' => \App\Http\Middleware\ListenerToken::class,
         ]);
 
         /*
@@ -34,7 +52,8 @@ return Application::configure(basePath: dirname(__DIR__))
         |--------------------------------------------------------------------------
         */
         $middleware->validateCsrfTokens(except: [
-            'api/bayarpro-webhook',
+            'api/bankpay/*',
+            'api/listener/*',
         ]);
 
         // 2. LOGIKA REDIRECT UNTUK GUEST

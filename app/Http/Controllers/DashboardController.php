@@ -6,9 +6,10 @@ use App\Models\Deposit;
 use App\Models\ProductCategory;
 use App\Models\User;
 use App\Models\UserInvestment;
-// use App\Models\VipRule;
+use App\Models\VipRule;
 // use App\Services\ReferralService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -41,6 +42,34 @@ class DashboardController extends Controller
         $saldoHold = (int) ($user->saldo_hold ?? 0);
         $saldoPenarikanTotal = (int) ($user->saldo_penarikan_total ?? 0);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Progress VIP untuk kartu "Tingkat VIP" di dashboard
+        |--------------------------------------------------------------------------
+        | Ambil aturan VIP berikutnya (level lebih tinggi dari user saat ini) untuk
+        | menghitung berapa lagi total investasi yang dibutuhkan menuju VIP berikut.
+        | Aman kalau tabel vip_rules belum ada / belum diisi.
+        */
+        $vipLevel = (int) ($user->vip_level ?? 0);
+        $nextVipLevel = null;
+        $nextVipTarget = 0;
+        $vipProgress = 0;
+
+        if (Schema::hasTable('vip_rules')) {
+            $nextVip = VipRule::where('is_active', true)
+                ->where('vip_level', '>', $vipLevel)
+                ->orderBy('vip_level')
+                ->first();
+
+            if ($nextVip) {
+                $nextVipLevel = (int) $nextVip->vip_level;
+                $nextVipTarget = (int) $nextVip->min_total_deposit;
+                $vipProgress = $nextVipTarget > 0
+                    ? (int) min(100, floor($totalInvestasi / $nextVipTarget * 100))
+                    : 0;
+            }
+        }
+
         return view('dashboard', compact(
             'user',
             'categories',
@@ -52,7 +81,11 @@ class DashboardController extends Controller
             'totalInvestasi',
             'activePlanCount',
             'totalDailyProfit',
-            'totalProfit'
+            'totalProfit',
+            'vipLevel',
+            'nextVipLevel',
+            'nextVipTarget',
+            'vipProgress'
         ));
     }
 

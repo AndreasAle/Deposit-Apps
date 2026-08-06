@@ -3,12 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Withdrawal;
-use App\Services\BayarProPayoutService;
+use App\Services\BankPay\BankPayBanks;
+use App\Services\BankPay\BankPayPayoutService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
+/**
+ * Penarikan saldo lewat payment gateway BankPay ("pembayaran atas nama").
+ *
+ * Hanya saluran gateway yang bisa melakukan penarikan — QRIS statis sifatnya
+ * terima uang saja, tidak bisa mengirim.
+ *
+ * Alur saldo: saldo_penarikan -> saldo_hold saat request, lalu hold dilepas
+ * kalau cair atau dikembalikan kalau gagal (lihat WithdrawalSettlementService).
+ */
 class WithdrawalController extends Controller
 {
     private const MIN_WITHDRAW = 50000;
@@ -35,7 +44,7 @@ class WithdrawalController extends Controller
         return response()->json(['data' => $row]);
     }
 
-    public function store(Request $request, BayarProPayoutService $bayarPro)
+    public function store(Request $request, BankPayPayoutService $bankPay)
     {
         $data = $request->validate([
             'amount' => ['required', 'integer', 'min:' . self::MIN_WITHDRAW, 'max:' . self::MAX_WITHDRAW],
@@ -48,11 +57,10 @@ class WithdrawalController extends Controller
             ->where('id', $data['user_payout_account_id'])
             ->firstOrFail();
 
-        $provider = strtoupper(trim((string) $account->provider));
-
-        if (!isset(BayarProPayoutService::BANK_TARGETS[$provider])) {
+        if (!BankPayBanks::supports($account->provider)) {
             return response()->json([
-                'message' => 'Tujuan penarikan "' . $provider . '" tidak didukung. Gunakan bank atau DANA/OVO.',
+                'message' => 'Tujuan penarikan "' . BankPayBanks::normalize($account->provider)
+                    . '" tidak didukung. Gunakan bank atau e-wallet yang tersedia.',
             ], 422);
         }
 
@@ -63,7 +71,7 @@ class WithdrawalController extends Controller
 
         /*
          * Step 1:
-         * Buat record withdraw dan hold saldo penarikan.
+         * Buat record withdraw dan tahan saldo penarikan.
          */
         $withdrawal = DB::transaction(function () use ($user, $account, $amount, $fee, $net) {
             $lockedUser = $user->newQuery()
@@ -83,9 +91,10 @@ class WithdrawalController extends Controller
                 'user_id' => $lockedUser->id,
                 'user_payout_account_id' => $account->id,
 
+                // Wajib unik dan 16-32 karakter (ketentuan gateway). Ini 22 karakter.
                 'order_id' => 'WD' . now()->format('YmdHis') . strtoupper(Str::random(6)),
                 'method' => null,
-                'bank_code' => strtoupper((string) $account->provider),
+                'bank_code' => BankPayBanks::normalize($account->provider),
                 'account_no' => (string) $account->account_number,
                 'account_name' => (string) $account->account_name,
 
@@ -100,32 +109,24 @@ class WithdrawalController extends Controller
 
         /*
          * Step 2:
-         * Kirim payout ke BayarPro.
-         * Kalau gagal, saldo penarikan otomatis dikembalikan.
+         * Kirim permintaan pencairan ke gateway. Kalau gagal terkirim, saldo
+         * penarikan langsung dikembalikan supaya dana user tidak menggantung.
          *
-         * Catatan: BayarPro tidak menerima merchant_ref_id pada payout, jadi
-         * pencocokan webhook memakai payout_id yang disimpan di plat_order_num.
+         * Pencocokan notifikasi memakai `order_id` kita sendiri (BankPay
+         * mengembalikannya sebagai `orderid`), jadi tidak bergantung pada
+         * nomor transaksi gateway.
          */
         try {
-            $response = $bayarPro->createPayout($withdrawal->fresh(['user', 'payoutAccount']));
-
-            $payoutId = data_get($response, 'data.payout_id')
-                ?: data_get($response, 'payout_id')
-                ?: data_get($response, 'data.reference_id')
-                ?: null;
-
-            $respMessage = data_get($response, 'message') ?: 'OK';
-
-            if (!$payoutId) {
-                throw new \RuntimeException('Payout BayarPro tidak mengembalikan payout_id.');
-            }
+            $result = $bankPay->createPayout($withdrawal->fresh(['user', 'payoutAccount']));
 
             $withdrawal->update([
+                // Diterima gateway, belum tentu cair. Status akhir datang dari
+                // notifikasi server atau poller.
                 'status' => 'PROCESSING',
-                'plat_order_num' => $payoutId,
-                'gateway_status' => (string) (data_get($response, 'data.status') ?: 'PENDING'),
-                'gateway_message' => $respMessage,
-                'gateway_response' => $response,
+                'plat_order_num' => $result['transaction_id'],
+                'gateway_status' => 'WAIT PAY',
+                'gateway_message' => 'Diterima gateway',
+                'gateway_response' => $result['response'],
                 'processing_at' => now(),
             ]);
 
@@ -136,15 +137,14 @@ class WithdrawalController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
-            /*
-             * Kalau gagal kirim ke JayaPay, refund saldo penarikan.
-             */
             DB::transaction(function () use ($withdrawal, $e) {
                 $row = Withdrawal::where('id', $withdrawal->id)
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                if (!in_array($row->status, ['PENDING'], true)) {
+                // Hanya PENDING yang boleh di-refund di sini: kalau statusnya
+                // sudah bergerak, jalur lain yang memegang saldonya.
+                if ($row->status !== 'PENDING') {
                     return;
                 }
 
@@ -207,89 +207,5 @@ class WithdrawalController extends Controller
         });
 
         return response()->json(['message' => 'Withdraw request dibatalkan']);
-    }
-
-    /**
-     * Webhook payout dari BayarPro.
-     * Verifikasi HMAC SHA256 dari raw body, cocokkan withdrawal via payout_id
-     * (disimpan di plat_order_num) karena payout tidak punya merchant_ref_id.
-     */
-    public function bayarProPayoutCallback(Request $request, BayarProPayoutService $bayarPro)
-    {
-        $rawBody = $request->getContent();
-        $signature = (string) $request->header('X-Bayarpro-Signature', '');
-
-        if (!$bayarPro->verifyWebhookSignature($rawBody, $signature)) {
-            Log::warning('BayarPro payout callback invalid signature', ['body' => $rawBody]);
-            return response('Invalid Webhook Signature', 401);
-        }
-
-        $payload = json_decode($rawBody, true) ?: [];
-
-        Log::info('BayarPro payout callback received', $payload);
-
-        $event = $payload['event'] ?? null;
-        $data = $payload['data'] ?? [];
-        $payoutId = $data['payout_id'] ?? null;
-        $status = strtoupper((string) ($data['status'] ?? ''));
-
-        if (!$payoutId) {
-            return response('payout_id empty', 400);
-        }
-
-        DB::transaction(function () use ($payload, $payoutId, $status, $event) {
-            $withdrawal = Withdrawal::query()
-                ->where('plat_order_num', $payoutId)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$withdrawal) {
-                Log::warning('BayarPro payout callback withdrawal not found', $payload);
-                return;
-            }
-
-            if (in_array($withdrawal->status, ['PAID', 'FAILED'], true)) {
-                return;
-            }
-
-            $withdrawal->gateway_status = $status;
-            $withdrawal->gateway_message = $payload['event'] ?? null;
-            $withdrawal->gateway_callback = $payload;
-
-            if ($event === 'payout.success' && $status === 'SUCCESS') {
-                $user = $withdrawal->user()->lockForUpdate()->firstOrFail();
-
-                // Saldo sudah di-hold saat request; sukses = lepas hold (dana keluar).
-                $user->saldo_hold = max(0, (float) $user->saldo_hold - (float) $withdrawal->amount);
-                $user->save();
-
-                $withdrawal->status = 'PAID';
-                $withdrawal->paid_at = now();
-                $withdrawal->save();
-
-                return;
-            }
-
-            if ($event === 'payout.failed' || $status === 'FAILED') {
-                $user = $withdrawal->user()->lockForUpdate()->firstOrFail();
-
-                // Gagal = kembalikan saldo penarikan dari hold.
-                $user->saldo_penarikan = (float) $user->saldo_penarikan + (float) $withdrawal->amount;
-                $user->saldo_hold = max(0, (float) $user->saldo_hold - (float) $withdrawal->amount);
-                $user->save();
-
-                $withdrawal->status = 'FAILED';
-                $withdrawal->failed_reason = 'Payout gagal dari gateway';
-                $withdrawal->failed_at = now();
-                $withdrawal->save();
-
-                return;
-            }
-
-            $withdrawal->status = 'PROCESSING';
-            $withdrawal->save();
-        });
-
-        return response()->json(['status' => 'ok']);
     }
 }

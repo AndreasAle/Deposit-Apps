@@ -13,6 +13,7 @@ class Deposit extends Model
         'amount',
         'method',
         'selected_channel',
+        'payment_channel',
         'pay_url',
         'pay_data',
         'pay_fee',
@@ -21,6 +22,7 @@ class Deposit extends Model
         'gateway_response',
         'status',
         'paid_at',
+        'unique_code',
     ];
 
     protected $casts = [
@@ -30,7 +32,15 @@ class Deposit extends Model
         'expired_at' => 'datetime',
         'paid_at' => 'datetime',
         'gateway_response' => 'array',
+        'unique_code' => 'integer',
     ];
+
+    /*
+    | Catatan: kolom `pending_unique_amount` di tabel deposits adalah GENERATED
+    | COLUMN milik MySQL (berisi nominal bayar selama status UNPAID, NULL
+    | setelahnya). Jangan pernah dimasukkan ke $fillable atau di-set manual -
+    | MySQL akan menolak penulisannya.
+    */
 
     public function user()
     {
@@ -50,6 +60,18 @@ class Deposit extends Model
     public function isFailed(): bool
     {
         return $this->status === 'FAILED';
+    }
+
+    /** Deposit ini dibuat lewat gateway BankPay (konfirmasi otomatis). */
+    public function isBankPay(): bool
+    {
+        return $this->payment_channel === \App\Services\DepositChannels::BANKPAY;
+    }
+
+    /** Deposit ini dibuat lewat QRIS statis sendiri (konfirmasi listener). */
+    public function isQrisStatis(): bool
+    {
+        return $this->payment_channel === \App\Services\DepositChannels::QRIS_STATIS;
     }
 
     public function isExpired(): bool

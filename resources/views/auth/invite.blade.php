@@ -701,18 +701,18 @@
 </head>
 <body>
   <main class="page">
-    <section class="shell" role="region" aria-label="Undangan Resmi Rubik Company">
+    <section class="shell" role="region" aria-label="Undangan Resmi Capital Wave">
 
       <header class="hero">
         <div class="topbar">
           <div class="brandMini">
             <div class="brandMiniLogo">
-              <img src="{{ asset('logo.png') }}" alt="Rubik Company">
+              <img src="{{ asset('logo.png') }}" alt="Capital Wave">
             </div>
 
             <div class="brandMiniText">
               <span>Platform Akun</span>
-              <strong>Rubik Company</strong>
+              <strong>Capital Wave</strong>
             </div>
           </div>
 
@@ -721,11 +721,11 @@
 
         <div class="heroMain">
           <div class="heroLogoCard">
-            <img src="{{ asset('logo.png') }}" alt="Rubik Company">
+            <img src="{{ asset('logo.png') }}" alt="Capital Wave">
           </div>
 
           <div class="heroBadge">
-            ✦ Undangan resmi Rubik
+            ✦ Undangan resmi Capital Wave
           </div>
 
           <h1 class="heroTitle">
@@ -733,7 +733,7 @@
           </h1>
 
           <p class="heroSub">
-            Kamu menerima undangan untuk membuat akun Rubik melalui halaman resmi yang aman dan transparan.
+            Kamu menerima undangan untuk membuat akun Capital Wave melalui halaman resmi yang aman dan transparan.
           </p>
         </div>
 
@@ -777,14 +777,14 @@
             Undangan akun
           </div>
 
-          <h1 class="title">Undangan resmi Rubik</h1>
+          <h1 class="title">Undangan resmi Capital Wave</h1>
 
           <p class="subtitle">
             Kode undangan hanya digunakan untuk menghubungkan akun kamu dengan pengundang di sistem referral.
           </p>
 
           <div class="notice">
-            <strong>Perhatian keamanan:</strong> Rubik tidak pernah meminta password melalui chat, telepon, atau pihak lain.
+            <strong>Perhatian keamanan:</strong> Capital Wave tidak pernah meminta password melalui chat, telepon, atau pihak lain.
             Buat akun hanya melalui halaman resmi dan pastikan data yang kamu isi benar.
           </div>
 
@@ -841,7 +841,7 @@
 
             <div class="safeText">
               <strong>Akses resmi perusahaan</strong>
-              <span>Pastikan pendaftaran hanya melalui halaman resmi Rubik dan jangan membagikan password ke pihak mana pun.</span>
+              <span>Pastikan pendaftaran hanya melalui halaman resmi Capital Wave dan jangan membagikan password ke pihak mana pun.</span>
             </div>
           </div>
 
@@ -866,12 +866,12 @@
           </div>
 
           <div class="small">
-            Dengan melanjutkan, kamu akan diarahkan ke halaman pendaftaran akun Rubik.
+            Dengan melanjutkan, kamu akan diarahkan ke halaman pendaftaran akun Capital Wave.
           </div>
         </section>
 
         <div class="copyright">
-          © {{ date('Y') }} Rubik Company. Tumbuh bersama, melalui akses resmi.
+          © {{ date('Y') }} Capital Wave. Tumbuh bersama, melalui akses resmi.
         </div>
       </div>
     </section>

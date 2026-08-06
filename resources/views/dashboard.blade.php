@@ -6,44 +6,75 @@
   <script>location.href='/login'</script>
 @endif
 
+@php
+  $vipLevel        = $vipLevel        ?? (int)($user->vip_level ?? 0);
+  $nextVipLevel    = $nextVipLevel    ?? null;
+  $nextVipTarget   = $nextVipTarget   ?? 0;
+  $vipProgress     = $vipProgress     ?? 0;
+  $totalInvestasi  = $totalInvestasi  ?? 0;
+  $activePlanCount = $activePlanCount ?? 0;
+  $saldoUtama      = $saldoUtama      ?? (int)($user->saldo ?? 0);
+  $saldoPenarikan  = $saldoPenarikan  ?? (int)($user->saldo_penarikan ?? 0);
+
+  $accountId = str_pad((string)($user->id ?? 0), 12, '0', STR_PAD_LEFT);
+  $vipButuh  = max(0, (int)$nextVipTarget - (int)$totalInvestasi);
+  $tierName  = $vipLevel > 0 ? 'VIP Member' : 'Classic Member';
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard | Velora Finance</title>
+  <title>Dashboard | Capital Wave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#fffaf3;
-      --paper:#ffffff;
-      --paper2:#fff7ea;
-      --panel:#ffffff;
-      --panel2:#fff3df;
-      --text:#3b1116;
-      --soft:#5b2a30;
-      --muted:#8b6b70;
-      --muted2:#b89aa0;
-      --border:rgba(75,16,21,.09);
-      --border2:rgba(75,16,21,.14);
+      /* === PALET === */
+      --blue:#0A57A3;
+      --blue-ink:#0b4a8c;
+      --blue-lite:#2f7fd4;
+      --blue-soft:#eef4fb;
+      --navy:#0b2740;
+      --navy-2:#0d3357;
+      --navy-3:#0a2036;
 
-      --brand:#7d3cff;
-      --brand2:#c957ff;
-      --purple:#8e46ff;
-      --violet:#d35cff;
-      --gold:#ffb52e;
-      --green:#22c982;
-      --rose:#ef4444;
-      --maroon:#4b1015;
+      --gold:#c99433;
+      --gold-lite:#e8c874;
+      --gold-deep:#a9772a;
+      --gold-soft:#faf3e2;
+      --gold-metal:linear-gradient(135deg,#a9772a 0%,#e8c874 46%,#c99433 100%);
 
-      --shadow:0 22px 55px rgba(75,16,21,.10);
-      --shadow-soft:0 12px 28px rgba(75,16,21,.075);
-      --radius:28px;
-      --radius-sm:20px;
+      --green:#1c9d67;
+      --green-soft:#e6f5ee;
+      --chart:#16a86a;
+      --red:#dc5757;
+
+      /* neutrals */
+      --bg:#eef1f6;
+      --card:#ffffff;
+      --tint:#f5f8fc;
+      --line:#e9edf4;
+      --line-2:#dfe5ee;
+
+      --ink:#152a3f;
+      --ink-soft:#46586c;
+      --muted:#8493a6;
+      --muted-2:#aab6c4;
+
+      /* shadows — layered, premium */
+      --sh-sm:0 1px 2px rgba(11,39,64,.05);
+      --sh:0 2px 6px rgba(11,39,64,.04), 0 12px 30px rgba(11,39,64,.07);
+      --sh-lg:0 4px 10px rgba(11,39,64,.05), 0 22px 50px rgba(11,39,64,.12);
+      --sh-navy:0 10px 24px rgba(9,30,52,.28), 0 24px 60px rgba(9,30,52,.30);
+
+      --r:24px;
+      --r-sm:16px;
+      --r-xs:13px;
     }
 
     *{ box-sizing:border-box; }
@@ -51,951 +82,553 @@
 
     body{
       margin:0;
-      color:var(--text);
-      font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--ink);
+      font-family:'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(780px 420px at 50% -120px, rgba(201,87,255,.10), transparent 64%),
-        linear-gradient(180deg, #fffdf9 0%, #fff8ee 45%, #f7eefc 100%);
+        radial-gradient(900px 500px at 50% -220px, rgba(10,87,163,.10), transparent 60%),
+        radial-gradient(600px 400px at 100% 8%, rgba(201,148,51,.06), transparent 55%),
+        linear-gradient(180deg, #f2f5f9 0%, #eef1f6 40%, #eaeef4 100%);
+      background-attachment:fixed;
       overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
       -webkit-tap-highlight-color:transparent;
-    }
-
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(rgba(75,16,21,.018) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(75,16,21,.012) 1px, transparent 1px);
-      background-size:34px 34px;
-      opacity:.55;
-      mask-image:linear-gradient(180deg, rgba(0,0,0,.45), transparent 80%);
-      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.45), transparent 80%);
-      z-index:0;
-    }
-
-    body::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(circle at 6% 18%, rgba(255,181,46,.12), transparent 30%),
-        radial-gradient(circle at 92% 28%, rgba(201,87,255,.11), transparent 30%),
-        radial-gradient(circle at 50% 100%, rgba(125,60,255,.07), transparent 34%);
-      z-index:0;
+      letter-spacing:-.01em;
     }
 
     a{ color:inherit; text-decoration:none; }
     button,input{ font-family:inherit; }
+    h1,h2,h3,p{ margin:0; }
 
-    .vl-page{
-      width:100%;
-      min-height:100vh;
-      position:relative;
-      z-index:1;
-      display:flex;
-      justify-content:center;
-      padding:14px 10px 0;
+    .vl-page{ width:100%; min-height:100vh; display:flex; justify-content:center; }
+    .vl-phone{ width:100%; max-width:428px; min-height:100vh; position:relative; padding:18px 16px 112px; }
+
+    .vl-gold-text{ background:var(--gold-metal); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+
+    /* ============ HEADER (Capital Wave) ============ */
+    .cw-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; }
+    .cw-brand{ display:flex; align-items:center; gap:11px; min-width:0; }
+    .cw-mark{
+      width:42px; height:42px; border-radius:50%; flex:0 0 auto; position:relative; display:grid; place-items:center;
+      background:linear-gradient(160deg,#ffffff 0%,#eef4fb 100%);
+      box-shadow:0 8px 20px rgba(11,39,64,.26), inset 0 1px 0 rgba(255,255,255,.14);
     }
+    .cw-mark::after{ content:""; position:absolute; inset:0; border-radius:50%; padding:1.4px; background:var(--gold-metal); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:.85; }
+    .cw-mark svg{ width:26px; height:26px; position:relative; z-index:1; }
+    .cw-word{ display:flex; flex-direction:column; min-width:0; line-height:1; }
+    .cw-word .name{ font-size:18px; font-weight:800; letter-spacing:.01em; color:var(--navy); white-space:nowrap; }
+    .cw-word .name b{ font-weight:800; }
+    .cw-word .tag{ margin-top:5px; font-size:8.5px; font-weight:600; letter-spacing:.24em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
 
-    .vl-phone{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      position:relative;
-      padding:8px 4px 104px;
+    .cw-tools{ display:flex; align-items:center; gap:2px; padding:4px; border-radius:999px; background:var(--card); border:1px solid var(--line); box-shadow:var(--sh-sm); flex:0 0 auto; }
+    .cw-tool{ width:38px; height:38px; border-radius:999px; display:grid; place-items:center; color:var(--ink-soft); position:relative; transition:.16s ease; }
+    .cw-tool:hover{ color:var(--blue); background:var(--blue-soft); }
+    .cw-tool svg{ width:19px; height:19px; }
+    .cw-tool .vl-dot{ position:absolute; right:8px; top:8px; width:7px; height:7px; border-radius:999px; background:var(--gold); border:2px solid var(--card); }
+    .cw-tool-div{ width:1px; height:20px; background:var(--line-2); }
+
+    /* ============ PROFILE ============ */
+    .vl-profile{
+      position:relative; overflow:hidden; border-radius:var(--r); padding:15px 17px; margin-bottom:15px;
+      background:var(--card); border:1px solid var(--line); box-shadow:var(--sh);
+      display:flex; align-items:center; gap:13px;
     }
+    .vl-avatar{ position:relative; width:48px; height:48px; flex:0 0 auto; border-radius:15px; padding:2px; background:var(--gold-metal); }
+    .vl-avatar-inner{ width:100%; height:100%; border-radius:13px; display:grid; place-items:center; color:var(--blue); background:var(--blue-soft); }
+    .vl-avatar-inner svg{ width:24px; height:24px; }
+    .vl-profile-info{ min-width:0; flex:1; }
+    .vl-profile-info h2{ font-size:16px; font-weight:700; letter-spacing:-.02em; color:var(--navy); }
+    .vl-tier{ margin-top:6px; display:inline-flex; align-items:center; gap:6px; padding:3px 9px 3px 8px; border-radius:999px; background:var(--gold-soft); border:1px solid rgba(201,148,51,.22); }
+    .vl-tier svg{ width:11px; height:11px; color:var(--gold-deep); }
+    .vl-tier b{ font-size:10px; font-weight:600; letter-spacing:.04em; color:var(--gold-deep); }
+    .vl-profile-id{ margin-left:8px; font-size:10.5px; font-weight:500; color:var(--muted); }
+    .vl-profile-id b{ color:var(--ink-soft); font-weight:600; }
+    .vl-mascot{ flex:0 0 auto; width:48px; height:48px; }
 
-    /* HEADER */
-    .vl-topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:14px;
-      padding:2px 2px 0;
-    }
-
-    .vl-brand{ display:flex; align-items:center; gap:11px; min-width:0; }
-    .vl-logo{
-      width:50px;
-      height:50px;
-      border-radius:18px;
-      display:grid;
-      place-items:center;
-      overflow:hidden;
-      background:linear-gradient(135deg, rgba(255,181,46,.12), rgba(201,87,255,.12), rgba(125,60,255,.10)), #fff;
-      border:1px solid rgba(75,16,21,.09);
-      box-shadow:0 12px 26px rgba(75,16,21,.075), 0 0 0 5px rgba(255,181,46,.08), inset 0 1px 0 rgba(255,255,255,.9);
-      flex:0 0 auto;
-    }
-
-    .vl-logo img{ width:44px; height:44px; object-fit:contain; display:block; }
-    .vl-brand-copy{ min-width:0; }
-    .vl-brand-copy span{
-      display:block;
-      margin-bottom:5px;
-      color:#9a6e72;
-      font-size:11px;
-      line-height:1;
-      font-weight:850;
-      letter-spacing:.16em;
-      text-transform:uppercase;
-    }
-
-    .vl-brand-copy h1{
-      margin:0;
-      font-size:23px;
-      line-height:1;
-      font-weight:950;
-      letter-spacing:-.055em;
-      color:#3b1116;
-      white-space:nowrap;
-    }
-
-    .vl-actions{ display:flex; align-items:center; gap:9px; flex:0 0 auto; }
-    .vl-icon-btn{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      border:1px solid rgba(75,16,21,.09);
-      background:#fff;
-      color:#5b2a30;
-      display:grid;
-      place-items:center;
-      box-shadow:0 12px 26px rgba(75,16,21,.075);
-      position:relative;
-      transition:.18s ease;
-    }
-
-    .vl-icon-btn:hover{ transform:translateY(-1px); color:var(--brand); box-shadow:0 16px 32px rgba(75,16,21,.11); }
-    .vl-icon-btn svg{ width:20px; height:20px; }
-    .vl-dot{
-      position:absolute;
-      right:9px;
-      top:8px;
-      width:8px;
-      height:8px;
-      border-radius:999px;
-      background:#ef4444;
-      border:2px solid #fff;
-      box-shadow:0 0 0 3px rgba(239,68,68,.12);
-    }
-
-    /* HERO */
+    /* ============ PORTFOLIO HERO (premium navy) ============ */
     .vl-hero{
-      position:relative;
-      overflow:visible;
-      border-radius:30px;
+      position:relative; overflow:hidden; border-radius:26px; padding:20px; color:#fff;
       background:
-        radial-gradient(360px 210px at 95% 0%, rgba(255,255,255,.18), transparent 60%),
-        linear-gradient(135deg, #ffb52e 0%, #c957ff 46%, #7d3cff 100%);
-      border:1px solid rgba(255,255,255,.55);
-      box-shadow:0 24px 52px rgba(201,87,255,.24), inset 0 1px 0 rgba(255,255,255,.22);
-      padding:18px;
-      color:#fff;
+        radial-gradient(420px 240px at 88% -20%, rgba(232,200,116,.16), transparent 62%),
+        radial-gradient(360px 220px at 8% 120%, rgba(47,127,212,.22), transparent 60%),
+        linear-gradient(150deg,#0f3255 0%, #0b2740 52%, #0a2036 100%);
+      box-shadow:var(--sh-navy);
     }
-
+    /* hairline gold border */
     .vl-hero::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      border-radius:inherit;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.20), transparent 34%),
-        radial-gradient(circle at 88% 22%, rgba(255,255,255,.18), transparent 28%);
+      content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; pointer-events:none;
+      background:linear-gradient(150deg, rgba(232,200,116,.6), rgba(232,200,116,0) 34%, rgba(255,255,255,.14) 100%);
+      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
     }
-
+    /* faint grid texture */
     .vl-hero::after{
-      content:"";
-      position:absolute;
-      right:20px;
-      top:20px;
-      width:34px;
-      height:18px;
-      border-radius:999px;
-      border:2px solid rgba(255,255,255,.65);
-      border-left-color:transparent;
-      border-right-color:transparent;
-      opacity:.8;
-      pointer-events:none;
+      content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+      background-image:linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size:26px 26px;
+      -webkit-mask-image:radial-gradient(120% 90% at 80% 0%, #000, transparent 70%);
+      mask-image:radial-gradient(120% 90% at 80% 0%, #000, transparent 70%);
     }
-
     .vl-hero > *{ position:relative; z-index:1; }
-    .vl-hero-head{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:14px; align-items:start; }
+    .vl-hero-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .vl-eyebrow{ display:inline-flex; align-items:center; gap:8px; color:rgba(255,255,255,.62); font-size:9.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; }
+    .vl-eyebrow::before{ content:""; width:6px; height:6px; border-radius:999px; background:var(--gold-lite); box-shadow:0 0 10px rgba(232,200,116,.8); }
+    .vl-live{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; color:#0b2740; background:var(--gold-metal); font-size:10px; font-weight:700; letter-spacing:.02em; box-shadow:0 6px 16px rgba(201,148,51,.34); }
+    .vl-live svg{ width:12px; height:12px; }
 
-    .vl-kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      min-height:28px;
-      padding:0 11px;
-      border-radius:999px;
-      color:#fff9ef;
-      background:rgba(255,255,255,.14);
-      border:1px solid rgba(255,255,255,.18);
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-      font-size:10px;
-      font-weight:950;
-      letter-spacing:.08em;
-      text-transform:uppercase;
+    .vl-balance{ margin-top:16px; color:#fff; font-size:36px; font-weight:700; letter-spacing:-.035em; line-height:1; text-shadow:0 8px 24px rgba(0,0,0,.28); }
+    .vl-balance .rp{ font-size:17px; font-weight:600; color:rgba(255,255,255,.55); margin-right:4px; vertical-align:2px; }
+    .vl-hero-hint{ margin-top:9px; display:inline-flex; align-items:center; gap:7px; color:rgba(255,255,255,.5); font-size:11px; font-weight:500; }
+    .vl-hero-hint svg{ width:13px; height:13px; color:var(--green); }
+    .vl-hero-hint b{ color:#7fe3b4; font-weight:600; }
+
+    .vl-divider{ margin:17px 0; height:1px; background:linear-gradient(90deg, transparent, rgba(232,200,116,.32) 22%, rgba(255,255,255,.1) 78%, transparent); }
+
+    .vl-sub{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+    .vl-sub-box{ position:relative; }
+    .vl-sub-box + .vl-sub-box::before{ content:""; position:absolute; left:-11px; top:2px; bottom:2px; width:1px; background:linear-gradient(180deg, transparent, rgba(255,255,255,.12), transparent); }
+    .vl-sub-box span{ display:flex; align-items:center; gap:6px; color:rgba(255,255,255,.55); font-size:10.5px; font-weight:500; }
+    .vl-sub-box span svg{ width:13px; height:13px; color:var(--gold-lite); opacity:.9; }
+    .vl-sub-box strong{ display:block; margin-top:7px; color:#fff; font-size:16px; font-weight:600; letter-spacing:-.02em; }
+    .vl-sub-box strong .rp{ font-size:11px; color:rgba(255,255,255,.5); font-weight:500; margin-right:2px; }
+
+    .vl-hero-actions{ margin-top:18px; display:grid; grid-template-columns:1.15fr 1fr; gap:11px; }
+    .vl-btn{ min-height:50px; border-radius:15px; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13.5px; font-weight:700; letter-spacing:-.01em; transition:.16s ease; }
+    .vl-btn svg{ width:17px; height:17px; }
+    .vl-btn.primary{ position:relative; color:#3d2b06; background:var(--gold-metal); box-shadow:0 10px 24px rgba(201,148,51,.4), inset 0 1px 0 rgba(255,255,255,.4); overflow:hidden; }
+    .vl-btn.primary::after{ content:""; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent); transform:skewX(-18deg); animation:vlSheen 4.5s ease-in-out infinite; }
+    .vl-btn.primary:hover{ transform:translateY(-1px); }
+    .vl-btn.ghost{ color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2); }
+    .vl-btn.ghost:hover{ background:rgba(255,255,255,.14); }
+
+    /* ============ VIP (membership) ============ */
+    .vl-vip{
+      margin-top:15px; position:relative; overflow:hidden; border-radius:var(--r); padding:17px 18px;
+      background:linear-gradient(135deg,#ffffff 0%, #fdf8ee 100%); border:1px solid var(--line); box-shadow:var(--sh);
     }
+    .vl-vip::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--gold-metal); }
+    .vl-vip::after{ content:""; position:absolute; right:-40px; top:-50px; width:150px; height:150px; border-radius:50%; background:radial-gradient(circle, rgba(201,148,51,.12), transparent 70%); }
+    .vl-vip > *{ position:relative; z-index:1; }
+    .vl-vip-top{ display:flex; align-items:center; gap:13px; }
+    .vl-vip-badge{ position:relative; width:46px; height:46px; flex:0 0 auto; border-radius:14px; padding:1.5px; background:var(--gold-metal); box-shadow:0 8px 18px rgba(201,148,51,.3); }
+    .vl-vip-badge span{ width:100%; height:100%; border-radius:12px; display:grid; place-items:center; color:var(--gold-deep); background:#fffdf8; }
+    .vl-vip-badge svg{ width:21px; height:21px; }
+    .vl-vip-info{ flex:1; min-width:0; }
+    .vl-vip-info .k{ display:block; color:var(--gold-deep); font-size:9px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+    .vl-vip-info h3{ margin-top:5px; font-size:17px; font-weight:700; letter-spacing:-.02em; color:var(--navy); }
+    .vl-vip-info p{ margin-top:3px; font-size:11.5px; font-weight:500; color:var(--muted); }
+    .vl-vip-info p b{ color:var(--ink-soft); font-weight:600; }
+    .vl-vip-chevron{ color:var(--muted-2); }
+    .vl-vip-chevron svg{ width:19px; height:19px; }
 
-    .vl-kicker::before{ content:""; width:7px; height:7px; border-radius:999px; background:#fff3ba; box-shadow:0 0 0 4px rgba(255,243,186,.20); }
-    .vl-portfolio-label{ margin:14px 0 8px; color:rgba(255,255,255,.70); font-size:12px; line-height:1.1; font-weight:650; }
-    .vl-balance{ margin:0; color:#fff; font-size:34px; line-height:1.02; letter-spacing:-.075em; font-weight:950; text-shadow:0 10px 26px rgba(0,0,0,.22); }
+    .vl-vip-progress{ margin-top:16px; }
+    .vl-vip-progress-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; font-size:11.5px; font-weight:500; }
+    .vl-vip-progress-head .lbl{ color:var(--ink-soft); }
+    .vl-vip-progress-head .lbl b{ color:var(--navy); font-weight:700; }
+    .vl-vip-progress-head .pct{ font-weight:700; }
+    .vl-track{ height:8px; border-radius:999px; background:#eee6d4; overflow:hidden; box-shadow:inset 0 1px 2px rgba(11,39,64,.08); }
+    .vl-track-fill{ height:100%; border-radius:999px; background:var(--gold-metal); box-shadow:0 1px 4px rgba(201,148,51,.5); transition:width .9s cubic-bezier(.22,.8,.22,1); }
+    .vl-vip-foot{ margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:11.5px; font-weight:500; color:var(--muted); }
+    .vl-vip-foot b{ color:var(--ink); font-weight:700; }
+    .vl-vip-foot .chip{ display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; background:var(--blue-soft); color:var(--blue); font-weight:600; }
+    .vl-vip-foot .chip::before{ content:""; width:5px; height:5px; border-radius:999px; background:var(--blue); }
 
-    .vl-market-pill{
-      min-width:82px;
-      min-height:38px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      padding:0 12px;
-      border-radius:999px;
-      color:#fff;
-      background:rgba(255,255,255,.15);
-      border:1px solid rgba(255,255,255,.22);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.20);
-      font-size:12px;
-      font-weight:950;
-      white-space:nowrap;
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
+    /* ============ QUICK MENU ============ */
+    .vl-quick{ margin-top:22px; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; padding:16px 8px 14px; background:var(--card); border:1px solid var(--line); border-radius:22px; box-shadow:var(--sh); }
+    .vl-quick-item{ display:flex; flex-direction:column; align-items:center; gap:9px; padding:4px 2px; background:none; border:0; cursor:pointer; opacity:0; transform:translateY(10px); animation:vlQuickIn .55s cubic-bezier(.22,.8,.22,1) forwards; }
+    .vl-quick-item:nth-child(1){ animation-delay:.04s; }
+    .vl-quick-item:nth-child(2){ animation-delay:.10s; }
+    .vl-quick-item:nth-child(3){ animation-delay:.16s; }
+    .vl-quick-item:nth-child(4){ animation-delay:.22s; }
+    .vl-quick-item:nth-child(5){ animation-delay:.28s; }
+    .vl-quick-icon{
+      width:50px; height:50px; border-radius:16px; display:grid; place-items:center; position:relative;
+      color:var(--blue); background:var(--blue-soft);
+      transition:transform .22s cubic-bezier(.22,.8,.22,1), box-shadow .2s ease, color .2s ease, background .2s ease;
     }
+    .vl-quick-icon::after{ content:""; position:absolute; inset:0; border-radius:inherit; padding:1.4px; background:var(--gold-metal); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:0; transition:.2s ease; }
+    .vl-quick-item:hover .vl-quick-icon{ transform:translateY(-4px); color:var(--gold-deep); background:var(--gold-soft); box-shadow:0 12px 22px rgba(201,148,51,.26); }
+    .vl-quick-item:hover .vl-quick-icon::after{ opacity:1; }
+    .vl-quick-item:active .vl-quick-icon{ transform:translateY(-1px) scale(.95); }
+    .vl-quick-icon svg{ width:23px; height:23px; position:relative; z-index:1; }
+    .vl-quick-icon .badge{ position:absolute; right:7px; top:7px; width:8px; height:8px; border-radius:999px; background:var(--gold); border:2px solid var(--card); z-index:2; box-shadow:0 0 0 3px rgba(201,148,51,.14); }
+    .vl-quick-item span{ font-size:10.5px; font-weight:600; color:var(--ink-soft); }
+    @keyframes vlQuickIn{ to{ opacity:1; transform:translateY(0); } }
 
-    .vl-market-pill svg{ width:15px; height:15px; }
-
-    .vl-chart-panel{
-      margin-top:17px;
-      min-height:128px;
-      border-radius:24px;
-      padding:13px;
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
-      overflow:hidden;
-    }
-
-    .vl-chart-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
-    .vl-chart-top span{ color:rgba(255,255,255,.64); font-size:10.5px; font-weight:750; }
-    .vl-chart-top strong{ color:#fff3ba; font-size:11px; font-weight:950; }
-    .vl-main-chart{ width:100%; height:82px; display:block; overflow:visible; }
-    .vl-main-chart .chart-grid{ stroke:rgba(255,255,255,.12); stroke-width:1; }
-    .vl-main-chart .chart-area{ fill:url(#mainChartFill); opacity:.72; }
-    .vl-main-chart .chart-line{ fill:none; stroke:url(#mainChartStroke); stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 5px 10px rgba(0,0,0,.12)); stroke-dasharray:420; stroke-dashoffset:420; animation:vlLineDraw 1.25s cubic-bezier(.22,.8,.22,1) forwards; }
-    .vl-main-chart .chart-glow{ fill:none; stroke:rgba(255,255,255,.20); stroke-width:8; stroke-linecap:round; stroke-linejoin:round; filter:blur(1px); opacity:.7; }
-    .vl-live-dot{ fill:#fff; filter:drop-shadow(0 0 10px rgba(255,255,255,.65)); animation:vlDotPulse 1.7s ease-in-out infinite; transform-origin:center; }
-
-    .vl-metrics{ margin-top:11px; display:grid; grid-template-columns:1fr; gap:9px; }
-    .vl-metric{ min-height:62px; border-radius:20px; padding:11px 12px; background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.16); box-shadow:inset 0 1px 0 rgba(255,255,255,.10); }
-    .vl-metric span{ display:block; margin-bottom:7px; color:rgba(255,255,255,.62); font-size:10px; font-weight:750; }
-    .vl-metric strong{ display:block; color:#fff; font-size:13px; line-height:1.15; letter-spacing:-.02em; font-weight:950; }
-    .vl-metric strong.is-up{ color:#fff3ba; }
-
-    .vl-hero-actions{ margin-top:11px; display:grid; grid-template-columns:1fr 1fr; gap:9px; }
-    .vl-main-btn{ min-height:50px; border-radius:18px; display:flex; align-items:center; justify-content:center; gap:9px; font-size:12.5px; line-height:1; font-weight:950; transition:.18s ease; }
-    .vl-main-btn:hover{ transform:translateY(-1px); filter:brightness(1.02); }
-    .vl-main-btn svg{ width:18px; height:18px; }
-    .vl-main-btn.deposit{ color:#4a1218; background:linear-gradient(135deg,#ffb52e,#ffd45c); border:1px solid rgba(255,255,255,.55); box-shadow:0 14px 28px rgba(255,181,46,.38), inset 0 1px 0 rgba(255,255,255,.55); }
-    .vl-main-btn.withdraw{ color:#fff; background:linear-gradient(135deg,#7d3cff,#c957ff); border:1px solid rgba(255,255,255,.22); box-shadow:0 14px 28px rgba(125,60,255,.38), inset 0 1px 0 rgba(255,255,255,.18); }
-
-    /* PROMO */
-    .vl-promo{ margin-top:14px; position:relative; overflow:hidden; border-radius:26px; background:#fff; border:1px solid var(--border); box-shadow:var(--shadow-soft); }
-    .vl-promo-viewport{ overflow:hidden; width:100%; aspect-ratio:9/4; border-radius:26px; }
-    .vl-promo-track{ height:100%; display:flex; transition:transform .52s cubic-bezier(.22,.8,.22,1); will-change:transform; cursor:grab; }
-    .vl-promo-track.is-dragging{ transition:none !important; cursor:grabbing; }
-    .vl-promo-slide{ flex:0 0 100%; width:100%; height:100%; display:block; }
-    .vl-promo-img{ width:100%; height:100%; object-fit:cover; display:block; background:#fff2df; }
-    .vl-promo-dots{ position:absolute; left:50%; bottom:9px; transform:translateX(-50%); z-index:5; display:flex; gap:6px; padding:5px 8px; border-radius:999px; background:rgba(255,255,255,.82); border:1px solid rgba(75,16,21,.09); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 8px 18px rgba(75,16,21,.12); }
-    .vl-promo-dot{ width:7px; height:7px; border:0; padding:0; border-radius:999px; background:rgba(148,104,112,.38); transition:.22s ease; cursor:pointer; }
-    .vl-promo-dot.active{ width:19px; background:linear-gradient(90deg,var(--gold),var(--violet),var(--brand)); box-shadow:0 0 13px rgba(201,87,255,.25); }
-
-    /* TRUST */
-    .vl-trust{ margin-top:14px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; align-items:center; min-height:64px; padding:11px 13px; border-radius:24px; background:#fff; border:1px solid var(--border); box-shadow:var(--shadow-soft); }
-    .vl-trust-title{ color:#3b1116; font-size:13px; line-height:1.2; font-weight:950; letter-spacing:-.025em; }
-    .vl-trust-sub{ margin-top:4px; color:#9a6e72; font-size:10px; font-weight:800; }
-    .vl-trust-logos{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
-    .vl-trust-logos img{ width:auto; object-fit:contain; filter:drop-shadow(0 3px 5px rgba(75,16,21,.075)) saturate(1.02); }
-    .vl-trust-logos .ojk{ height:42px; }
-    .vl-trust-logos .bappebti{ height:34px; }
-
-    /* INVITE */
-    .vl-invite{ margin-top:14px; position:relative; overflow:hidden; min-height:150px; border-radius:28px; padding:18px; background:linear-gradient(135deg,#ffffff 0%,#fff2df 100%); border:1px solid var(--border); box-shadow:var(--shadow-soft); color:#3b1116; }
-    .vl-invite::after{ content:""; position:absolute; right:-44px; bottom:-60px; width:188px; height:188px; border-radius:50%; background:rgba(201,87,255,.10); }
-    .vl-invite-content{ position:relative; z-index:2; max-width:225px; }
-    .vl-invite h2{ margin:0; font-size:22px; line-height:1.04; letter-spacing:-.06em; font-weight:950; color:#3b1116; }
-    .vl-invite h2 span{ color:var(--brand); }
-    .vl-invite p{ margin:8px 0 0; color:#9a6e72; font-size:11.5px; line-height:1.4; font-weight:750; }
-    .vl-invite-btn{ margin-top:13px; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:0 16px; border-radius:999px; color:#fff; background:linear-gradient(135deg,var(--gold),var(--violet),var(--brand)); border:1px solid rgba(255,255,255,.24); box-shadow:0 14px 28px rgba(201,87,255,.20); font-size:12px; font-weight:950; }
-     .vl-invite-coin{ position:absolute; z-index:2; right:22px; top:24px; width:74px; height:74px; border-radius:26px; display:grid; place-items:center; color:#fff; background:linear-gradient(160deg,#ffffff 0%,#f8f4ff 60%,#fff5e8 100%); border:1px solid rgba(201,87,255,.14); box-shadow:0 16px 30px rgba(201,87,255,.14), 0 4px 12px rgba(75,16,21,.07), inset 0 1px 0 rgba(255,255,255,.95); animation:vlFloat 4s ease-in-out infinite; }
-    .vl-invite-coin svg{ width:36px; height:36px; }
-
-    /* SECTION */
-    .vl-section{ margin-top:20px; }
-    .vl-section-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:13px; padding:0 2px; }
-    .vl-section-title h2{ margin:0; color:#3b1116; font-size:18px; line-height:1.15; letter-spacing:-.035em; font-weight:900; }
-    .vl-section-title p{ margin:5px 0 0; color:#8b6b70; font-size:11px; font-weight:550; }
-    .vl-see-all{ display:inline-flex; align-items:center; gap:5px; color:var(--brand); font-size:11.5px; font-weight:850; white-space:nowrap; }
+    /* ============ SECTION ============ */
+    .vl-section{ margin-top:26px; }
+    .vl-section-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:15px; }
+    .vl-section-title{ display:flex; align-items:center; gap:11px; }
+    .vl-section-title .bar{ width:4px; height:30px; border-radius:999px; background:var(--gold-metal); }
+    .vl-section-title h2{ color:var(--navy); font-size:18px; font-weight:700; letter-spacing:-.025em; }
+    .vl-section-title p{ margin-top:3px; color:var(--muted); font-size:11.5px; font-weight:500; }
+    .vl-see-all{ display:inline-flex; align-items:center; gap:5px; padding:8px 14px; border-radius:999px; color:var(--blue); background:var(--card); border:1px solid var(--line); box-shadow:var(--sh-sm); font-size:11.5px; font-weight:600; white-space:nowrap; }
     .vl-see-all svg{ width:13px; height:13px; }
 
-    /* CATEGORY */
-    .vl-categories{ overflow:hidden; margin:0 -2px; position:relative; }
-    .vl-category-track{ display:flex; gap:10px; overflow:auto; padding:2px 2px 8px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
-    .vl-category-track::-webkit-scrollbar{ display:none; }
-    .vl-cat{ flex:0 0 116px; min-height:124px; border:0; border-radius:24px; padding:12px; color:#3b1116; background:#fff; border:1px solid var(--border); box-shadow:var(--shadow-soft); text-align:left; cursor:pointer; transition:.18s ease; }
-    .vl-cat:hover,.vl-cat.active{ transform:translateY(-2px); border-color:rgba(201,87,255,.24); box-shadow:0 18px 34px rgba(75,16,21,.11), 0 0 0 4px rgba(255,181,46,.10); }
-    .vl-cat.regular{ --cat-accent:#7d3cff; --cat-accent2:#c957ff; --cat-soft:#f6efff; }
-    .vl-cat.daily{ --cat-accent:#ffb52e; --cat-accent2:#ffcf57; --cat-soft:#fff5df; }
-    .vl-cat.premium{ --cat-accent:#c957ff; --cat-accent2:#7d3cff; --cat-soft:#f7efff; }
-    .vl-cat-icon{ width:42px; height:42px; border-radius:17px; display:grid; place-items:center; color:var(--cat-accent); background:var(--cat-soft); box-shadow:inset 0 0 0 1px rgba(17,24,39,.04); margin-bottom:15px; }
-    .vl-cat-icon svg{ width:21px; height:21px; }
-    .vl-cat strong{ display:block; color:#3b1116; font-size:13px; line-height:1.16; font-weight:900; letter-spacing:-.02em; }
-    .vl-cat span{ display:block; margin-top:6px; color:#8b6b70; font-size:10.5px; line-height:1.2; font-weight:650; }
+    /* ============ CATEGORY TABS ============ */
+    .vl-cats{ display:flex; gap:8px; overflow-x:auto; overflow-y:hidden; padding:8px 4px 22px; margin:0 -2px -10px; scrollbar-width:none; }
+    .vl-cats::-webkit-scrollbar{ display:none; }
+    .vl-cat{
+      flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; height:40px; padding:0 16px; border:0; cursor:pointer;
+      border-radius:999px; color:var(--ink-soft); background:var(--card); border:1px solid var(--line); box-shadow:var(--sh-sm);
+      font-size:12.5px; font-weight:500; transition:transform .16s ease, color .16s ease, background .16s ease, box-shadow .16s ease; white-space:nowrap;
+      opacity:0; animation:vlQuickIn .5s cubic-bezier(.22,.8,.22,1) forwards;
+    }
+    .vl-cat:nth-child(1){ animation-delay:.22s; }
+    .vl-cat:nth-child(2){ animation-delay:.28s; }
+    .vl-cat:nth-child(3){ animation-delay:.34s; }
+    .vl-cat:nth-child(4){ animation-delay:.40s; }
+    .vl-cat:active{ transform:scale(.97); }
+    .vl-cat svg{ width:15px; height:15px; opacity:.85; }
+    .vl-cat .count{ font-size:11px; color:var(--muted); font-weight:600; }
+    .vl-cat.active{ color:#fff; background:linear-gradient(135deg,#123457,#0b2740); border-color:transparent; font-weight:600; box-shadow:0 8px 16px rgba(11,39,64,.2); }
+    .vl-cat.active svg{ opacity:1; color:var(--gold-lite); }
+    .vl-cat.active .count{ color:rgba(255,255,255,.6); }
 
-    /* ASSET LIST */
-    .vl-products{ display:flex; flex-direction:column; gap:11px; }
+    /* ============ PRODUCT CARDS (slider) ============ */
+    .vl-products{
+      display:flex; flex-direction:row; gap:13px;
+      overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+      margin:-2px 0 -8px; padding:8px 0 20px; scrollbar-width:none;
+    }
+    .vl-products::-webkit-scrollbar{ display:none; }
     .vl-product-pane{ display:none; }
     .vl-product-pane.active{ display:block; }
-    .vl-asset-card{ position:relative; overflow:hidden; border-radius:25px; background:#fff; border:1px solid var(--border); box-shadow:var(--shadow-soft); transition:.18s ease; }
-    .vl-asset-card + .vl-asset-card{ margin-top:11px; }
-    .vl-asset-card::before{ content:""; position:absolute; inset:0; pointer-events:none; background:radial-gradient(220px 120px at 92% 2%, var(--asset-soft), transparent 68%); opacity:.95; }
-    .vl-asset-card:hover{ transform:translateY(-1px); border-color:rgba(201,87,255,.20); box-shadow:0 18px 36px rgba(75,16,21,.11); }
-    .vl-asset-card.regular{ --asset-accent:#7d3cff; --asset-accent2:#c957ff; --asset-soft:rgba(201,87,255,.11); --asset-bg:#f6efff; }
-    .vl-asset-card.daily{ --asset-accent:#ffb52e; --asset-accent2:#ffcf57; --asset-soft:rgba(255,181,46,.16); --asset-bg:#fff5df; }
-    .vl-asset-card.premium{ --asset-accent:#c957ff; --asset-accent2:#7d3cff; --asset-soft:rgba(201,87,255,.13); --asset-bg:#f7efff; }
+    .vl-asset-card{ flex:0 0 88%; scroll-snap-align:start; position:relative; overflow:hidden; border-radius:var(--r); background:var(--card); border:1px solid var(--line); box-shadow:var(--sh); transition:.18s ease; }
+    .vl-asset-card::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold-metal); opacity:0; transition:.18s ease; }
+    .vl-asset-card:hover{ box-shadow:var(--sh-lg); transform:translateY(-1px); }
+    .vl-asset-card:hover::before{ opacity:1; }
 
-    .vl-asset-row{ position:relative; z-index:1; min-height:104px; display:grid; grid-template-columns:52px minmax(0,1fr) 118px; grid-template-areas:"icon info chart" "icon meta chart"; gap:6px 11px; align-items:center; padding:14px 12px; }
-    .vl-token{ grid-area:icon; width:50px; height:50px; border-radius:19px; display:grid; place-items:center; color:var(--asset-accent); background:var(--asset-bg); box-shadow:inset 0 0 0 1px rgba(17,24,39,.04); font-size:15px; font-weight:950; }
-    .vl-asset-info{ grid-area:info; min-width:0; align-self:end; }
-    .vl-asset-info h3{ margin:0; color:#3b1116; font-size:14px; line-height:1.17; letter-spacing:-.025em; font-weight:950; white-space:normal; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
-    .vl-asset-info p{ margin:5px 0 0; color:#8b6b70; font-size:10.5px; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .vl-asset-meta{ grid-area:meta; display:flex; align-items:center; gap:7px; min-width:0; align-self:start; }
-    .vl-price{ color:#3b1116; font-size:12px; font-weight:950; white-space:nowrap; letter-spacing:-.02em; }
-    .vl-profit-badge{ min-height:22px; display:inline-flex; align-items:center; padding:0 8px; border-radius:999px; color:var(--asset-accent); background:var(--asset-bg); font-size:10px; line-height:1; font-weight:950; white-space:nowrap; }
-    .vl-spark{ grid-area:chart; width:100%; height:58px; align-self:center; overflow:visible; }
-    .vl-spark .spark-grid{ stroke:rgba(75,16,21,.10); stroke-width:1; }
-    .vl-spark .spark-area{ fill:var(--asset-accent); opacity:.12; }
-    .vl-spark .spark-line{ fill:none; stroke:var(--asset-accent); stroke-width:2.8; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 5px 9px rgba(75,16,21,.06)); stroke-dasharray:260; stroke-dashoffset:260; animation:vlLineDraw .95s cubic-bezier(.22,.8,.22,1) forwards; }
-    .vl-spark .spark-glow{ fill:none; stroke:var(--asset-accent); stroke-width:7; opacity:.10; stroke-linecap:round; stroke-linejoin:round; filter:blur(1px); }
-    .vl-spark .spark-dot{ fill:var(--asset-accent); filter:drop-shadow(0 0 10px var(--asset-soft)); animation:vlDotPulse 1.9s ease-in-out infinite; transform-origin:center; }
+    .vl-asset-top{ display:flex; align-items:center; gap:12px; padding:17px 17px 12px; }
+    .vl-token{ position:relative; width:44px; height:44px; flex:0 0 auto; border-radius:13px; padding:1.5px; background:var(--gold-metal); }
+    .vl-token span{ width:100%; height:100%; border-radius:11px; display:grid; place-items:center; color:var(--navy); background:#fff; font-size:13px; font-weight:700; letter-spacing:-.02em; }
+    .vl-asset-headline{ min-width:0; flex:1; }
+    .vl-asset-headline h3{ color:var(--navy); font-size:15.5px; font-weight:700; letter-spacing:-.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .vl-asset-headline p{ margin-top:4px; display:flex; align-items:center; gap:5px; color:var(--muted); font-size:11px; font-weight:500; }
+    .vl-asset-headline p svg{ width:12px; height:12px; color:var(--green); }
+    .vl-profit-badge{ flex:0 0 auto; display:inline-flex; align-items:center; gap:3px; padding:5px 10px; border-radius:10px; color:var(--green); background:var(--green-soft); font-size:11.5px; font-weight:700; }
 
-    .vl-asset-detail{ position:relative; z-index:1; display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--border); background:#fffaf3; }
-    .vl-detail{ padding:11px 10px; }
-    .vl-detail + .vl-detail{ border-left:1px solid var(--border); }
-    .vl-detail span{ display:block; margin-bottom:5px; color:#9a6e72; font-size:9.5px; line-height:1.1; font-weight:650; }
-    .vl-detail strong{ color:#3b1116; font-size:11px; line-height:1.15; font-weight:850; letter-spacing:-.01em; }
-    .vl-detail strong.accent{ color:var(--asset-accent); }
-    .vl-asset-action{ position:relative; z-index:1; padding:0 12px 12px; background:#fffaf3; }
-    .vl-buy{ width:100%; min-height:45px; border:0; border-radius:16px; display:flex; align-items:center; justify-content:center; gap:8px; color:#fff; background:linear-gradient(135deg,var(--asset-accent),var(--asset-accent2)); box-shadow:0 14px 26px var(--asset-soft); font-size:12.5px; font-weight:950; cursor:pointer; transition:.18s ease; }
-    .vl-buy:hover{ transform:translateY(-1px); filter:brightness(1.03); }
-    .vl-buy.muted{ color:#8b6b70; background:#fff0db; border:1px solid rgba(17,24,39,.06); box-shadow:none; cursor:not-allowed; }
-    .vl-empty{ padding:18px 14px; border-radius:22px; background:#fff; border:1px dashed rgba(75,16,21,.22); color:#8b6b70; text-align:center; font-size:12.5px; font-weight:750; }
-    .vl-bottom-spacer{ height:96px; }
+    .vl-spark-wrap{ padding:0 16px; }
+    .vl-spark{ width:100%; height:70px; display:block; overflow:visible; }
+    .vl-spark .spark-grid{ stroke:var(--line); stroke-width:1; stroke-dasharray:2 4; }
+    .vl-spark .spark-area{ fill:url(#vlSparkFill); }
+    .vl-spark .spark-line{ fill:none; stroke:var(--chart); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; filter:drop-shadow(0 4px 7px rgba(22,168,106,.20)); stroke-dasharray:520; stroke-dashoffset:520; animation:vlDraw 1.2s ease forwards; }
+    .vl-spark .spark-glow{ display:none; }
+    .vl-spark .spark-dot{ fill:var(--chart); stroke:#fff; stroke-width:1.6; filter:drop-shadow(0 0 6px rgba(22,168,106,.75)); animation:vlPulse 2s ease-in-out infinite; transform-origin:center; }
 
+    .vl-indicators{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:15px 16px 8px; }
+    .vl-ind{ text-align:center; }
+    .vl-ind span{ display:block; margin-bottom:8px; color:var(--muted); font-size:9px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; }
+    .vl-ind-dots{ display:flex; justify-content:center; gap:3px; }
+    .vl-ind-dots i{ width:14px; height:4px; border-radius:999px; background:var(--line-2); }
+    .vl-ind.risk i.on{ background:var(--gold); }
+    .vl-ind.profit i.on{ background:var(--green); }
+    .vl-ind.eff i.on{ background:var(--blue); }
 
-    /* CS / CHANNEL WELCOME POPUP */
-.vl-cs-popup{
-  position:fixed;
-  inset:0;
-  z-index:100000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px 14px;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(255,181,46,.18), transparent 34%),
-    radial-gradient(circle at 90% 22%, rgba(125,60,255,.22), transparent 38%),
-    rgba(38, 10, 45, .58);
-  backdrop-filter:blur(18px);
-  -webkit-backdrop-filter:blur(18px);
-}
+    .vl-asset-detail{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--line); margin-top:14px; background:var(--tint); }
+    .vl-detail{ padding:14px; }
+    .vl-detail + .vl-detail{ border-left:1px solid var(--line); }
+    .vl-detail span{ display:block; margin-bottom:6px; color:var(--muted); font-size:9.5px; font-weight:500; letter-spacing:.05em; text-transform:uppercase; }
+    .vl-detail strong{ color:var(--navy); font-size:13px; font-weight:700; letter-spacing:-.01em; }
+    .vl-detail strong.gold{ color:var(--gold-deep); }
+    .vl-detail strong.blue{ color:var(--blue); }
 
-.vl-cs-popup.show{
-  display:flex;
-}
-
-.vl-cs-card{
-  width:100%;
-  max-width:420px;
-  position:relative;
-  overflow:hidden;
-  border-radius:34px;
-  background:
-    radial-gradient(280px 180px at 100% 0%, rgba(201,87,255,.22), transparent 64%),
-    radial-gradient(260px 170px at 0% 100%, rgba(255,181,46,.18), transparent 62%),
-    linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,248,239,.96));
-  border:1px solid rgba(255,255,255,.76);
-  box-shadow:
-    0 34px 90px rgba(41, 10, 55, .34),
-    0 0 0 1px rgba(125,60,255,.08),
-    inset 0 1px 0 rgba(255,255,255,.92);
-  animation:vlCsIn .32s cubic-bezier(.22,.8,.22,1) both;
-}
-
-.vl-cs-card::before{
-  content:"";
-  position:absolute;
-  left:-90px;
-  top:-80px;
-  width:190px;
-  height:190px;
-  border-radius:999px;
-  background:linear-gradient(135deg, rgba(255,181,46,.28), rgba(201,87,255,.20));
-  filter:blur(8px);
-}
-
-.vl-cs-card::after{
-  content:"";
-  position:absolute;
-  right:-70px;
-  bottom:-90px;
-  width:210px;
-  height:210px;
-  border-radius:999px;
-  background:linear-gradient(135deg, rgba(125,60,255,.18), rgba(255,181,46,.16));
-  filter:blur(10px);
-}
-
-.vl-cs-inner{
-  position:relative;
-  z-index:2;
-  padding:22px;
-}
-
-.vl-cs-top{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:18px;
-}
-
-.vl-cs-brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  min-width:0;
-}
-
-.vl-cs-logo{
-  width:52px;
-  height:52px;
-  border-radius:19px;
-  display:grid;
-  place-items:center;
-  background:
-    linear-gradient(135deg, rgba(255,181,46,.18), rgba(201,87,255,.16), rgba(125,60,255,.13)),
-    #fff;
-  border:1px solid rgba(75,16,21,.08);
-  box-shadow:0 16px 32px rgba(75,16,21,.10);
-  overflow:hidden;
-  flex:0 0 auto;
-}
-
-.vl-cs-logo img{
-  width:44px;
-  height:44px;
-  object-fit:contain;
-  display:block;
-}
-
-.vl-cs-brand span{
-  display:block;
-  margin-bottom:5px;
-  font-size:10px;
-  font-weight:950;
-  letter-spacing:.16em;
-  color:#9b6b72;
-  text-transform:uppercase;
-}
-
-.vl-cs-brand strong{
-  display:block;
-  color:#3b1116;
-  font-size:19px;
-  line-height:1;
-  font-weight:950;
-  letter-spacing:-.045em;
-}
-
-.vl-cs-close{
-  width:40px;
-  height:40px;
-  border:0;
-  border-radius:15px;
-  color:#5b2a30;
-  background:rgba(255,255,255,.72);
-  box-shadow:0 10px 24px rgba(75,16,21,.08);
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-}
-
-.vl-cs-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  min-height:32px;
-  padding:0 12px;
-  border-radius:999px;
-  color:#fff;
-  background:linear-gradient(135deg, var(--gold), var(--violet), var(--brand));
-  box-shadow:0 14px 28px rgba(125,60,255,.22);
-  font-size:10.5px;
-  font-weight:950;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-}
-
-.vl-cs-badge::before{
-  content:"";
-  width:7px;
-  height:7px;
-  border-radius:999px;
-  background:#fff3ba;
-  box-shadow:0 0 0 5px rgba(255,255,255,.18);
-}
-
-.vl-cs-title{
-  margin:14px 0 0;
-  color:#321047;
-  font-size:27px;
-  line-height:1.04;
-  font-weight:950;
-  letter-spacing:-.07em;
-}
-
-.vl-cs-title span{
-  color:var(--brand);
-}
-
-.vl-cs-desc{
-  margin:10px 0 0;
-  max-width:330px;
-  color:#8b6b70;
-  font-size:12.5px;
-  line-height:1.55;
-  font-weight:720;
-}
-
-.vl-cs-info{
-  margin-top:18px;
-  display:grid;
-  gap:10px;
-}
-
-.vl-cs-info-item{
-  min-height:58px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px;
-  border-radius:22px;
-  background:rgba(255,255,255,.74);
-  border:1px solid rgba(75,16,21,.08);
-  box-shadow:0 12px 28px rgba(75,16,21,.065);
-}
-
-.vl-cs-info-icon{
-  width:38px;
-  height:38px;
-  border-radius:15px;
-  display:grid;
-  place-items:center;
-  color:#fff;
-  background:linear-gradient(135deg, var(--gold), var(--violet), var(--brand));
-  flex:0 0 auto;
-}
-
-.vl-cs-info-icon svg{
-  width:19px;
-  height:19px;
-}
-
-.vl-cs-info-text{
-  min-width:0;
-}
-
-.vl-cs-info-text span{
-  display:block;
-  margin-bottom:4px;
-  color:#9a6e72;
-  font-size:10px;
-  font-weight:850;
-  text-transform:uppercase;
-  letter-spacing:.08em;
-}
-
-.vl-cs-info-text strong{
-  display:block;
-  color:#3b1116;
-  font-size:13px;
-  line-height:1.15;
-  font-weight:950;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.vl-cs-actions{
-  margin-top:18px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-
-.vl-cs-btn{
-  min-height:50px;
-  border-radius:18px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:9px;
-  font-size:12.5px;
-  font-weight:950;
-  transition:.18s ease;
-}
-
-.vl-cs-btn:hover{
-  transform:translateY(-1px);
-  filter:brightness(1.02);
-}
-
-.vl-cs-btn svg{
-  width:18px;
-  height:18px;
-}
-
-.vl-cs-btn.cs{
-  color:#4a1218;
-  background:linear-gradient(135deg,#ffb52e,#ffd45c);
-  box-shadow:0 16px 28px rgba(255,181,46,.28);
-}
-
-.vl-cs-btn.channel{
-  color:#fff;
-  background:linear-gradient(135deg,#7d3cff,#c957ff);
-  box-shadow:0 16px 28px rgba(125,60,255,.30);
-}
-
-.vl-cs-foot{
-  margin-top:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  color:#9a6e72;
-  font-size:10.5px;
-  font-weight:800;
-}
-
-.vl-cs-foot svg{
-  width:14px;
-  height:14px;
-  color:var(--gold);
-}
-
-@keyframes vlCsIn{
-  from{
-    opacity:0;
-    transform:translateY(18px) scale(.94);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0) scale(1);
-  }
-}
-
-@media(max-width:370px){
-  .vl-cs-inner{
-    padding:18px;
-  }
-
-  .vl-cs-title{
-    font-size:23px;
-  }
-
-  .vl-cs-actions{
-    grid-template-columns:1fr;
-  }
-}
-
-    /* MODAL */
-    .vl-modal-overlay{ position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center; padding:18px 14px; background:rgba(75,16,21,.35); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); }
-    .vl-modal-overlay.show{ display:flex; }
-    .vl-modal{ width:100%; max-width:420px; border-radius:28px; background:#fff; border:1px solid rgba(255,255,255,.72); box-shadow:0 30px 80px rgba(75,16,21,.22); overflow:hidden; animation:vlModalIn .24s ease both; }
-    .vl-modal-head{ padding:15px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); }
-    .vl-modal-title{ display:flex; align-items:center; gap:10px; color:#3b1116; font-size:15px; font-weight:950; letter-spacing:-.02em; }
-    .vl-modal-icon{ width:36px; height:36px; border-radius:15px; display:grid; place-items:center; color:#fff; background:linear-gradient(135deg,var(--gold),var(--violet),var(--brand)); }
-    .vl-modal-close{ width:38px; height:38px; border-radius:14px; border:1px solid var(--border); background:#fff8ef; color:#5b2a30; display:grid; place-items:center; cursor:pointer; }
-    .vl-modal-body{ padding:17px; color:#9a6e72; text-align:center; font-size:13px; line-height:1.55; font-weight:700; }
-    .vl-modal-body b{ color:#3b1116; }
-    .vl-modal-actions{ padding:0 17px 17px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .vl-modal-btn{ min-height:44px; border-radius:16px; border:1px solid var(--border); background:#fff8ef; color:#9a6e72; font-size:12.5px; font-weight:950; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-    .vl-modal-btn.primary{ border:0; color:#fff; background:linear-gradient(135deg,var(--gold),var(--violet),var(--brand)); box-shadow:0 14px 26px rgba(201,87,255,.20); }
-
-    /* PROMO POPUP */
-    .vl-promo-popup{ position:fixed; inset:0; z-index:99999; display:none; align-items:center; justify-content:center; padding:24px 10px 96px; background:rgba(75,16,21,.38); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
-    .vl-promo-popup.show{ display:flex; }
-    .vl-promo-popup-modal{ width:min(calc(100vw - 18px),430px); position:relative; display:flex; align-items:center; justify-content:center; animation:vlPromoIn .26s ease forwards; }
-    .vl-promo-popup-img{ width:100%; height:auto; display:block; object-fit:contain; transform:scale(1.36); filter:drop-shadow(0 26px 50px rgba(75,16,21,.24)); }
-    .vl-promo-popup-close{ position:absolute; left:50%; bottom:-92px; transform:translateX(-50%); width:48px; height:48px; border-radius:999px; border:1px solid rgba(75,16,21,.09); display:grid; place-items:center; background:rgba(255,255,255,.96); color:#5b2a30; box-shadow:0 14px 32px rgba(75,16,21,.18); cursor:pointer; }
-
-    /* BOTTOM NAV COMPAT */
-    .rb-bottom-spacer{ height:94px !important; }
-    .rb-bottom-nav{ background:rgba(255,255,255,.94) !important; border:1px solid rgba(75,16,21,.09) !important; box-shadow:0 -18px 42px rgba(75,16,21,.10), inset 0 1px 0 rgba(255,255,255,.75) !important; backdrop-filter:blur(22px) !important; -webkit-backdrop-filter:blur(22px) !important; }
-    .rb-bottom-nav__item{ color:#b78d92 !important; }
-    .rb-bottom-nav__item:hover{ color:#5b2a30 !important; }
-    .rb-bottom-nav__item.is-active{ color:#3b1116 !important; text-shadow:none; }
-    .rb-bottom-nav__item.is-active .rb-bottom-nav__icon{ filter:drop-shadow(0 8px 12px rgba(201,87,255,.20)); }
-
-    /* ANIMATIONS */
-    @keyframes vlLineDraw{ to{ stroke-dashoffset:0; } }
-    @keyframes vlDotPulse{ 0%,100%{ transform:scale(.86); opacity:.72; } 50%{ transform:scale(1.2); opacity:1; } }
-    @keyframes vlFloat{ 0%,100%{ transform:translate3d(0,0,0) rotate(0deg); } 50%{ transform:translate3d(0,-8px,0) rotate(4deg); } }
-    @keyframes vlModalIn{ from{ opacity:0; transform:translateY(16px) scale(.96); } to{ opacity:1; transform:translateY(0) scale(1); } }
-    @keyframes vlPromoIn{ from{ opacity:0; transform:translateY(16px) scale(.96); } to{ opacity:1; transform:translateY(0) scale(1); } }
-
-    @media (max-width:370px){
-      .vl-page{ padding-left:8px; padding-right:8px; }
-      .vl-logo{ width:44px; height:44px; border-radius:15px; }
-      .vl-logo img{ width:38px; height:38px; }
-      .vl-brand-copy h1{ font-size:21px; }
-      .vl-icon-btn{ width:39px; height:39px; }
-      .vl-hero{ border-radius:28px; padding:16px; }
-      .vl-balance{ font-size:28px; }
-      .vl-chart-panel{ min-height:116px; padding:12px; }
-      .vl-main-chart{ height:74px; }
-      .vl-metrics{ grid-template-columns:1fr; }
-      .vl-asset-row{ grid-template-columns:46px minmax(0,1fr) 106px; min-height:98px; gap:6px 9px; padding:12px 10px; }
-      .vl-token{ width:44px; height:44px; border-radius:17px; }
-      .vl-spark{ height:52px; }
-      .vl-asset-info h3{ font-size:12.7px; }
-      .vl-price{ font-size:11px; }
-      .vl-asset-detail{ grid-template-columns:1fr; }
-      .vl-detail + .vl-detail{ border-left:0; border-top:1px solid var(--border); }
-      .vl-trust{ grid-template-columns:1fr; }
-      .vl-trust-logos{ justify-content:flex-start; }
-      .vl-invite-coin{ width:60px; height:60px; border-radius:22px; right:16px; top:24px; opacity:.95; }
-      .vl-invite-content{ max-width:205px; }
+    .vl-asset-action{ padding:14px 16px 16px; }
+    .vl-buy{ position:relative; overflow:hidden; width:100%; min-height:48px; border:0; border-radius:14px; display:flex; align-items:center; justify-content:center; gap:8px; color:#fff; background:linear-gradient(135deg,#123457,#0b2740); box-shadow:0 10px 22px rgba(11,39,64,.24), inset 0 1px 0 rgba(255,255,255,.08); font-size:13.5px; font-weight:700; letter-spacing:-.01em; cursor:pointer; transition:.16s ease; }
+    .vl-buy::after{ content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; background:linear-gradient(135deg, rgba(232,200,116,.7), transparent 55%); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:.6; }
+    .vl-buy:hover{ transform:translateY(-1px); }
+    .vl-buy svg{ width:16px; height:16px; position:relative; z-index:1; }
+    /* blink / kilau untuk CTA Deposit */
+    .vl-buy.is-blink{ animation:vlBuyPulse 2.4s ease-in-out infinite; }
+    .vl-buy.is-blink::before{ content:""; position:absolute; top:0; left:-75%; width:50%; height:100%; z-index:2; pointer-events:none;
+      background:linear-gradient(100deg, transparent, rgba(255,255,255,.48), transparent); transform:skewX(-18deg);
+      animation:vlBuyShine 2.4s ease-in-out infinite; }
+    @keyframes vlBuyShine{ 0%{ left:-75%; } 50%,100%{ left:135%; } }
+    @keyframes vlBuyPulse{
+      0%,100%{ box-shadow:0 10px 22px rgba(11,39,64,.24), inset 0 1px 0 rgba(255,255,255,.08); }
+      50%{ box-shadow:0 12px 26px rgba(11,39,64,.3), 0 0 0 3px rgba(232,200,116,.22), inset 0 1px 0 rgba(255,255,255,.08); }
     }
+    .vl-buy.muted{ color:var(--muted); background:var(--tint); border:1px solid var(--line); box-shadow:none; cursor:default; }
+    .vl-buy.muted::after{ display:none; }
+    .vl-empty{ flex:1 0 100%; padding:24px 16px; border-radius:var(--r); background:var(--card); border:1px dashed var(--line-2); color:var(--muted); text-align:center; font-size:12.5px; font-weight:500; }
 
-    @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } }
+    /* ============ CS POPUP ============ */
+    .vl-cs-popup{ position:fixed; inset:0; z-index:100000; display:none; align-items:center; justify-content:center; padding:20px 16px; background:rgba(11,39,64,.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+    .vl-cs-popup.show{ display:flex; }
+    .vl-cs-card{ width:100%; max-width:340px; overflow:hidden; border-radius:22px; background:var(--card); box-shadow:var(--sh-lg); animation:vlIn .3s cubic-bezier(.22,.8,.22,1) both; }
+    .vl-cs-inner{ padding:16px 16px 15px; }
+    .vl-cs-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .vl-cs-brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+    .vl-cs-logo{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; overflow:hidden; flex:0 0 auto; background:linear-gradient(160deg,#ffffff,#eef4fb); border:1px solid var(--line); }
+    .vl-cs-logo img{ width:26px; height:26px; object-fit:contain; display:block; }
+    .vl-cs-brand span{ display:block; margin-bottom:3px; font-size:8.5px; font-weight:600; letter-spacing:.16em; color:var(--gold-deep); text-transform:uppercase; }
+    .vl-cs-brand strong{ display:block; color:var(--navy); font-size:15px; font-weight:700; letter-spacing:-.02em; }
+    .vl-cs-close{ width:34px; height:34px; border:0; border-radius:11px; color:var(--ink-soft); background:var(--tint); display:grid; place-items:center; cursor:pointer; }
+    .vl-cs-badge{ display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; color:var(--gold-deep); background:var(--gold-soft); border:1px solid rgba(201,148,51,.22); font-size:9px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+    .vl-cs-title{ margin-top:10px; color:var(--navy); font-size:17px; font-weight:700; line-height:1.15; letter-spacing:-.03em; }
+    .vl-cs-title span{ color:var(--blue); }
+    .vl-cs-desc{ margin-top:6px; max-width:290px; color:var(--ink-soft); font-size:11px; line-height:1.5; font-weight:500; }
+    .vl-cs-info{ margin-top:12px; display:grid; gap:6px; }
+    .vl-cs-info-item{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:12px; background:var(--tint); border:1px solid var(--line); }
+    .vl-cs-info-icon{ width:31px; height:31px; border-radius:10px; display:grid; place-items:center; color:var(--blue); background:var(--blue-soft); flex:0 0 auto; }
+    .vl-cs-info-icon svg{ width:16px; height:16px; }
+    .vl-cs-info-text span{ display:block; margin-bottom:2px; color:var(--muted); font-size:9px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; }
+    .vl-cs-info-text strong{ display:block; color:var(--navy); font-size:12px; font-weight:600; }
+    .vl-cs-actions{ margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .vl-cs-btn{ min-height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; gap:7px; font-size:11.5px; font-weight:600; transition:.16s ease; }
+    .vl-cs-btn svg{ width:16px; height:16px; }
+    .vl-cs-btn.cs{ color:var(--navy); background:var(--gold-soft); border:1px solid rgba(201,148,51,.28); }
+    .vl-cs-btn.channel{ color:#fff; background:linear-gradient(135deg,#123457,#0b2740); }
+    .vl-cs-btn.wa{ grid-column:1 / -1; color:#fff; background:linear-gradient(135deg,#25d366,#1aa251); box-shadow:0 10px 22px rgba(37,211,102,.3); }
+    .vl-cs-info-icon.wa{ color:#1aa251; background:#e7f9ef; }
+    .vl-cs-foot{ margin-top:11px; display:flex; align-items:center; justify-content:center; gap:7px; color:var(--muted); font-size:10px; font-weight:500; }
+    .vl-cs-foot svg{ width:13px; height:13px; color:var(--gold); }
 
+    /* ============ MODAL ============ */
+    .vl-modal-overlay{ position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center; padding:18px 16px; background:rgba(11,39,64,.55); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+    .vl-modal-overlay.show{ display:flex; }
+    .vl-modal{ width:100%; max-width:404px; border-radius:22px; background:var(--card); box-shadow:var(--sh-lg); overflow:hidden; animation:vlIn .24s ease both; }
+    .vl-modal-head{ padding:15px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--line); }
+    .vl-modal-title{ display:flex; align-items:center; gap:10px; color:var(--navy); font-size:14.5px; font-weight:700; letter-spacing:-.02em; }
+    .vl-modal-icon{ width:34px; height:34px; border-radius:11px; display:grid; place-items:center; color:var(--gold-deep); background:var(--gold-soft); }
+    .vl-modal-close{ width:36px; height:36px; border-radius:11px; border:1px solid var(--line); background:var(--tint); color:var(--ink-soft); display:grid; place-items:center; cursor:pointer; }
+    .vl-modal-body{ padding:18px; color:var(--ink-soft); text-align:center; font-size:13px; line-height:1.55; font-weight:500; }
+    .vl-modal-body b{ color:var(--navy); font-weight:600; }
+    .vl-modal-actions{ padding:0 18px 18px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .vl-modal-btn{ min-height:44px; border-radius:13px; border:1px solid var(--line-2); background:var(--card); color:var(--ink-soft); font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .vl-modal-btn.primary{ border:0; color:#fff; background:linear-gradient(135deg,#123457,#0b2740); }
+
+    /* ============ ANIMATIONS ============ */
+    @keyframes vlDraw{ to{ stroke-dashoffset:0; } }
+    @keyframes vlPulse{ 0%,100%{ opacity:.6; } 50%{ opacity:1; } }
+    @keyframes vlIn{ from{ opacity:0; transform:translateY(14px) scale(.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+    @keyframes vlSheen{ 0%,60%{ left:-60%; } 100%{ left:130%; } }
+
+    @media (max-width:360px){
+      .vl-phone{ padding:16px 12px 112px; }
+      .vl-balance{ font-size:31px; }
+      .vl-quick-icon{ width:48px; height:48px; border-radius:16px; }
+      .vl-asset-detail{ grid-template-columns:1fr; }
+      .vl-detail + .vl-detail{ border-left:0; border-top:1px solid var(--line); }
+    }
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{ animation:none !important; transition:none !important; }
+      .vl-quick-item,.vl-cat{ opacity:1 !important; transform:none !important; }
+    }
   </style>
 </head>
 
 <body>
+  {{-- shared gradient defs untuk chart --}}
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="vlSparkFill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#16a86a" stop-opacity=".26"/>
+        <stop offset="55%" stop-color="#16a86a" stop-opacity=".08"/>
+        <stop offset="100%" stop-color="#16a86a" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
   <main class="vl-page">
     <div class="vl-phone">
 
       {{-- HEADER --}}
-      <header class="vl-topbar">
-        <div class="vl-brand">
-          <div class="vl-logo">
-            <img src="{{ asset('logo.png') }}" alt="Velora Finance">
-          </div>
+      <header class="cw-header">
+        <a href="{{ url('/dashboard') }}" class="cw-brand" aria-label="Capital Wave">
+          <span class="cw-mark">
+            <img src="{{ asset('logo.png') }}" alt="Capital Wave" style="width:82%;height:82%;object-fit:contain;position:relative;z-index:1;">
+          </span>
+          <span class="cw-word">
+            <span class="name">Capital&nbsp;<b class="vl-gold-text">Wave</b></span>
+            <span class="tag">Ride the Wave</span>
+          </span>
+        </a>
 
-          <div class="vl-brand-copy">
-            <span>Velora Finance</span>
-            <h1>Dashboard</h1>
-          </div>
-        </div>
-
-        <div class="vl-actions">
-          <a href="{{ url('/saldo/rincian') }}" class="vl-icon-btn" aria-label="Notifikasi">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" fill="currentColor"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+        <div class="cw-tools">
+          <a href="{{ url('/saldo/rincian') }}" class="cw-tool" aria-label="Notifikasi">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
             <span class="vl-dot"></span>
           </a>
-
-          <a href="{{ url('/akun') }}" class="vl-icon-btn" aria-label="Akun">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" fill="currentColor"/>
-              <path d="M4 21a8 8 0 0 1 16 0" fill="currentColor"/>
-            </svg>
+          <span class="cw-tool-div"></span>
+          <a href="{{ url('/akun') }}" class="cw-tool" aria-label="Akun">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.7"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
           </a>
         </div>
       </header>
 
       @if ($errors->any())
-        <div style="margin:0 0 14px; padding:13px; border-radius:20px; background:rgba(255,79,109,.12); border:1px solid rgba(255,79,109,.26); color:#7f1d1d; font-size:12.5px; font-weight:750; line-height:1.45;">
-          <strong style="display:block; margin-bottom:6px; color:#3b1116;">Terjadi kesalahan</strong>
+        <div style="margin:0 0 14px; padding:13px 15px; border-radius:16px; background:#fdecec; border:1px solid #f7d4d4; color:#a33; font-size:12.5px; font-weight:500; line-height:1.5;">
+          <strong style="display:block; margin-bottom:5px; color:#0b2740; font-weight:700;">Terjadi kesalahan</strong>
           <ul style="margin:0; padding-left:18px;">
-            @foreach ($errors->all() as $error)
-              <li>{{ $error }}</li>
-            @endforeach
+            @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
           </ul>
         </div>
       @endif
 
-      {{-- CRYPTO HERO --}}
-      <section class="vl-hero">
-        <div class="vl-hero-head">
-          <div>
-            <span class="vl-kicker">Live Portfolio</span>
-            <p class="vl-portfolio-label">Total Aset</p>
-            <h2 class="vl-balance">Rp {{ number_format((int)($user->saldo ?? 0), 0, ',', '.') }}</h2>
-          </div>
-
-          <div class="vl-market-pill">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Live
+      {{-- PROFILE --}}
+      <section class="vl-profile">
+        <div class="vl-avatar">
+          <div class="vl-avatar-inner">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/><path d="M5 20a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </div>
         </div>
+        <div class="vl-profile-info">
+          <h2>{{ $user->name ?: 'Investor Capital Wave' }}</h2>
+          <div style="display:flex;align-items:center;flex-wrap:wrap;">
+            <span class="vl-tier">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6 6.1.9-4.5 4.3 1.1 6L12 16.9 6.4 19.2l1.1-6L3 8.9 9.1 8 12 2Z"/></svg>
+              <b>{{ $tierName }}</b>
+            </span>
+            <span class="vl-profile-id">ID <b>{{ $accountId }}</b></span>
+          </div>
+        </div>
+        <svg class="vl-mascot" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect x="29" y="7" width="6" height="7" rx="3" fill="#c99433"/><circle cx="32" cy="6" r="2.4" fill="#e8c874"/>
+          <rect x="13" y="14" width="38" height="30" rx="13" fill="#0b2740"/>
+          <rect x="18" y="20" width="28" height="17" rx="8.5" fill="#0A57A3"/>
+          <circle cx="27" cy="28.5" r="3" fill="#e8c874"/><circle cx="37" cy="28.5" r="3" fill="#e8c874"/>
+          <rect x="28" y="40" width="8" height="10" rx="4" fill="#123a5c"/>
+          <rect x="7" y="24" width="6" height="14" rx="3" fill="#123a5c"/><rect x="51" y="24" width="6" height="14" rx="3" fill="#123a5c"/>
+        </svg>
+      </section>
 
+      {{-- PORTFOLIO --}}
+      <section class="vl-hero">
+        <div class="vl-hero-top">
+          <span class="vl-eyebrow">Total Portofolio</span>
+          <span class="vl-live">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Live
+          </span>
+        </div>
 
-        <div class="vl-metrics">
-          <div class="vl-metric">
-            <span>Saldo Penarikan</span>
-            <strong>Rp {{ number_format((int)($user->saldo_penarikan ?? 0), 0, ',', '.') }}</strong>
+        <h2 class="vl-balance"><span class="rp">Rp</span>{{ number_format($saldoUtama, 0, ',', '.') }}</h2>
+        <div class="vl-hero-hint">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Portofolio kamu terpantau real-time
+        </div>
+
+        <div class="vl-divider"></div>
+
+        <div class="vl-sub">
+          <div class="vl-sub-box">
+            <span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.8"/></svg> Saldo Akun</span>
+            <strong><span class="rp">Rp</span>{{ number_format($saldoUtama, 0, ',', '.') }}</strong>
+          </div>
+          <div class="vl-sub-box">
+            <span><svg viewBox="0 0 24 24" fill="none"><path d="M4 10 12 4l8 6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 10v9h14v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> Saldo Bank</span>
+            <strong><span class="rp">Rp</span>{{ number_format($saldoPenarikan, 0, ',', '.') }}</strong>
           </div>
         </div>
 
         <div class="vl-hero-actions">
-          <a href="{{ url('/deposit') }}" class="vl-main-btn deposit">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-              <path d="M5 12h14" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-            </svg>
+          <a href="{{ url('/deposit') }}" class="vl-btn primary">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 4v11" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M7 11l5 5 5-5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
             Deposit
           </a>
-
-          <a href="{{ url('/ui/withdrawals') }}" class="vl-main-btn withdraw">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 4v13" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-              <path d="M7 12l5 5 5-5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+          <a href="{{ url('/ui/withdrawals') }}" class="vl-btn ghost">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 20V9" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M7 13l5-5 5 5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 4h14" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
             Withdraw
           </a>
         </div>
       </section>
 
-   
+      {{-- VIP --}}
+      <a href="{{ url('/akun') }}" style="display:block;">
+        <section class="vl-vip">
+          <div class="vl-vip-top">
+            <div class="vl-vip-badge"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 2.9 6 6.1.9-4.5 4.3 1.1 6L12 16.9 6.4 19.2l1.1-6L3 8.9 9.1 8 12 2Z"/></svg></span></div>
+            <div class="vl-vip-info">
+              <span class="k">Tingkat VIP</span>
+              <h3>VIP {{ $vipLevel }}</h3>
+              <p>Total investasi <b>Rp {{ number_format((int)$totalInvestasi, 0, ',', '.') }}</b></p>
+            </div>
+            <span class="vl-vip-chevron"><svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
 
-      {{-- TRUST --}}
-      <section class="vl-trust">
-        <div>
-          <div class="vl-trust-title">Secure Digital Finance</div>
-          <div class="vl-trust-sub">Sistem terenkripsi dan transaksi terpantau</div>
-        </div>
+          @if($nextVipLevel)
+            <div class="vl-vip-progress">
+              <div class="vl-vip-progress-head">
+                <span class="lbl">Menuju <b>VIP {{ $nextVipLevel }}</b></span>
+                <span class="pct vl-gold-text">{{ $vipProgress }}%</span>
+              </div>
+              <div class="vl-track"><div class="vl-track-fill" style="width: {{ $vipProgress }}%"></div></div>
+              <div class="vl-vip-foot">
+                <span>Butuh <b>Rp {{ number_format($vipButuh, 0, ',', '.') }}</b> lagi</span>
+                <span class="chip">{{ $activePlanCount }} paket aktif</span>
+              </div>
+            </div>
+          @else
+            <div class="vl-vip-progress">
+              <div class="vl-vip-foot">
+                <span>Level VIP tertinggi tercapai</span>
+                <span class="chip">{{ $activePlanCount }} paket aktif</span>
+              </div>
+            </div>
+          @endif
+        </section>
+      </a>
 
-        <div class="vl-trust-logos">
-          <img src="{{ asset('ojk.png') }}" class="ojk" alt="OJK" onerror="this.style.display='none'">
-          <img src="{{ asset('bappebti.png') }}" class="bappebti" alt="Bappebti" onerror="this.style.display='none'">
-        </div>
-      </section>
+      {{-- QUICK MENU --}}
+      <nav class="vl-quick">
+        <a href="{{ route('investasi.index') }}" class="vl-quick-item">
+          <span class="vl-quick-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M9 11.5l2.2 2.2L15 9.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="4" width="16" height="16" rx="4.5" stroke="currentColor" stroke-width="1.8"/></svg></span>
+          <span>Tugas</span>
+        </a>
+        <a href="{{ route('referral.index') }}" class="vl-quick-item">
+          <span class="vl-quick-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M4 19a5 5 0 0 1 10 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 8h4M19 6v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><i class="badge"></i></span>
+          <span>Undangan</span>
+        </a>
+        <a href="{{ route('referral.index') }}" class="vl-quick-item">
+          <span class="vl-quick-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 8h18v3H3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8v12" stroke="currentColor" stroke-width="1.8"/><path d="M12 8C10 8 8.5 7 8.5 5.8 8.5 4.8 9.3 4 10.3 4c1.3 0 1.7 1.6 1.7 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+          <span>Bonus</span>
+        </a>
+        <a href="{{ route('team.index') }}" class="vl-quick-item">
+          <span class="vl-quick-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m12 4 2.2 4.5 5 .7-3.6 3.5.8 4.9L12 15.8 7.6 17.6l.8-4.9L4.8 9.2l5-.7L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+          <span>Testimoni</span>
+        </a>
+        <button type="button" class="vl-quick-item" id="vlQuickCs">
+          <span class="vl-quick-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="3.5" y="13" width="4" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8"/><rect x="16.5" y="13" width="4" height="6.5" rx="2" stroke="currentColor" stroke-width="1.8"/></svg></span>
+          <span>Layanan</span>
+        </button>
+      </nav>
 
-      {{-- INVITE --}}
-      <section class="vl-invite">
-        <div class="vl-invite-content">
-          <h2>Earn more with <span>Velora Reward</span></h2>
-          <p>Bagikan referral dan pantau komisi dari jaringan kamu secara langsung.</p>
-          <a href="{{ route('referral.index') }}" class="vl-invite-btn">
-            Buka Referral
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </div>
-
-   <div class="vl-invite-coin" aria-hidden="true">
-          <img src="{{ asset('logo.png') }}" alt="Velora" style="width:52px;height:52px;object-fit:contain;display:block;">
-        </div>
-      </section>
-
-      {{-- CATEGORY --}}
+      {{-- PRODUCTS --}}
       <section class="vl-section">
         <div class="vl-section-head">
           <div class="vl-section-title">
-            <h2>Market Categories</h2>
-            <p>Pilih kategori aset Velora</p>
+            <span class="bar"></span>
+            <div>
+              <h2>Produk Investasi AI</h2>
+              <p>Pasar Investasi Capital Wave</p>
+            </div>
           </div>
-
           <a href="{{ route('market.index') }}" class="vl-see-all">
             Lihat Semua
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
 
-        <div class="vl-categories">
-          <div class="vl-category-track" id="vlCategoryTrack">
-            @foreach(($categories ?? []) as $i => $cat)
-              @php
-                $catName = strtolower($cat->name ?? '');
-
-                if(str_contains($catName, 'saham')) {
-                  $catClass = 'daily';
-                  $catIcon = 'chart';
-                } elseif(str_contains($catName, 'pro')) {
-                  $catClass = 'premium';
-                  $catIcon = 'diamond';
-                } else {
-                  $catClass = 'regular';
-                  $catIcon = 'cube';
-                }
-
-                $catProducts = $cat->products ?? collect();
-              @endphp
-
-              <button
-                type="button"
-                class="vl-cat {{ $catClass }} {{ $i === 0 ? 'active' : '' }}"
-                data-category-target="vl-cat-{{ $cat->id }}"
-              >
-                <span class="vl-cat-icon">
-                  @if($catIcon === 'chart')
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M4 19V5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                      <path d="M8 17v-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                      <path d="M12 17V7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                      <path d="M16 17v-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                      <path d="M20 17V4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-                    </svg>
-                  @elseif($catIcon === 'diamond')
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="m12 21 8-10-4-7H8l-4 7 8 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                      <path d="M4 11h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      <path d="m9 4 3 17 3-17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                    </svg>
-                  @else
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path d="M12 2.7 20 7.1v9.8l-8 4.4-8-4.4V7.1l8-4.4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                      <path d="M4.5 7.4 12 11.7l7.5-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M12 11.7v8.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  @endif
-                </span>
-
-                <strong>{{ str_ireplace('Rubik', 'Velora', $cat->name) }}</strong>
-                <span>{{ count($catProducts) }} aset tersedia</span>
-              </button>
-            @endforeach
-          </div>
-        </div>
-      </section>
-
-      {{-- ASSETS --}}
-      <section class="vl-section">
-        <div class="vl-section-head">
-          <div class="vl-section-title">
-            <h2>Trending Assets</h2>
-            <p>Grafik line chart real visual seperti aplikasi crypto</p>
-          </div>
-
-          <a href="{{ route('market.index') }}" class="vl-see-all">Market</a>
+        <div class="vl-cats" id="vlCategoryTrack">
+          @foreach(($categories ?? []) as $i => $cat)
+            @php
+              $catName = strtolower($cat->name ?? '');
+              if(str_contains($catName, 'saham')) { $catIcon = 'chart'; }
+              elseif(str_contains($catName, 'pro')) { $catIcon = 'diamond'; }
+              else { $catIcon = 'cube'; }
+              $catProducts = $cat->products ?? collect();
+            @endphp
+            <button type="button" class="vl-cat {{ $i === 0 ? 'active' : '' }}" data-category-target="vl-cat-{{ $cat->id }}">
+              @if($catIcon === 'chart')
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 19V5M8 17v-7M12 17V7M16 17v-4M20 17V4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+              @elseif($catIcon === 'diamond')
+                <svg viewBox="0 0 24 24" fill="none"><path d="m12 21 8-10-4-7H8l-4 7 8 10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              @else
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7.4v9.2L12 21l-8-4.4V7.4L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+              @endif
+              {{ str_ireplace(['Rubik', 'Velora'], 'Capital Wave', $cat->name) }}
+              <span class="count">{{ count($catProducts) }}</span>
+            </button>
+          @endforeach
         </div>
 
         @forelse(($categories ?? []) as $i => $cat)
@@ -1004,26 +637,15 @@
               @forelse(($cat->products ?? []) as $product)
                 @php
                   $catName = strtolower($cat->name ?? '');
-                  $productName = str_ireplace('Rubik', 'Velora', $product->name ?? 'Velora Asset');
+                  $productName = str_ireplace(['Rubik', 'Velora'], 'Capital Wave', $product->name ?? 'Capital Wave Asset');
 
-                  if(str_contains($catName, 'saham')) {
-                    $assetClass = 'daily';
-                    $assetType = 'Saham Velora';
-                    $tokenSymbol = 'SV';
-                  } elseif(str_contains($catName, 'pro')) {
-                    $assetClass = 'premium';
-                    $assetType = 'Velora Pro';
-                    $tokenSymbol = 'VP';
-                  } else {
-                    $assetClass = 'regular';
-                    $assetType = 'Velora Asset';
-                    $tokenSymbol = 'VA';
-                  }
+                  if(str_contains($catName, 'saham')) { $tokenSymbol = 'SV'; }
+                  elseif(str_contains($catName, 'pro')) { $tokenSymbol = 'VP'; }
+                  else { $tokenSymbol = 'VA'; }
 
                   $activeInvestments = $activeInvestments ?? [];
                   $invActive = $activeInvestments[$product->id] ?? null;
 
-                  $isBasicProduct = (int) $cat->id === 1;
                   $isOneTimeProduct = in_array((int) $cat->id, [2, 3], true);
                   $shouldLockBuyButton = $isOneTimeProduct && $invActive;
 
@@ -1035,38 +657,34 @@
                     : 0;
 
                   $seed = (int) (
-                    (int) ($product->id ?? 0)
-                    + (int) ($product->price ?? 0)
-                    + (int) ($product->daily_profit ?? 0)
-                    + (int) ($product->total_profit ?? 0)
+                    (int) ($product->id ?? 0) + (int) ($product->price ?? 0)
+                    + (int) ($product->daily_profit ?? 0) + (int) ($product->total_profit ?? 0)
                     + (int) ($product->duration_days ?? 0)
                   );
+
+                  $riskDots   = max(1, min(4, ($seed % 3) + 1));
+                  $profitDots = max(1, min(4, (int) round($profitPercent / 2) + 1));
+                  $effDots    = max(1, min(4, (($seed >> 2) % 4) + 1));
                 @endphp
 
-                <article class="vl-asset-card {{ $assetClass }}">
-                  <div class="vl-asset-row">
-                    <div class="vl-token">{{ $tokenSymbol }}</div>
-
-                    <div class="vl-asset-info">
+                <article class="vl-asset-card">
+                  <div class="vl-asset-top">
+                    <div class="vl-token"><span>{{ $tokenSymbol }}</span></div>
+                    <div class="vl-asset-headline">
                       <h3>{{ $productName }}</h3>
+                      <p>
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Performa AI · 30 hari
+                      </p>
                     </div>
+                    <span class="vl-profit-badge">+{{ $profitPercent }}%</span>
+                  </div>
 
-                    <div class="vl-asset-meta">
-                      <span class="vl-price">Rp {{ number_format((int)($product->price ?? 0), 0, ',', '.') }}</span>
-                      <span class="vl-profit-badge">+{{ $profitPercent }}%</span>
-                    </div>
-
-                    <svg
-                      class="vl-spark js-spark-chart"
-                      viewBox="0 0 128 62"
-                      preserveAspectRatio="none"
-                      aria-hidden="true"
-                      data-seed="{{ max($seed, 1) }}"
-                      data-price="{{ (int)($product->price ?? 0) }}"
-                      data-profit="{{ (int)($product->daily_profit ?? 0) }}"
-                      data-total="{{ (int)($product->total_profit ?? 0) }}"
-                    >
-                      <path class="spark-grid" d="M0 16 H128 M0 31 H128 M0 46 H128"></path>
+                  <div class="vl-spark-wrap">
+                    <svg class="vl-spark js-spark-chart" viewBox="0 0 300 70" preserveAspectRatio="none" aria-hidden="true"
+                      data-seed="{{ max($seed, 1) }}" data-price="{{ (int)($product->price ?? 0) }}"
+                      data-profit="{{ (int)($product->daily_profit ?? 0) }}" data-total="{{ (int)($product->total_profit ?? 0) }}">
+                      <path class="spark-grid" d="M0 18 H300 M0 35 H300 M0 52 H300"></path>
                       <path class="spark-area" d=""></path>
                       <path class="spark-glow" d=""></path>
                       <path class="spark-line" d=""></path>
@@ -1074,27 +692,23 @@
                     </svg>
                   </div>
 
-                  <div class="vl-asset-detail">
-                    <div class="vl-detail">
-                      <span>Profit Harian</span>
-                      <strong class="accent">Rp {{ number_format((int)($product->daily_profit ?? 0), 0, ',', '.') }}</strong>
-                    </div>
+                  <div class="vl-indicators">
+                    <div class="vl-ind risk"><span>Resiko</span><div class="vl-ind-dots">@for($d=1;$d<=4;$d++)<i class="{{ $d <= $riskDots ? 'on' : '' }}"></i>@endfor</div></div>
+                    <div class="vl-ind profit"><span>Profit</span><div class="vl-ind-dots">@for($d=1;$d<=4;$d++)<i class="{{ $d <= $profitDots ? 'on' : '' }}"></i>@endfor</div></div>
+                    <div class="vl-ind eff"><span>Efisiensi</span><div class="vl-ind-dots">@for($d=1;$d<=4;$d++)<i class="{{ $d <= $effDots ? 'on' : '' }}"></i>@endfor</div></div>
+                  </div>
 
-                    <div class="vl-detail">
-                      <span>Total Profit</span>
-                      <strong>Rp {{ number_format((int)($product->total_profit ?? 0), 0, ',', '.') }}</strong>
-                    </div>
+                  <div class="vl-asset-detail">
+                    <div class="vl-detail"><span>Investasi</span><strong>Rp {{ number_format((int)($product->price ?? 0), 0, ',', '.') }}</strong></div>
+                    <div class="vl-detail"><span>Potensi</span><strong class="gold">Rp {{ number_format((int)($product->total_profit ?? 0), 0, ',', '.') }}</strong></div>
+                    <div class="vl-detail"><span>Durasi</span><strong class="blue">{{ (int)($product->duration_days ?? 0) }} Hari</strong></div>
                   </div>
 
                   <div class="vl-asset-action">
                     @if($shouldLockBuyButton)
                       <a href="{{ route('investasi.index') }}" class="vl-buy muted">Sedang Aktif</a>
                     @else
-                      <form
-                        method="POST"
-                        action="{{ url('/product/buy/'.$product->id) }}"
-                        class="js-invest-form"
-                        style="margin:0;"
+                      <form method="POST" action="{{ url('/product/buy/'.$product->id) }}" class="js-invest-form" style="margin:0;"
                         data-product-name="{{ $productName }}"
                         data-product-price="Rp {{ number_format((int)($product->price ?? 0), 0, ',', '.') }}"
                         data-product-profit="Rp {{ number_format((int)($product->daily_profit ?? 0), 0, ',', '.') }}"
@@ -1104,11 +718,11 @@
                         data-product-raw-price="{{ (int)($product->price ?? 0) }}"
                         data-user-saldo="{{ (int)($user->saldo ?? 0) }}"
                         data-vip-kurang="{{ $vipKurang ? '1' : '0' }}"
-                        data-saldo-kurang="{{ $saldoKurang ? '1' : '0' }}"
-                      >
+                        data-saldo-kurang="{{ $saldoKurang ? '1' : '0' }}">
                         @csrf
-                        <button type="submit" class="vl-buy">
-                          {{ ($vipKurang || $saldoKurang) ? 'Deposit Sekarang' : 'Investasikan Sekarang' }}
+                        <button type="submit" class="vl-buy {{ ($vipKurang || $saldoKurang) ? 'is-blink' : '' }}">
+                          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" fill="currentColor"/></svg>
+                          {{ ($vipKurang || $saldoKurang) ? 'Deposit Sekarang' : 'Aktifkan' }}
                         </button>
                       </form>
                     @endif
@@ -1124,119 +738,79 @@
         @endforelse
       </section>
 
-      <div class="vl-bottom-spacer"></div>
+      <div class="rb-bottom-spacer"></div>
       @include('partials.bottom-nav')
     </div>
   </main>
-    {{-- CS & CHANNEL POPUP --}}
+
+  {{-- CS POPUP --}}
   <div class="vl-cs-popup" id="vlCsPopup" aria-hidden="true">
     <div class="vl-cs-card">
       <div class="vl-cs-inner">
         <div class="vl-cs-top">
           <div class="vl-cs-brand">
-            <div class="vl-cs-logo">
-              <img src="{{ asset('logo.png') }}" alt="Velora Finance">
-            </div>
-
-            <div>
-              <span>Official Support</span>
-              <strong>Velora Finance</strong>
-            </div>
+            <div class="vl-cs-logo"><img src="{{ asset('logo.png') }}" alt="Capital Wave"></div>
+            <div><span>Official Support</span><strong>Capital Wave</strong></div>
           </div>
-
           <button type="button" class="vl-cs-close" id="vlCsPopupClose" aria-label="Tutup">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
-              <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-            </svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </button>
         </div>
-
         <div class="vl-cs-badge">Resmi Hadir 2026</div>
-
-        <h2 class="vl-cs-title">
-          Akses CS & Channel <span>Resmi Velora</span>
-        </h2>
-
-        <p class="vl-cs-desc">
-          Gunakan kontak resmi Velora untuk bantuan akun, informasi terbaru, dan update layanan agar transaksi tetap aman dan terpantau.
-        </p>
+        <h2 class="vl-cs-title">Akses CS &amp; Channel <span>Resmi Capital Wave</span></h2>
+        <p class="vl-cs-desc">Gunakan kontak resmi Capital Wave untuk bantuan akun, informasi terbaru, dan update layanan agar transaksi tetap aman dan terpantau.</p>
 
         <div class="vl-cs-info">
           <div class="vl-cs-info-item">
-            <div class="vl-cs-info-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-            </div>
-
-            <div class="vl-cs-info-text">
-              <span>Customer Service</span>
-              <strong>@goveloracs</strong>
-            </div>
+            <div class="vl-cs-info-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <div class="vl-cs-info-text"><span>Customer Service</span><strong>@Capitalwavecs</strong></div>
           </div>
-
           <div class="vl-cs-info-item">
-            <div class="vl-cs-info-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-            </div>
-
-            <div class="vl-cs-info-text">
-              <span>Official Channel</span>
-              <strong>t.me/velorafinance</strong>
-            </div>
+            <div class="vl-cs-info-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <div class="vl-cs-info-text"><span>Official Channel</span><strong>t.me/capitalwavee</strong></div>
+          </div>
+          <div class="vl-cs-info-item">
+            <div class="vl-cs-info-icon wa"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1-1.4-1-2.6 0-1.3.6-1.9.9-2.1.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.1.3.7 1.1 1.4 1.8.9.8 1.7 1 2 1.2.2.1.4.1.5-.1l.7-.8c.2-.2.3-.2.6-.1l1.8.9c.3.1.4.2.5.3 0 .2 0 .8-.1 1.5Z"/></svg></div>
+            <div class="vl-cs-info-text"><span>WhatsApp Channel</span><strong>Saluran Resmi Capital Wave</strong></div>
           </div>
         </div>
 
         <div class="vl-cs-actions">
-          <a href="https://t.me/goveloracs" target="_blank" rel="noopener noreferrer" class="vl-cs-btn cs">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
+          <a href="https://whatsapp.com/channel/0029VbDNrP0CxoB4eZyy5907" target="_blank" rel="noopener noreferrer" class="vl-cs-btn wa">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1-1.4-1-2.6 0-1.3.6-1.9.9-2.1.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.1.3.7 1.1 1.4 1.8.9.8 1.7 1 2 1.2.2.1.4.1.5-.1l.7-.8c.2-.2.3-.2.6-.1l1.8.9c.3.1.4.2.5.3 0 .2 0 .8-.1 1.5Z"/></svg>
+            Channel WhatsApp
+          </a>
+          <a href="https://t.me/Capitalwavecs" target="_blank" rel="noopener noreferrer" class="vl-cs-btn cs">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
             Hubungi CS
           </a>
-
-          <a href="https://t.me/velorafinance" target="_blank" rel="noopener noreferrer" class="vl-cs-btn channel">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
+          <a href="https://t.me/capitalwavee" target="_blank" rel="noopener noreferrer" class="vl-cs-btn channel">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21.5 4.5 2.8 11.7c-1.1.4-1.1 1.9.1 2.2l4.7 1.4 1.8 5.1c.4 1.1 1.8 1.3 2.4.3l2.5-3.8 4.8 3.5c.9.7 2.2.2 2.4-.9l2.5-13.4c.2-1.1-.9-2-2-1.6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
             Join Channel
           </a>
         </div>
 
         <div class="vl-cs-foot">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 2.5 20 7v5.5c0 4.8-3.2 7.7-8 9-4.8-1.3-8-4.2-8-9V7l8-4.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            <path d="m8.5 12 2.2 2.2 4.8-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Pastikan hanya menggunakan kontak resmi Velora
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5 20 7v5.5c0 4.8-3.2 7.7-8 9-4.8-1.3-8-4.2-8-9V7l8-4.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.5 12 2.2 2.2 4.8-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Pastikan hanya menggunakan kontak resmi Capital Wave
         </div>
       </div>
     </div>
   </div>
-  {{-- MODAL ALERT --}}
+
+  {{-- MODAL --}}
   <div class="vl-modal-overlay" id="vlModal" aria-hidden="true">
     <div class="vl-modal">
       <div class="vl-modal-head">
         <div class="vl-modal-title">
-          <span class="vl-modal-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2.5 20 7v10l-8 4.5L4 17V7l8-4.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          </span>
+          <span class="vl-modal-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 8v5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16.5" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg></span>
           <span id="vlModalTitle">Informasi</span>
         </div>
-
         <button type="button" class="vl-modal-close" id="vlModalClose" aria-label="Tutup">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-          </svg>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </div>
-
       <div class="vl-modal-body" id="vlModalBody"></div>
-
       <div class="vl-modal-actions">
         <button type="button" class="vl-modal-btn" id="vlModalCancel">Nanti</button>
         <a href="{{ url('/deposit') }}" class="vl-modal-btn primary" id="vlModalAction">Deposit</a>
@@ -1244,251 +818,62 @@
     </div>
   </div>
 
-  {{-- PROMO POPUP --}}
-  <div class="vl-promo-popup" id="vlPromoPopup" aria-hidden="true">
-    <div class="vl-promo-popup-modal">
-      <img src="" alt="Promo Velora" class="vl-promo-popup-img" id="vlPromoPopupImg">
-      <button type="button" class="vl-promo-popup-close" id="vlPromoPopupClose" aria-label="Tutup">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-  </div>
-
   <script>
-    // Shared utilities
     function seededRandom(seed){
       let value = seed % 2147483647;
       if(value <= 0) value += 2147483646;
-
-      return function(){
-        value = value * 16807 % 2147483647;
-        return (value - 1) / 2147483646;
-      };
+      return function(){ value = value * 16807 % 2147483647; return (value - 1) / 2147483646; };
     }
-
     function buildSmoothPath(points){
       if(!points.length) return '';
-
       let d = `M ${points[0].x} ${points[0].y}`;
-
       for(let i = 1; i < points.length; i++){
-        const prev = points[i - 1];
-        const curr = points[i];
-        const midX = (prev.x + curr.x) / 2;
+        const prev = points[i - 1], curr = points[i], midX = (prev.x + curr.x) / 2;
         d += ` C ${midX} ${prev.y}, ${midX} ${curr.y}, ${curr.x} ${curr.y}`;
       }
-
       return d;
     }
-
     function buildLineChart(svg, options){
-      const width = options.width;
-      const height = options.height;
-      const count = options.count || 9;
-      const seed = options.seed || 1;
-      const minY = options.minY || 8;
-      const maxY = options.maxY || (height - 8);
-      const bottomY = height;
-      const rand = seededRandom(seed);
-
+      const width = options.width, height = options.height, count = options.count || 9, seed = options.seed || 1;
+      const minY = options.minY || 8, maxY = options.maxY || (height - 8), bottomY = height, rand = seededRandom(seed);
       const points = [];
-
       for(let i = 0; i < count; i++){
         const x = Math.round((width / (count - 1)) * i);
         const upwardTrend = (maxY - 6) - (i * ((maxY - minY) / (count + 1)));
         const wave = Math.sin((i + seed) * .9) * (options.wave || 8);
         const noise = (rand() * (options.noise || 14)) - ((options.noise || 14) / 2);
         const y = Math.max(minY, Math.min(maxY, upwardTrend + wave + noise));
-
         points.push({ x, y: Math.round(y) });
       }
-
-      const path = buildSmoothPath(points);
-      const first = points[0];
-      const last = points[points.length - 1];
-
-      const line = svg.querySelector('.chart-line, .spark-line');
-      const glow = svg.querySelector('.chart-glow, .spark-glow');
-      const area = svg.querySelector('.chart-area, .spark-area');
-      const dot = svg.querySelector('.vl-live-dot, .spark-dot');
-
+      const path = buildSmoothPath(points), first = points[0], last = points[points.length - 1];
+      const line = svg.querySelector('.spark-line'), area = svg.querySelector('.spark-area'), dot = svg.querySelector('.spark-dot');
       if(line) line.setAttribute('d', path);
-      if(glow) glow.setAttribute('d', path);
       if(area) area.setAttribute('d', `${path} L ${last.x} ${bottomY} L ${first.x} ${bottomY} Z`);
-      if(dot){
-        dot.setAttribute('cx', last.x);
-        dot.setAttribute('cy', last.y);
-      }
+      if(dot){ dot.setAttribute('cx', last.x); dot.setAttribute('cy', last.y); }
     }
 
-    // Main hero line chart
-    (function(){
-      const chart = document.querySelector('.js-main-line-chart');
-      if(!chart) return;
-
-      buildLineChart(chart, {
-        width:330,
-        height:92,
-        count:10,
-        seed:Number(chart.dataset.seed || 10),
-        minY:12,
-        maxY:78,
-        wave:9,
-        noise:15
-      });
-    })();
-
-    // Asset line charts
     (function(){
       const charts = Array.from(document.querySelectorAll('.js-spark-chart'));
-
       charts.forEach((chart, index) => {
-        const seed = Number(chart.dataset.seed || index + 1)
-          + Number(chart.dataset.price || 0)
-          + Number(chart.dataset.profit || 0)
-          + Number(chart.dataset.total || 0);
-
-        buildLineChart(chart, {
-          width:128,
-          height:62,
-          count:8,
-          seed,
-          minY:9,
-          maxY:52,
-          wave:6.5,
-          noise:11
-        });
+        const seed = Number(chart.dataset.seed || index + 1) + Number(chart.dataset.price || 0)
+          + Number(chart.dataset.profit || 0) + Number(chart.dataset.total || 0);
+        buildLineChart(chart, { width:300, height:70, count:26, seed, minY:10, maxY:60, wave:2.6, noise:15 });
       });
     })();
 
-    // Category tabs
     (function(){
       const tabs = Array.from(document.querySelectorAll('.vl-cat'));
       const panes = Array.from(document.querySelectorAll('.vl-product-pane'));
-
-      tabs.forEach(tab => {
-        tab.addEventListener('click', function(){
-          const target = this.dataset.categoryTarget;
-
-          tabs.forEach(t => t.classList.remove('active'));
-          panes.forEach(p => p.classList.remove('active'));
-
-          this.classList.add('active');
-
-          const pane = document.getElementById(target);
-          if(pane) pane.classList.add('active');
-        });
-      });
+      tabs.forEach(tab => tab.addEventListener('click', function(){
+        const target = this.dataset.categoryTarget;
+        tabs.forEach(t => t.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        const pane = document.getElementById(target);
+        if(pane) pane.classList.add('active');
+      }));
     })();
 
-    // Promo slider
-    (function(){
-      const slider = document.querySelector('.js-promo-slider');
-      if(!slider) return;
-
-      const track = slider.querySelector('.vl-promo-track');
-      const slides = Array.from(slider.querySelectorAll('.vl-promo-slide'));
-      const dots = Array.from(slider.querySelectorAll('.vl-promo-dot'));
-
-      if(!track || !slides.length) return;
-
-      let index = 0;
-      let timer = null;
-      let startX = 0;
-      let currentX = 0;
-      let dragging = false;
-
-      function goTo(next){
-        index = (next + slides.length) % slides.length;
-        track.style.transform = `translateX(-${index * 100}%)`;
-
-        dots.forEach((dot, i) => {
-          dot.classList.toggle('active', i === index);
-        });
-      }
-
-      function startAuto(){
-        stopAuto();
-        timer = setInterval(() => goTo(index + 1), 4200);
-      }
-
-      function stopAuto(){
-        if(timer) clearInterval(timer);
-      }
-
-      dots.forEach((dot, i) => {
-        dot.addEventListener('click', function(){
-          goTo(i);
-          startAuto();
-        });
-      });
-
-      track.addEventListener('pointerdown', function(e){
-        dragging = true;
-        startX = e.clientX;
-        currentX = startX;
-        track.classList.add('is-dragging');
-        stopAuto();
-      });
-
-      window.addEventListener('pointermove', function(e){
-        if(!dragging) return;
-        currentX = e.clientX;
-      });
-
-      window.addEventListener('pointerup', function(){
-        if(!dragging) return;
-
-        const diff = currentX - startX;
-        dragging = false;
-        track.classList.remove('is-dragging');
-
-        if(Math.abs(diff) > 42){
-          goTo(diff < 0 ? index + 1 : index - 1);
-        }
-
-        startAuto();
-      });
-
-      startAuto();
-    })();
-
-    // Promo popup
-    (function(){
-      const popup = document.getElementById('vlPromoPopup');
-      const image = document.getElementById('vlPromoPopupImg');
-      const close = document.getElementById('vlPromoPopupClose');
-
-      if(!popup || !image || !close) return;
-
-      document.querySelectorAll('.vl-promo-img').forEach(img => {
-        img.addEventListener('click', function(e){
-          const src = this.dataset.popupSrc || this.src;
-          if(!src) return;
-
-          e.preventDefault();
-          image.src = src;
-          popup.classList.add('show');
-          popup.setAttribute('aria-hidden', 'false');
-        });
-      });
-
-      function hide(){
-        popup.classList.remove('show');
-        popup.setAttribute('aria-hidden', 'true');
-        image.src = '';
-      }
-
-      close.addEventListener('click', hide);
-
-      popup.addEventListener('click', function(e){
-        if(e.target === popup) hide();
-      });
-    })();
-
-    // Buy modal / validation
     (function(){
       const modal = document.getElementById('vlModal');
       const modalTitle = document.getElementById('vlModalTitle');
@@ -1496,103 +881,49 @@
       const modalClose = document.getElementById('vlModalClose');
       const modalCancel = document.getElementById('vlModalCancel');
       const modalAction = document.getElementById('vlModalAction');
-
       function openModal(title, body, actionUrl, actionText){
         if(!modal) return;
-
-        modalTitle.textContent = title;
-        modalBody.innerHTML = body;
-
-        if(actionUrl){
-          modalAction.href = actionUrl;
-          modalAction.textContent = actionText || 'Lanjutkan';
-          modalAction.style.display = 'flex';
-        } else {
-          modalAction.style.display = 'none';
-        }
-
-        modal.classList.add('show');
-        modal.setAttribute('aria-hidden', 'false');
+        modalTitle.textContent = title; modalBody.innerHTML = body;
+        if(actionUrl){ modalAction.href = actionUrl; modalAction.textContent = actionText || 'Lanjutkan'; modalAction.style.display = 'flex'; }
+        else { modalAction.style.display = 'none'; }
+        modal.classList.add('show'); modal.setAttribute('aria-hidden', 'false');
       }
-
-      function closeModal(){
-        if(!modal) return;
-        modal.classList.remove('show');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-
+      function closeModal(){ if(!modal) return; modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); }
       modalClose?.addEventListener('click', closeModal);
       modalCancel?.addEventListener('click', closeModal);
-      modal?.addEventListener('click', function(e){
-        if(e.target === modal) closeModal();
-      });
-
+      modal?.addEventListener('click', e => { if(e.target === modal) closeModal(); });
       document.querySelectorAll('.js-invest-form').forEach(form => {
         form.addEventListener('submit', function(e){
-          const vipKurang = this.dataset.vipKurang === '1';
-          const saldoKurang = this.dataset.saldoKurang === '1';
-
+          const vipKurang = this.dataset.vipKurang === '1', saldoKurang = this.dataset.saldoKurang === '1';
           if(vipKurang || saldoKurang){
             e.preventDefault();
-
-            const name = this.dataset.productName || 'Produk Velora';
+            const name = this.dataset.productName || 'Produk Capital Wave';
             const price = this.dataset.productPrice || '-';
-            const productVip = this.dataset.productVip || '0';
-            const userVip = this.dataset.userVip || '0';
-
+            const productVip = this.dataset.productVip || '0', userVip = this.dataset.userVip || '0';
             if(vipKurang){
-              openModal(
-                'VIP Belum Cukup',
-                `Produk <b>${name}</b> membutuhkan minimal <b>VIP ${productVip}</b>.<br>Status kamu saat ini <b>VIP ${userVip}</b>.`,
-                '{{ url('/akun') }}',
-                'Lihat Akun'
-              );
+              openModal('VIP Belum Cukup', `Produk <b>${name}</b> membutuhkan minimal <b>VIP ${productVip}</b>.<br>Status kamu saat ini <b>VIP ${userVip}</b>.`, '{{ url('/akun') }}', 'Lihat Akun');
               return;
             }
-
             if(saldoKurang){
-              openModal(
-                'Saldo Belum Cukup',
-                `Saldo kamu belum cukup untuk membeli <b>${name}</b>.<br>Harga produk: <b>${price}</b>.`,
-                '{{ url('/deposit') }}',
-                'Deposit'
-              );
+              openModal('Saldo Belum Cukup', `Saldo kamu belum cukup untuk membeli <b>${name}</b>.<br>Harga produk: <b>${price}</b>.`, '{{ url('/deposit') }}', 'Deposit');
             }
           }
         });
       });
     })();
 
-        // CS & Channel popup - selalu muncul saat masuk dashboard
     (function(){
       const popup = document.getElementById('vlCsPopup');
       const close = document.getElementById('vlCsPopupClose');
-
+      const quickCs = document.getElementById('vlQuickCs');
       if(!popup || !close) return;
-
-      function showPopup(){
-        popup.classList.add('show');
-        popup.setAttribute('aria-hidden', 'false');
-      }
-
-      function hidePopup(){
-        popup.classList.remove('show');
-        popup.setAttribute('aria-hidden', 'true');
-      }
-
-      window.addEventListener('load', function(){
-        setTimeout(showPopup, 450);
-      });
-
+      function showPopup(){ popup.classList.add('show'); popup.setAttribute('aria-hidden', 'false'); }
+      function hidePopup(){ popup.classList.remove('show'); popup.setAttribute('aria-hidden', 'true'); }
+      window.addEventListener('load', () => setTimeout(showPopup, 500));
       close.addEventListener('click', hidePopup);
-
-      popup.addEventListener('click', function(e){
-        if(e.target === popup) hidePopup();
-      });
-
-      document.addEventListener('keydown', function(e){
-        if(e.key === 'Escape') hidePopup();
-      });
+      quickCs?.addEventListener('click', showPopup);
+      popup.addEventListener('click', e => { if(e.target === popup) hidePopup(); });
+      document.addEventListener('keydown', e => { if(e.key === 'Escape') hidePopup(); });
     })();
   </script>
 </body>

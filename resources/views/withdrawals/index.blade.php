@@ -1,1104 +1,222 @@
- @include('partials.anti-inspect')
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <title>Penarikan Saldo | Velora Finance</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="csrf-token" content="{{ csrf_token() }}">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --wd-bg:#f6f2f8;
-      --wd-bg2:#efe8f7;
-      --wd-paper:#ffffff;
-      --wd-paper2:#fbf8ff;
-      --wd-text:#2b0b16;
-      --wd-soft:#45162a;
-      --wd-muted:#7b6370;
-      --wd-muted2:#a894a0;
-      --wd-border:rgba(43,11,22,.085);
-      --wd-border2:rgba(43,11,22,.14);
-
-      --wd-maroon:#3a0712;
-      --wd-gold:#f5af2a;
-      --wd-gold2:#ffd46d;
-      --wd-purple:#8f57ff;
-      --wd-violet:#d96bff;
-      --wd-pink:#d96bff;
-      --wd-green:#20b873;
-      --wd-red:#e24a64;
-      --wd-yellow:#f5af2a;
-      --wd-blue:#8f57ff;
-
-      --wd-gradient:linear-gradient(135deg,#f5af2a 0%,#ffd46d 25%,#d96bff 58%,#8f57ff 100%);
-      --wd-gradient-soft:linear-gradient(145deg,#8f57ff 0%,#9f55ff 40%,#d96bff 72%,#f5af2a 100%);
-      --wd-shadow:0 24px 58px rgba(88,43,145,.16);
-      --wd-shadow-soft:0 14px 34px rgba(43,11,22,.075);
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ min-height:100%; }
-
-    body{
-      margin:0;
-      font-family:Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-      color:var(--wd-text);
-      background:
-        radial-gradient(680px 360px at 50% -150px, rgba(245,175,42,.22), transparent 64%),
-        radial-gradient(520px 340px at 100% 4%, rgba(217,107,255,.17), transparent 62%),
-        radial-gradient(520px 330px at -12% 34%, rgba(143,87,255,.12), transparent 58%),
-        linear-gradient(180deg,#fff 0%,#f7f2fa 44%,#eee8f6 100%);
-      overflow-x:hidden;
-      -webkit-tap-highlight-color:transparent;
-    }
-
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        linear-gradient(rgba(43,11,22,.026) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(43,11,22,.018) 1px, transparent 1px);
-      background-size:32px 32px;
-      mask-image:linear-gradient(180deg, rgba(0,0,0,.42), transparent 76%);
-      -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,.42), transparent 76%);
-      opacity:.55;
-      z-index:0;
-    }
-
-    a{ color:inherit; text-decoration:none; }
-    button,input,select{ font-family:inherit; }
-    button{ -webkit-tap-highlight-color:transparent; }
-
-    .wd-page{
-      width:100%;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      padding:14px 10px 0;
-      position:relative;
-      z-index:1;
-    }
-
-    .wd-phone{
-      width:100%;
-      max-width:430px;
-      min-height:100vh;
-      position:relative;
-      padding:8px 4px 112px;
-    }
-
-    .wd-header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:16px;
-      padding:0 2px;
-    }
-
-    .wd-brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      min-width:0;
-    }
-
-    .wd-logo-card{
-      width:52px;
-      height:52px;
-      border-radius:19px;
-      background:
-        radial-gradient(circle at 28% 8%, rgba(255,255,255,.98), rgba(255,226,155,.78) 34%, rgba(225,188,255,.76) 92%),
-        var(--wd-gradient);
-      border:1px solid rgba(255,255,255,.68);
-      box-shadow:
-        0 16px 34px rgba(88,43,145,.13),
-        0 8px 22px rgba(245,175,42,.10),
-        inset 0 1px 0 rgba(255,255,255,.72);
-      display:grid;
-      place-items:center;
-      flex:0 0 auto;
-      overflow:hidden;
-    }
-
-    .wd-logo-card img{
-      width:46px;
-      height:46px;
-      object-fit:contain;
-      display:block;
-    }
-
-    .wd-title-wrap{ min-width:0; }
-
-    .wd-title-wrap span{
-      display:block;
-      margin-bottom:6px;
-      color:rgba(58,7,18,.58);
-      font-size:10px;
-      line-height:1;
-      font-weight:800;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-    }
-
-    .wd-title-wrap h1{
-      margin:0;
-      font-size:23px;
-      line-height:1;
-      font-weight:950;
-      letter-spacing:-.055em;
-      color:var(--wd-maroon);
-      white-space:nowrap;
-    }
-
-    .wd-header-actions{
-      display:flex;
-      align-items:center;
-      gap:9px;
-      flex:0 0 auto;
-    }
-
-    .wd-header-btn{
-      width:42px;
-      height:42px;
-      border-radius:999px;
-      border:1px solid rgba(43,11,22,.08);
-      background:rgba(255,255,255,.88);
-      color:#5b2841;
-      display:grid;
-      place-items:center;
-      box-shadow:0 12px 26px rgba(43,11,22,.065), inset 0 1px 0 rgba(255,255,255,.92);
-      transition:.18s ease;
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
-    }
-
-    .wd-header-btn:hover{
-      transform:translateY(-1px);
-      color:var(--wd-purple);
-      border-color:rgba(143,87,255,.18);
-    }
-
-    .wd-header-btn svg{ width:20px; height:20px; }
-
-    .wd-hero{
-      position:relative;
-      overflow:hidden;
-      border-radius:34px;
-      background:
-        radial-gradient(360px 220px at 92% -12%, rgba(255,212,109,.48), transparent 58%),
-        radial-gradient(300px 200px at 2% 8%, rgba(217,107,255,.34), transparent 62%),
-        linear-gradient(145deg,#8f57ff 0%,#9455ff 40%,#d96bff 72%,#f5af2a 100%);
-      border:1px solid rgba(255,255,255,.44);
-      box-shadow:0 28px 62px rgba(143,87,255,.22), 0 18px 42px rgba(245,175,42,.10), inset 0 1px 0 rgba(255,255,255,.22);
-      padding:18px;
-      margin-bottom:14px;
-      animation:wdFadeUp .42s ease both;
-      color:#fff;
-    }
-
-    .wd-hero::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        linear-gradient(135deg, rgba(255,255,255,.22), transparent 34%),
-        radial-gradient(circle at 82% 26%, rgba(255,255,255,.16), transparent 28%),
-        linear-gradient(180deg, transparent 0%, rgba(43,11,22,.08) 100%);
-      pointer-events:none;
-    }
-
-    .wd-hero::after{
-      content:"";
-      position:absolute;
-      right:-68px;
-      bottom:-86px;
-      width:240px;
-      height:240px;
-      border-radius:50%;
-      background:linear-gradient(135deg, rgba(255,212,109,.46), rgba(217,107,255,.25));
-      filter:blur(18px);
-      pointer-events:none;
-    }
-
-    .wd-hero-inner{
-      position:relative;
-      z-index:1;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-    }
-
-    .wd-hero-label{
-      margin:0 0 8px;
-      color:rgba(255,255,255,.74);
-      font-size:12px;
-      font-weight:700;
-      line-height:1.1;
-    }
-
-    .wd-hero-title{
-      margin:0;
-      color:#fff;
-      font-size:31px;
-      line-height:1.02;
-      letter-spacing:-.075em;
-      font-weight:950;
-      text-shadow:0 12px 28px rgba(43,11,22,.22);
-    }
-
-    .wd-hero-sub{
-      margin-top:12px;
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      color:#2c1200;
-      font-size:11.5px;
-      font-weight:850;
-      padding:8px 12px;
-      border-radius:999px;
-      background:linear-gradient(135deg,#ffe08a 0%,#f5af2a 100%);
-      border:1px solid rgba(255,255,255,.30);
-      box-shadow:0 12px 22px rgba(245,175,42,.24), inset 0 1px 0 rgba(255,255,255,.38);
-    }
-
-    .wd-hero-sub span{
-      color:rgba(44,18,0,.68);
-      font-weight:700;
-    }
-
-    .wd-hero-pill{
-      flex:0 0 auto;
-      min-width:78px;
-      height:40px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      color:#2b0b16;
-      background:radial-gradient(circle at 24% 0%, rgba(255,255,255,.72), transparent 40%), linear-gradient(135deg,#ffd46d 0%,#d96bff 56%,#8f57ff 100%);
-      border:1px solid rgba(255,255,255,.40);
-      box-shadow:0 12px 24px rgba(143,87,255,.18), inset 0 1px 0 rgba(255,255,255,.40);
-      font-size:12px;
-      font-weight:950;
-      white-space:nowrap;
-    }
-
-    .wd-hero-pill svg{ width:15px; height:15px; }
-
-    .wd-available-card{
-      margin-bottom:14px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-
-    .wd-available-item{
-      min-height:78px;
-      border-radius:22px;
-      padding:13px;
-      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.88));
-      border:1px solid rgba(43,11,22,.075);
-      box-shadow:var(--wd-shadow-soft), inset 0 1px 0 rgba(255,255,255,.95);
-      overflow:hidden;
-      position:relative;
-    }
-
-    .wd-available-item::after{
-      content:"";
-      position:absolute;
-      left:13px;
-      right:13px;
-      bottom:0;
-      height:3px;
-      border-radius:999px 999px 0 0;
-      background:linear-gradient(90deg,#d96bff,transparent 80%);
-    }
-
-    .wd-available-item.is-main::after{ background:linear-gradient(90deg,#f5af2a,#d96bff 80%); }
-
-    .wd-available-item span{
-      display:block;
-      color:var(--wd-muted);
-      font-size:10px;
-      font-weight:800;
-      margin-bottom:9px;
-    }
-
-    .wd-available-item strong{
-      display:block;
-      color:var(--wd-maroon);
-      font-size:14px;
-      font-weight:950;
-      letter-spacing:-.03em;
-    }
-
-    .wd-available-item.is-main strong{ color:var(--wd-purple); }
-
-    .wd-card{
-      position:relative;
-      overflow:visible;
-      border-radius:0;
-      background:transparent;
-      border:0;
-      box-shadow:none;
-      padding:0;
-      animation:wdFadeUp .42s ease both;
-    }
-
-    .wd-fieldset{
-      position:relative;
-      margin-bottom:14px;
-      border:1px solid rgba(43,11,22,.075);
-      border-radius:28px;
-      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.88));
-      padding:18px 14px 14px;
-      box-shadow:var(--wd-shadow-soft), inset 0 1px 0 rgba(255,255,255,.94);
-      overflow:hidden;
-    }
-
-    .wd-fieldset::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(220px 120px at 100% 0%, rgba(217,107,255,.11), transparent 62%),
-        radial-gradient(200px 110px at 0% 100%, rgba(245,175,42,.09), transparent 60%);
-    }
-
-    .wd-fieldset > *{ position:relative; z-index:1; }
-
-    .wd-fieldset-label{
-      position:static;
-      display:inline-flex;
-      min-height:28px;
-      align-items:center;
-      margin:0 0 12px;
-      padding:0 11px;
-      border-radius:999px;
-      background:#fbf8ff;
-      color:var(--wd-maroon);
-      border:1px solid rgba(43,11,22,.07);
-      font-size:11px;
-      font-weight:900;
-      line-height:1;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
-    }
-
-    .wd-loader{
-      color:var(--wd-muted);
-      font-size:12px;
-      font-weight:800;
-      text-align:center;
-      padding:14px;
-    }
-
-    .wd-bank-card{
-      border:1px solid rgba(43,11,22,.07);
-      border-radius:22px;
-      overflow:hidden;
-      background:rgba(255,255,255,.68);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.85);
-    }
-
-    .wd-bank-top{
-      padding:13px;
-      display:flex;
-      gap:12px;
-      align-items:flex-start;
-    }
-
-    .wd-bank-logo{
-      width:52px;
-      height:52px;
-      min-width:52px;
-      flex:0 0 52px;
-      border-radius:18px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:#fff;
-      border:1px solid rgba(43,11,22,.08);
-      overflow:hidden;
-      box-shadow:0 12px 24px rgba(43,11,22,.08), inset 0 1px 0 rgba(255,255,255,.9);
-    }
-
-    .wd-bank-logo-img{
-      display:block;
-      width:42px;
-      height:42px;
-      object-fit:contain;
-    }
-
-    .wd-bank-logo-fallback{
-      display:none;
-      width:100%;
-      height:100%;
-      align-items:center;
-      justify-content:center;
-      color:var(--wd-maroon);
-      font-size:11px;
-      font-weight:950;
-      line-height:1;
-    }
-
-    .wd-bank-label{
-      color:var(--wd-muted);
-      font-size:10px;
-      font-weight:850;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-    }
-
-    .wd-bank-name{
-      margin-top:4px;
-      color:var(--wd-maroon);
-      font-size:16px;
-      font-weight:950;
-      letter-spacing:-.03em;
-    }
-
-    .wd-bank-bottom{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      border-top:1px solid rgba(43,11,22,.07);
-      background:#fbf8ff;
-    }
-
-    .wd-bank-info{
-      padding:12px 13px;
-      min-width:0;
-    }
-
-    .wd-bank-info + .wd-bank-info{
-      border-left:1px solid rgba(43,11,22,.07);
-    }
-
-    .wd-bank-info span{
-      display:block;
-      color:var(--wd-muted);
-      font-size:10.5px;
-      font-weight:750;
-      margin-bottom:5px;
-    }
-
-    .wd-bank-info strong{
-      display:block;
-      color:var(--wd-maroon);
-      font-size:14px;
-      font-weight:950;
-      letter-spacing:-.02em;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-
-    .wd-bank-change{
-      padding:10px 13px 13px;
-      border-top:1px solid rgba(43,11,22,.07);
-      background:#fff;
-      text-align:center;
-    }
-
-    .wd-bank-change a{
-      min-height:36px;
-      padding:0 13px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      color:#2c1200;
-      background:linear-gradient(135deg,#ffe08a,#f5af2a);
-      text-decoration:none;
-      font-size:11.5px;
-      font-weight:950;
-      box-shadow:0 12px 24px rgba(245,175,42,.16);
-    }
-
-    .wd-bank-empty{
-      padding:16px 14px;
-      border-radius:20px;
-      border:1px dashed rgba(143,87,255,.22);
-      background:#fbf8ff;
-      color:var(--wd-muted);
-      text-align:center;
-    }
-
-    .wd-bank-empty-title{
-      color:var(--wd-maroon);
-      font-size:13px;
-      font-weight:950;
-      letter-spacing:-.02em;
-    }
-
-    .wd-bank-empty-desc{
-      margin:7px auto 12px;
-      max-width:280px;
-      color:var(--wd-muted);
-      font-size:11.5px;
-      font-weight:650;
-      line-height:1.45;
-    }
-
-    .wd-add-bank-link{
-      width:100%;
-      min-height:42px;
-      border-radius:999px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      color:#2c1200 !important;
-      text-decoration:none !important;
-      background:linear-gradient(135deg,#ffd46d,#d96bff 70%,#8f57ff);
-      box-shadow:0 14px 28px rgba(143,87,255,.18), inset 0 1px 0 rgba(255,255,255,.32);
-      font-size:12.5px;
-      font-weight:950;
-    }
-
-    .wd-amount-box{
-      min-height:96px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border-radius:24px;
-      background:#fff;
-      border:1px solid rgba(43,11,22,.07);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
-    }
-
-    .wd-rp{
-      color:var(--wd-purple);
-      font-size:31px;
-      line-height:1;
-      font-weight:700;
-      letter-spacing:-.055em;
-      flex:0 0 auto;
-    }
-
-    .wd-amount-input{
-      width:100%;
-      min-width:0;
-      border:0;
-      outline:0;
-      background:transparent;
-      color:var(--wd-maroon);
-      font-size:31px;
-      line-height:1;
-      font-weight:800;
-      letter-spacing:-.055em;
-      padding:0;
-    }
-
-    .wd-amount-input::placeholder{ color:rgba(43,11,22,.28); }
-
-    .wd-clear{
-      width:34px;
-      height:34px;
-      border-radius:999px;
-      border:1px solid rgba(43,11,22,.08);
-      background:#fbf8ff;
-      color:#7b6370;
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      flex:0 0 auto;
-    }
-
-    .wd-clear svg{ width:18px; }
-
-    .wd-presets{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:8px;
-      margin:8px 0 14px;
-    }
-
-    .wd-preset{
-      border:1px solid rgba(43,11,22,.075);
-      background:rgba(255,255,255,.92);
-      color:var(--wd-maroon);
-      min-height:40px;
-      padding:0 8px;
-      border-radius:16px;
-      font-size:11.2px;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:0 10px 22px rgba(43,11,22,.055), inset 0 1px 0 rgba(255,255,255,.9);
-      transition:.18s ease;
-    }
-
-    .wd-preset:hover{ transform:translateY(-1px); }
-
-    .wd-preset.is-active{
-      color:#2c1200;
-      background:linear-gradient(135deg,#ffd46d,#d96bff 68%,#8f57ff);
-      border-color:rgba(255,255,255,.60);
-      box-shadow:0 14px 28px rgba(143,87,255,.18);
-    }
-
-    .wd-limit{
-      display:grid;
-      gap:8px;
-      margin:0 0 14px;
-      border-radius:22px;
-      padding:12px;
-      background:rgba(255,255,255,.84);
-      border:1px solid rgba(43,11,22,.07);
-      box-shadow:var(--wd-shadow-soft);
-    }
-
-    .wd-limit-row{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      color:var(--wd-muted);
-      font-size:11.5px;
-      font-weight:700;
-    }
-
-    .wd-limit-row strong{
-      color:var(--wd-maroon);
-      font-weight:950;
-      text-align:right;
-    }
-
-    .wd-received{
-      border-radius:24px;
-      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.88));
-      border:1px solid rgba(43,11,22,.075);
-      padding:15px;
-      margin-bottom:12px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      box-shadow:var(--wd-shadow-soft), inset 0 1px 0 rgba(255,255,255,.94);
-    }
-
-    .wd-received-left{ display:grid; gap:4px; }
-
-    .wd-received-label{
-      color:var(--wd-maroon);
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .wd-received-note{
-      display:block;
-      color:var(--wd-muted);
-      font-size:10.5px;
-      font-weight:700;
-      line-height:1.35;
-    }
-
-    .wd-received-right{ text-align:right; }
-
-    .wd-received-amount{
-      display:block;
-      color:var(--wd-purple);
-      font-size:22px;
-      font-weight:950;
-      letter-spacing:-.04em;
-    }
-
-    .wd-tax{
-      display:block;
-      color:var(--wd-red);
-      font-size:11px;
-      font-weight:750;
-      margin-top:4px;
-    }
-
-    .wd-error{
-      min-height:20px;
-      text-align:center;
-      color:var(--wd-red);
-      font-size:11.5px;
-      font-weight:850;
-      margin-bottom:4px;
-    }
-
-    .wd-error:empty{ display:none; }
-
-    .wd-history{ margin-top:18px; }
-
-    .wd-history-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      margin-bottom:10px;
-      padding:0 2px;
-    }
-
-    .wd-history-title{
-      margin:0;
-      color:var(--wd-maroon);
-      font-size:16px;
-      font-weight:900;
-      letter-spacing:-.025em;
-    }
-
-    .wd-history-sub{
-      color:var(--wd-muted);
-      font-size:11px;
-      font-weight:750;
-    }
-
-    .wd-history-list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .wd-history-item{
-      border-radius:20px;
-      border:1px solid rgba(43,11,22,.075);
-      background:#fff;
-      padding:12px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      box-shadow:var(--wd-shadow-soft);
-    }
-
-    .wd-history-amount{
-      color:var(--wd-maroon);
-      font-size:13px;
-      font-weight:950;
-    }
-
-    .wd-history-date{
-      margin-top:4px;
-      color:var(--wd-muted);
-      font-size:10.5px;
-      font-weight:600;
-      line-height:1.35;
-    }
-
-    .wd-status{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:24px;
-      padding:0 9px;
-      border-radius:999px;
-      font-size:10px;
-      font-weight:950;
-      text-transform:uppercase;
-      white-space:nowrap;
-    }
-
-    .wd-status.is-paid{ color:#0f5132; background:#e8fff4; }
-    .wd-status.is-pending{ color:#a56d00; background:#fff7dd; border:1px solid rgba(245,175,42,.22); }
-    .wd-status.is-rejected{ color:#c52c48; background:#fff1f3; border:1px solid rgba(226,74,100,.18); }
-    .wd-status.is-processing{ color:#5d2bd6; background:#f4edff; border:1px solid rgba(143,87,255,.18); }
-
-    .wd-empty{
-      border-radius:20px;
-      border:1px dashed rgba(43,11,22,.14);
-      background:#fff;
-      padding:14px;
-      color:var(--wd-muted);
-      text-align:center;
-      font-size:12px;
-      font-weight:750;
-      box-shadow:var(--wd-shadow-soft);
-    }
-
-    .wd-cancel{
-      margin-top:8px;
-      border:0;
-      border-radius:999px;
-      min-height:28px;
-      padding:0 10px;
-      color:#c52c48;
-      background:#fff1f3;
-      border:1px solid rgba(226,74,100,.18);
-      font-size:10.5px;
-      font-weight:900;
-      cursor:pointer;
-    }
-
-    .wd-bottom{
-      position:fixed;
-      left:50%;
-      bottom:0;
-      transform:translateX(-50%);
-      z-index:50;
-      width:min(100%,430px);
-      padding:12px 14px calc(14px + env(safe-area-inset-bottom));
-      background:linear-gradient(180deg, rgba(247,242,250,0), rgba(247,242,250,.92) 28%, rgba(247,242,250,.98));
-      pointer-events:none;
-    }
-
-    .wd-submit{
-      width:100%;
-      min-height:52px;
-      border:0;
-      border-radius:999px;
-      color:#2c1200;
-      background:linear-gradient(135deg,#ffd46d,#d96bff 68%,#8f57ff);
-      box-shadow:0 18px 38px rgba(143,87,255,.22), inset 0 1px 0 rgba(255,255,255,.32);
-      font-size:14px;
-      font-weight:950;
-      cursor:pointer;
-      pointer-events:auto;
-    }
-
-    .wd-submit[disabled]{
-      opacity:.55;
-      cursor:not-allowed;
-      filter:saturate(.6);
-    }
-
-    .wd-toast{
-      position:fixed;
-      left:50%;
-      bottom:92px;
-      z-index:1200;
-      transform:translateX(-50%) translateY(12px);
-      opacity:0;
-      pointer-events:none;
-      min-height:44px;
-      max-width:calc(100% - 24px);
-      padding:0 15px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#2c1200;
-      background:linear-gradient(135deg,#ffd46d,#d96bff 68%,#8f57ff);
-      box-shadow:0 18px 42px rgba(43,11,22,.18);
-      font-size:12px;
-      font-weight:850;
-      transition:.22s ease;
-      white-space:nowrap;
-    }
-
-    .wd-toast.is-error{
-      color:#fff;
-      background:linear-gradient(135deg,#e24a64,#f5af2a);
-    }
-
-    .wd-toast.show{
-      opacity:1;
-      transform:translateX(-50%) translateY(0);
-    }
-
-    .wd-hero-balance,
-    .wd-hero-balance-caption{ display:none; }
-
-    @keyframes wdFadeUp{
-      from{ opacity:0; transform:translateY(10px); }
-      to{ opacity:1; transform:translateY(0); }
-    }
-
-    @media(min-width:768px){
-      .wd-page{ padding:22px 0; }
-      .wd-phone{ min-height:calc(100vh - 44px); border-radius:30px; overflow:hidden; }
-      .wd-bottom{ bottom:22px; border-radius:0 0 30px 30px; }
-    }
-
-    @media(max-width:370px){
-      .wd-page{ padding-left:8px; padding-right:8px; }
-      .wd-phone{ padding-left:2px; padding-right:2px; }
-      .wd-logo-card{ width:45px; height:45px; border-radius:16px; }
-      .wd-logo-card img{ width:39px; height:39px; }
-      .wd-title-wrap h1{ font-size:21px; }
-      .wd-hero{ padding:16px; border-radius:30px; }
-      .wd-hero-title{ font-size:27px; }
-      .wd-hero-pill{ min-width:70px; height:37px; font-size:11px; }
-      .wd-available-card{ gap:8px; }
-      .wd-available-item{ min-height:74px; padding:11px; border-radius:20px; }
-      .wd-available-item strong{ font-size:12.3px; }
-      .wd-rp,.wd-amount-input{ font-size:28px; }
-      .wd-presets{ grid-template-columns:1fr 1fr; }
-      .wd-preset{ font-size:11px; }
-      .wd-bank-bottom{ grid-template-columns:1fr; }
-      .wd-bank-info + .wd-bank-info{ border-left:0; border-top:1px solid rgba(43,11,22,.07); }
-      .wd-received{ align-items:flex-start; flex-direction:column; }
-      .wd-received-right{ text-align:left; }
-    }
-  </style>
-</head>
-
+@include('partials.anti-inspect')
 @php
   $user = auth()->user();
-
   $saldoPenarikan = (int) data_get($user, 'saldo_penarikan', 0);
   $saldoHold = (int) data_get($user, 'saldo_hold', 0);
 @endphp
 
+@if(!$user)
+  <script>location.href='/login'</script>
+@endif
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Penarikan Saldo | Capital Wave</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --blue:#0A57A3; --blue-lite:#2f7fd4; --blue-soft:#eef4fb;
+      --navy:#0b2740; --navy-2:#0d3357; --navy-3:#0a2036;
+      --gold:#c99433; --gold-lite:#e8c874; --gold-deep:#a9772a; --gold-soft:#faf3e2;
+      --gold-metal:linear-gradient(135deg,#a9772a 0%,#e8c874 46%,#c99433 100%);
+      --green:#1c9d67; --green-soft:#e6f5ee; --red:#dc5757; --red-soft:#fdeaea; --amber:#c98a1e; --amber-soft:#fdf3e0;
+      --card:#ffffff; --tint:#f5f8fc; --line:#e9edf4; --line-2:#dfe5ee;
+      --ink:#152a3f; --ink-soft:#46586c; --muted:#8493a6; --muted-2:#aab6c4;
+      --sh-sm:0 1px 2px rgba(11,39,64,.05);
+      --sh:0 2px 6px rgba(11,39,64,.04), 0 12px 30px rgba(11,39,64,.07);
+      --sh-lg:0 4px 10px rgba(11,39,64,.05), 0 22px 50px rgba(11,39,64,.12);
+      --sh-navy:0 10px 24px rgba(9,30,52,.28), 0 24px 60px rgba(9,30,52,.30);
+      --r:24px;
+    }
+    *{ box-sizing:border-box; }
+    html,body{ min-height:100%; }
+    body{
+      margin:0; color:var(--ink);
+      font-family:'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(900px 500px at 50% -220px, rgba(10,87,163,.10), transparent 60%),
+        radial-gradient(600px 400px at 100% 8%, rgba(201,148,51,.06), transparent 55%),
+        linear-gradient(180deg,#f2f5f9 0%,#eef1f6 40%,#eaeef4 100%);
+      background-attachment:fixed; overflow-x:hidden; -webkit-font-smoothing:antialiased; letter-spacing:-.01em;
+    }
+    a{ color:inherit; text-decoration:none; } button,input{ font-family:inherit; }
+    h1,h2,h3,p{ margin:0; }
+    .wd-page{ width:100%; min-height:100vh; display:flex; justify-content:center; }
+    .wd-phone{ width:100%; max-width:428px; min-height:100vh; padding:18px 16px 100px; }
+
+    .wd-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .wd-head-l{ display:flex; align-items:center; gap:11px; min-width:0; }
+    .wd-back{ width:42px; height:42px; flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--navy); border-radius:13px; display:grid; place-items:center; box-shadow:var(--sh-sm); }
+    .wd-back svg{ width:20px; height:20px; }
+    .wd-head-l .t .name{ display:block; font-size:17px; font-weight:700; letter-spacing:-.02em; color:var(--navy); }
+    .wd-head-l .t .tag{ display:block; margin-top:3px; font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+    .wd-header-btn{ width:42px; height:42px; flex:0 0 auto; border:1px solid var(--line); background:var(--card); color:var(--ink-soft); border-radius:13px; display:grid; place-items:center; box-shadow:var(--sh-sm); }
+    .wd-header-btn svg{ width:19px; height:19px; }
+
+    .wd-hero{ position:relative; overflow:hidden; border-radius:20px; padding:14px 16px; color:#fff;
+      background:
+        radial-gradient(420px 240px at 90% -20%, rgba(232,200,116,.18), transparent 62%),
+        radial-gradient(360px 220px at 5% 120%, rgba(47,127,212,.22), transparent 60%),
+        linear-gradient(150deg,#0f3255 0%,#0b2740 52%,#0a2036 100%);
+      box-shadow:var(--sh-navy); }
+    .wd-hero::before{ content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; pointer-events:none;
+      background:linear-gradient(150deg, rgba(232,200,116,.6), rgba(232,200,116,0) 34%, rgba(255,255,255,.14) 100%);
+      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+    .wd-hero > *{ position:relative; z-index:1; }
+    .wd-eyebrow{ display:inline-flex; align-items:center; gap:8px; color:rgba(255,255,255,.62); font-size:9.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; }
+    .wd-eyebrow::before{ content:""; width:6px; height:6px; border-radius:999px; background:var(--gold-lite); box-shadow:0 0 10px rgba(232,200,116,.8); }
+    .wd-hero-big{ margin-top:8px; font-size:25px; font-weight:700; letter-spacing:-.035em; line-height:1; }
+    .wd-hero-boxes{ margin-top:11px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .wd-hbox{ border-radius:13px; padding:9px 11px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); }
+    .wd-hbox span{ display:flex; align-items:center; gap:6px; font-size:10px; font-weight:500; color:rgba(255,255,255,.6); }
+    .wd-hbox span svg{ width:13px; height:13px; color:var(--gold-lite); }
+    .wd-hbox strong{ display:block; margin-top:5px; font-size:13px; font-weight:700; letter-spacing:-.02em; }
+
+    .wd-sec-label{ margin:18px 0 11px; font-size:13.5px; font-weight:700; color:var(--navy); letter-spacing:-.02em; }
+
+    /* selected bank (JS rendered) */
+    .wd-bank-card{ border-radius:18px; background:var(--card); border:1px solid var(--line); box-shadow:var(--sh); padding:16px; position:relative; overflow:hidden; }
+    .wd-bank-card::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold-metal); }
+    .wd-bank-top{ display:flex; align-items:center; gap:12px; }
+    .wd-bank-logo{ width:46px; height:46px; flex:0 0 auto; border-radius:13px; display:grid; place-items:center; overflow:hidden; background:var(--blue-soft); position:relative; }
+    .wd-bank-logo-img{ width:100%; height:100%; object-fit:contain; padding:7px; background:#fff; }
+    .wd-bank-logo-fallback{ display:none; font-size:13px; font-weight:700; color:var(--navy); }
+    .wd-bank-logo-img + .wd-bank-logo-fallback{ position:absolute; inset:0; align-items:center; justify-content:center; }
+    .wd-bank-label{ font-size:9px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+    .wd-bank-name{ margin-top:3px; font-size:15px; font-weight:700; color:var(--navy); letter-spacing:-.02em; }
+    .wd-bank-bottom{ margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:13px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .wd-bank-info span{ font-size:9.5px; font-weight:500; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+    .wd-bank-info strong{ display:block; margin-top:5px; font-size:13px; font-weight:700; color:var(--navy); letter-spacing:.03em; }
+    .wd-bank-change{ margin-top:12px; text-align:center; }
+    .wd-bank-change a{ font-size:12px; font-weight:700; color:var(--blue); }
+    .wd-bank-empty{ border-radius:18px; background:var(--card); border:1px dashed var(--line-2); padding:22px; text-align:center; }
+    .wd-bank-empty-title{ font-size:14px; font-weight:700; color:var(--navy); }
+    .wd-bank-empty-desc{ margin:8px 0 14px; font-size:12px; font-weight:500; color:var(--muted); line-height:1.5; }
+    .wd-add-bank-link{ display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:0 20px; border-radius:13px; color:#fff; background:linear-gradient(135deg,#123457,#0b2740); box-shadow:0 10px 22px rgba(11,39,64,.24); font-size:13px; font-weight:700; }
+
+    /* amount */
+    .wd-amount-box{ display:flex; align-items:center; gap:10px; padding:16px 18px; border-radius:18px; background:var(--card); border:1.5px solid var(--line); box-shadow:var(--sh-sm); }
+    .wd-amount-box:focus-within{ border-color:var(--blue); box-shadow:0 0 0 3px rgba(10,87,163,.1); }
+    .wd-rp{ font-size:20px; font-weight:700; color:var(--muted); }
+    .wd-amount-input{ flex:1; min-width:0; border:0; outline:none; background:transparent; color:var(--navy); font-size:30px; font-weight:700; letter-spacing:-.03em; }
+    .wd-amount-input::placeholder{ color:var(--muted-2); }
+    .wd-clear{ width:34px; height:34px; flex:0 0 auto; border:0; border-radius:10px; background:var(--tint); color:var(--muted); font-size:18px; cursor:pointer; display:grid; place-items:center; }
+    .wd-presets{ margin-top:12px; display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
+    .wd-preset{ min-height:44px; border:1px solid var(--line); border-radius:13px; background:var(--card); color:var(--ink-soft); font-size:12px; font-weight:700; cursor:pointer; box-shadow:var(--sh-sm); transition:.15s ease; }
+    .wd-preset.is-active{ color:#fff; background:linear-gradient(135deg,#123457,#0b2740); border-color:transparent; box-shadow:0 8px 16px rgba(11,39,64,.2); }
+
+    .wd-received{ margin-top:14px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:15px 16px; border-radius:16px; background:linear-gradient(135deg, var(--gold-soft), #fff); border:1px solid rgba(201,148,51,.2); }
+    .wd-received-label{ display:block; font-size:10.5px; font-weight:600; color:var(--gold-deep); }
+    .wd-received-amount{ display:block; margin-top:4px; font-size:19px; font-weight:700; color:var(--navy); letter-spacing:-.02em; }
+    .wd-tax{ font-size:10px; font-weight:600; color:var(--muted); text-align:right; max-width:120px; line-height:1.4; }
+    .wd-error{ margin-top:10px; font-size:11.5px; font-weight:600; color:var(--red); min-height:16px; }
+
+    /* history */
+    .wd-history{ margin-top:14px; display:flex; flex-direction:column; gap:9px; }
+    .wd-empty{ padding:22px; border-radius:16px; background:var(--card); border:1px dashed var(--line-2); text-align:center; color:var(--muted); font-size:12.5px; font-weight:500; }
+    .wd-history-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px; border-radius:16px; background:var(--card); border:1px solid var(--line); box-shadow:var(--sh-sm); }
+    .wd-history-amount{ font-size:15px; font-weight:700; color:var(--navy); letter-spacing:-.02em; }
+    .wd-history-date{ margin-top:4px; font-size:10.5px; font-weight:500; color:var(--muted); }
+    .wd-status{ display:inline-block; padding:5px 10px; border-radius:9px; font-size:10px; font-weight:700; }
+    .wd-status.is-paid{ color:var(--green); background:var(--green-soft); }
+    .wd-status.is-processing{ color:var(--blue); background:var(--blue-soft); }
+    .wd-status.is-rejected{ color:var(--red); background:var(--red-soft); }
+    .wd-status.is-pending{ color:var(--amber); background:var(--amber-soft); }
+    .wd-cancel{ display:block; margin-top:8px; margin-left:auto; padding:6px 12px; border:1px solid var(--red-soft); background:var(--red-soft); color:var(--red); border-radius:9px; font-size:11px; font-weight:700; cursor:pointer; }
+
+    .wd-bottom{ position:fixed; left:50%; bottom:0; transform:translateX(-50%); width:min(100%,460px); padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg, rgba(238,241,246,0), #eef1f6 40%); }
+    .wd-submit{ position:relative; overflow:hidden; width:100%; min-height:54px; border:0; border-radius:16px; cursor:pointer; color:#fff;
+      background:linear-gradient(135deg,#123457,#0b2740); box-shadow:0 12px 26px rgba(11,39,64,.3), inset 0 1px 0 rgba(255,255,255,.08); font-size:14.5px; font-weight:700; letter-spacing:-.01em; transition:.16s ease; }
+    .wd-submit::after{ content:""; position:absolute; inset:0; border-radius:inherit; padding:1px; background:linear-gradient(135deg, rgba(232,200,116,.7), transparent 55%); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:.6; }
+    .wd-submit[disabled]{ opacity:.5; cursor:default; box-shadow:none; }
+
+    .wd-toast{ position:fixed; left:50%; bottom:90px; transform:translateX(-50%) translateY(20px); z-index:2000; opacity:0; pointer-events:none;
+      padding:13px 18px; border-radius:14px; background:var(--navy); color:#fff; box-shadow:var(--sh-lg); font-size:12.5px; font-weight:600; transition:.28s cubic-bezier(.22,.8,.22,1); }
+    .wd-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+    .wd-toast.is-error{ background:linear-gradient(135deg,#dc5757,#b83f3f); }
+    @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } }
+  </style>
+</head>
 
 <body>
   <main class="wd-page">
     <div class="wd-phone">
 
-      {{-- HEADER --}}
       <header class="wd-header">
-        <div class="wd-brand">
-          <div class="wd-logo-card">
-            <img src="{{ asset('logo.png') }}" alt="Velora Finance">
-          </div>
-
-          <div class="wd-title-wrap">
-            <span>Velora Finance</span>
-            <h1>Penarikan Saldo</h1>
-          </div>
+        <div class="wd-head-l">
+          <a href="{{ url('/dashboard') }}" class="wd-back" aria-label="Kembali"><svg viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <div class="t"><span class="name">Penarikan</span><span class="tag">Cairkan Saldo</span></div>
         </div>
-
-        <div class="wd-header-actions">
-          <a href="{{ url('/dashboard') }}" class="wd-header-btn" aria-label="Kembali ke Dashboard">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M15 18 9 12l6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-
-          <a href="{{ url('/ui/payout-accounts') }}" class="wd-header-btn" aria-label="Kelola Rekening">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="2.2"/>
-              <path d="M3 9h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M7 14h4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-            </svg>
-          </a>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <a href="{{ route('withdrawals.history') }}" class="wd-header-btn" aria-label="Riwayat Penarikan"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+          <a href="{{ url('/ui/payout-accounts') }}" class="wd-header-btn" aria-label="Kelola Rekening"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10 12 4l8 6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M5 10v9h14v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></a>
         </div>
       </header>
 
-      {{-- HERO --}}
       <section class="wd-hero">
-        <div class="wd-hero-inner">
-          <div>
-<p class="wd-hero-label">Saldo siap ditarik</p>
-<h2 class="wd-hero-title">Withdraw</h2>
-
-
-<div class="wd-hero-sub">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-                <path d="M4 15l5-5 4 4 7-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M15 6h5v5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              Minimal Rp 50.000
-             <span>Biaya Gateway</span>
-            </div>
-          </div>
-
-          <div class="wd-hero-pill">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
-            </svg>
-            Aman
-          </div>
+        <span class="wd-eyebrow">Saldo Siap Ditarik</span>
+        <div class="wd-hero-big">Rp {{ number_format($saldoPenarikan, 0, ',', '.') }}</div>
+        <div class="wd-hero-boxes">
+          <div class="wd-hbox"><span><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg> Dalam Proses</span><strong>Rp {{ number_format($saldoHold, 0, ',', '.') }}</strong></div>
+          <div class="wd-hbox"><span><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 4.4-3.2 7.2-8 8.5C7.2 19.2 4 16.4 4 12V7l8-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> Biaya Admin</span><strong>5%</strong></div>
         </div>
       </section>
 
-      <section class="wd-available-card">
-  <div class="wd-available-item is-main">
-    <span>Bisa Ditarik</span>
-    <strong>Rp {{ number_format($saldoPenarikan, 0, ',', '.') }}</strong>
-  </div>
+      <p class="wd-sec-label">Rekening Tujuan</p>
+      <div id="selectedBank"></div>
 
-  <div class="wd-available-item">
-    <span>Sedang Diproses</span>
-    <strong>Rp {{ number_format($saldoHold, 0, ',', '.') }}</strong>
-  </div>
-</section>
+      <form id="wdForm" novalidate>
+        <input type="hidden" id="payout" value="">
+        <input type="hidden" id="amount" value="">
 
-      {{-- FORM CARD --}}
-      <section class="wd-card">
-        <form id="wdForm" novalidate>
-          <input type="hidden" id="payout" value="">
-          <input type="hidden" id="amount" value="">
+        <p class="wd-sec-label">Jumlah Penarikan</p>
+        <div class="wd-amount-box">
+          <span class="wd-rp">Rp</span>
+          <input inputmode="numeric" autocomplete="off" id="amountDisplay" class="wd-amount-input" placeholder="0">
+          <button type="button" class="wd-clear" id="clearAmount" aria-label="Hapus nominal">×</button>
+        </div>
 
-          <section class="wd-fieldset">
-            <span class="wd-fieldset-label">Akun Bank Terpilih</span>
-            <div id="selectedBank">
-              <div class="wd-loader">Mengambil akun bank...</div>
-            </div>
-          </section>
+        <div class="wd-presets">
+          <button type="button" class="wd-preset" data-amount="50000">Rp 50.000</button>
+          <button type="button" class="wd-preset" data-amount="100000">Rp 100.000</button>
+          <button type="button" class="wd-preset" data-amount="500000">Rp 500.000</button>
+          <button type="button" class="wd-preset" data-amount="1000000">Rp 1.000.000</button>
+          <button type="button" class="wd-preset" data-amount="5000000">Rp 5.000.000</button>
+          <button type="button" class="wd-preset" data-amount="10000000">Rp 10.000.000</button>
+        </div>
 
-          <section class="wd-fieldset">
-            <span class="wd-fieldset-label">Masukkan Jumlah Penarikan</span>
-
-            <div class="wd-amount-box">
-              <span class="wd-rp">Rp</span>
-
-              <input
-                type="text"
-                inputmode="numeric"
-                id="amountDisplay"
-                class="wd-amount-input"
-                placeholder="0"
-                autocomplete="off"
-                aria-label="Jumlah penarikan"
-              >
-
-              <button type="button" class="wd-clear" id="clearAmount" aria-label="Hapus nominal">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M18 6 6 18" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-                  <path d="M6 6 18 18" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/>
-                </svg>
-              </button>
-            </div>
-          </section>
-
-          <div class="wd-presets">
-            <button type="button" class="wd-preset" data-amount="50000">Rp 50.000</button>
-            <button type="button" class="wd-preset" data-amount="100000">Rp 100.000</button>
-            <button type="button" class="wd-preset" data-amount="500000">Rp 500.000</button>
-            <button type="button" class="wd-preset" data-amount="1000000">Rp 1.000.000</button>
-            <button type="button" class="wd-preset" data-amount="5000000">Rp 5.000.000</button>
-            <button type="button" class="wd-preset" data-amount="10000000">Rp 10.000.000</button>
+        <div class="wd-received">
+          <div>
+            <span class="wd-received-label">Kamu akan menerima</span>
+            <span class="wd-received-amount" id="receivedAmount">Rp 0</span>
           </div>
+          <span class="wd-tax" id="gatewayFeeText">Biaya mengikuti response gateway pembayaran</span>
+        </div>
 
-          <div class="wd-limit">
-            <div class="wd-limit-row">
-              <span>Minimal penarikan:</span>
-              <strong>Rp 50.000</strong>
-            </div>
+        <div class="wd-error" id="amountError"></div>
+      </form>
 
-            <div class="wd-limit-row">
-              <span>Maksimal penarikan:</span>
-              <strong>Rp 50.000.000</strong>
-            </div>
-          </div>
-
-<div class="wd-received">
-  <div class="wd-received-left">
-    <span class="wd-received-label">Jumlah yang Diterima</span>
-    <span class="wd-received-note">Estimasi setelah biaya gateway</span>
-  </div>
-
-  <div class="wd-received-right">
-    <span class="wd-received-amount" id="receivedAmount">Rp 0</span>
-    <span class="wd-tax" id="gatewayFeeText">Biaya gateway Rp 0</span>
-  </div>
-</div>
-
-          <div class="wd-error" id="amountError"></div>
-        </form>
-      </section>
-
-      {{-- HISTORY --}}
-     
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 11px;">
+        <p class="wd-sec-label" style="margin:0;">Riwayat Penarikan</p>
+        <a href="{{ route('withdrawals.history') }}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--blue);text-decoration:none;">
+          Lihat Semua
+          <svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+      <div class="wd-history" id="history"></div>
     </div>
   </main>
 
   <div class="wd-bottom">
-    <button class="wd-submit" type="submit" form="wdForm" id="btnSubmitWd">
-      Lanjutkan Penarikan
-    </button>
+    <button class="wd-submit" type="submit" form="wdForm" id="btnSubmitWd">Ajukan Penarikan</button>
   </div>
 
   <div id="wdToast" class="wd-toast" role="status" aria-live="polite">

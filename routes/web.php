@@ -77,10 +77,14 @@ Route::middleware('guest')->group(function () {
         if ($request->attributes->get('is_bot') === true) {
             return response('Not Found', 404);
         }
-        
-        // Jika manusia, lempar ke Controller
-        return app(AuthController::class)->referralEntry($request, $code);
+
+        // Tampilkan gate verifikasi Cloudflare Turnstile (anti-bot) sebelum lanjut
+        return app(AuthController::class)->referralGate($request, $code);
     })->where('code', '[A-Za-z0-9]+')->name('referral.entry');
+
+    // Verifikasi Turnstile lalu simpan kode referral + lanjut ke form daftar
+    Route::post('/r-verify', [AuthController::class, 'referralVerify'])
+        ->name('referral.verify');
 
     /*
     |--------------------------------------------------------------------------
@@ -276,8 +280,38 @@ Route::middleware('auth')->group(function () {
 
 
 });
-Route::post('/api/bayarpro-webhook', [\App\Http\Controllers\BayarProWebhookController::class, 'handle'])
-    ->name('payment.bayarpro.webhook');
+/*
+|--------------------------------------------------------------------------
+| Notifikasi Server Payment Gateway (BankPay)
+|--------------------------------------------------------------------------
+| Ditembak langsung oleh gateway, bukan oleh browser user — tanpa session,
+| tanpa CSRF (lihat pengecualian di bootstrap/app.php). Keasliannya dijamin
+| tanda tangan MD5, dan kedua endpoint wajib membalas string "OK".
+|
+| URL ini harus didaftarkan di dashboard BankPay, atau dikirim otomatis lewat
+| parameter pay_notifyurl / notifyurl pada setiap permintaan.
+*/
+Route::post('/api/bankpay/deposit-notify', [\App\Http\Controllers\BankPayCallbackController::class, 'deposit'])
+    ->name('payment.bankpay.deposit.notify');
+
+Route::post('/api/bankpay/payout-notify', [\App\Http\Controllers\BankPayCallbackController::class, 'payout'])
+    ->name('payment.bankpay.payout.notify');
+
+/*
+|--------------------------------------------------------------------------
+| Listener QRIS Statis (ditembak HP Android / MacroDroid)
+|--------------------------------------------------------------------------
+| Dilindungi token, bukan session login. Wajib HTTPS di produksi.
+*/
+Route::middleware('listener.token')
+    ->prefix('api/listener')
+    ->group(function () {
+        Route::post('/mutasi', [\App\Http\Controllers\ListenerController::class, 'mutasi'])
+            ->name('listener.mutasi');
+
+        Route::post('/heartbeat', [\App\Http\Controllers\ListenerController::class, 'heartbeat'])
+            ->name('listener.heartbeat');
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -337,6 +371,23 @@ Route::post('/deposits/{id}/paid', [DepositAdminController::class, 'markPaid'])
 
 Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed'])
     ->name('admin.deposits.failed');
+
+/*
+|--------------------------------------------------------------------------
+| Admin Mutasi QRIS (JSON only - tidak mengubah tampilan admin yang ada)
+|--------------------------------------------------------------------------
+*/
+Route::get('/mutations', [\App\Http\Controllers\Admin\MutationAdminController::class, 'index'])
+    ->name('admin.mutations.data');
+
+Route::post('/mutations/resolve', [\App\Http\Controllers\Admin\MutationAdminController::class, 'resolve'])
+    ->name('admin.mutations.resolve');
+
+Route::post('/mutations/dismiss', [\App\Http\Controllers\Admin\MutationAdminController::class, 'dismiss'])
+    ->name('admin.mutations.dismiss');
+
+Route::get('/listener/status', [\App\Http\Controllers\ListenerController::class, 'status'])
+    ->name('admin.listener.status');
 
 
     Route::get('/investments', [InvestmentAdminController::class, 'index'])

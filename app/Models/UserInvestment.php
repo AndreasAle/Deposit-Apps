@@ -75,8 +75,8 @@ class UserInvestment extends Model
      *
      * Rule client:
      * category_id = 1 / Semua       => tidak masuk profit
-     * category_id = 2 / Saham Velora => masuk profit
-     * category_id = 3 / Velora Pro   => masuk profit
+     * category_id = 2 / Saham Capital Wave => masuk profit
+     * category_id = 3 / Capital Wave Pro   => masuk profit
      */
     public function scopeProfitEligible($query)
     {
