@@ -81,6 +81,18 @@ return [
     // Invoice deposit kedaluwarsa (menit) — dipakai untuk expired_at lokal.
     'expiry_minutes' => (int) env('BANKPAY_EXPIRY_MINUTES', 60),
 
+    /*
+    | Berapa lama setelah invoice kedaluwarsa statusnya masih ditanyakan ke
+    | gateway. Ini yang mencegah invoice mati ditanyai selamanya: tanpa batas
+    | ini, satu invoice yang ditinggalkan user akan terus di-poll sampai
+    | jendela retensi habis — ribuan panggilan API untuk sesuatu yang tidak
+    | akan pernah dibayar, dan risiko kena pembatasan laju dari gateway.
+    |
+    | Tetap diberi kelonggaran (bukan nol) karena pembayaran yang masuk
+    | beberapa menit setelah lewat waktu tetap harus diakui.
+    */
+    'poll_grace_minutes' => (int) env('BANKPAY_POLL_GRACE_MINUTES', 30),
+
     // Kosongkan untuk memakai route() bawaan aplikasi. Isi hanya kalau URL
     // publik berbeda dari APP_URL (mis. di balik WAF / domain terpisah).
     'deposit_notify_url' => env('BANKPAY_DEPOSIT_NOTIFY_URL'),

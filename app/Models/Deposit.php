@@ -62,6 +62,50 @@ class Deposit extends Model
         return $this->status === 'FAILED';
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kelayakan bertanya ke gateway
+    |--------------------------------------------------------------------------
+    | Gateway hanya boleh ditanyai soal invoice yang MASIH MUNGKIN dibayar.
+    | Batasnya: belum berstatus final, dan belum lewat masa kedaluwarsa +
+    | kelonggaran. Tanpa batas ini, invoice yang ditinggalkan user akan
+    | ditanyakan berulang sampai jendela retensi habis - ribuan panggilan API
+    | untuk sesuatu yang tidak akan pernah dibayar.
+    |
+    | Dipakai bersama oleh poller cron dan halaman invoice supaya keduanya
+    | tidak mungkin punya batas yang berbeda.
+    */
+
+    /** Query scope untuk poller. */
+    public function scopeMenungguGateway($query)
+    {
+        $grace = (int) config('services.bankpay.poll_grace_minutes', 30);
+
+        return $query
+            ->where('payment_channel', \App\Services\DepositChannels::BANKPAY)
+            ->whereNotIn('status', ['PAID', 'FAILED'])
+            ->where(function ($q) use ($grace) {
+                $q->whereNull('expired_at')
+                    ->orWhere('expired_at', '>', now()->subMinutes($grace));
+            });
+    }
+
+    /** Versi satu baris untuk halaman invoice. */
+    public function masihBisaDitanyakanKeGateway(): bool
+    {
+        if (!$this->isBankPay() || in_array($this->status, ['PAID', 'FAILED'], true)) {
+            return false;
+        }
+
+        if (!$this->expired_at) {
+            return true;
+        }
+
+        $grace = (int) config('services.bankpay.poll_grace_minutes', 30);
+
+        return $this->expired_at->greaterThan(now()->subMinutes($grace));
+    }
+
     /** Deposit ini dibuat lewat gateway BankPay (konfirmasi otomatis). */
     public function isBankPay(): bool
     {

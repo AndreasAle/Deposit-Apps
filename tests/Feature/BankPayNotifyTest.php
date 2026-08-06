@@ -177,6 +177,55 @@ class BankPayNotifyTest extends TestCase
         $this->assertEquals(0, $user->fresh()->saldo);
     }
 
+    /**
+     * Invoice mati tidak boleh terus ditanyakan ke gateway. Ini yang menjaga
+     * kita dari membanjiri gateway dengan pertanyaan soal invoice yang tidak
+     * akan pernah dibayar - dan dari kena pembatasan laju karenanya.
+     */
+    public function test_invoice_kedaluwarsa_lewat_kelonggaran_berhenti_ditanyakan(): void
+    {
+        config(['services.bankpay.poll_grace_minutes' => 30]);
+
+        $user = $this->user();
+
+        $masihHidup = $this->deposit($user);
+        $masihHidup->update(['expired_at' => now()->addMinutes(10)]);
+
+        // Baru lewat 10 menit - masih dalam kelonggaran, pembayaran telat
+        // tetap harus bisa diakui.
+        $baruLewat = $this->deposit($user);
+        $baruLewat->update(['expired_at' => now()->subMinutes(10)]);
+
+        $sudahMati = $this->deposit($user);
+        $sudahMati->update(['expired_at' => now()->subMinutes(90)]);
+
+        $ditanyakan = Deposit::menungguGateway()->pluck('id')->all();
+
+        $this->assertContains($masihHidup->id, $ditanyakan);
+        $this->assertContains($baruLewat->id, $ditanyakan);
+        $this->assertNotContains($sudahMati->id, $ditanyakan, 'invoice mati masih ditanyakan ke gateway');
+
+        // Halaman invoice harus memakai batas yang sama persis.
+        $this->assertTrue($masihHidup->fresh()->masihBisaDitanyakanKeGateway());
+        $this->assertTrue($baruLewat->fresh()->masihBisaDitanyakanKeGateway());
+        $this->assertFalse($sudahMati->fresh()->masihBisaDitanyakanKeGateway());
+    }
+
+    public function test_deposit_lunas_dan_qris_statis_tidak_ditanyakan_ke_gateway(): void
+    {
+        $user = $this->user();
+
+        $lunas = $this->deposit($user);
+        $lunas->update(['status' => 'PAID']);
+
+        $qris = $this->deposit($user, 50000, DepositChannels::QRIS_STATIS);
+
+        $ditanyakan = Deposit::menungguGateway()->pluck('id')->all();
+
+        $this->assertNotContains($lunas->id, $ditanyakan);
+        $this->assertNotContains($qris->id, $ditanyakan, 'QRIS statis tidak dikenal gateway');
+    }
+
     public function test_order_tak_dikenal_dijawab_ok_tanpa_efek(): void
     {
         $params = [

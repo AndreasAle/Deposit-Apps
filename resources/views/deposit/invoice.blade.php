@@ -770,8 +770,22 @@
             document.body.removeChild(link);
         }
 
-        @if($deposit->status !== 'PAID')
-            setTimeout(function(){ window.location.reload(); }, 20000);
+        /*
+          Muat ulang berkala selama menunggu pembayaran, TAPI berhenti sendiri
+          begitu invoice lewat waktu. Setiap muat ulang memicu satu pengecekan
+          status ke gateway, jadi tanpa batas ini satu tab yang ditinggalkan
+          terbuka akan menanyai gateway terus-menerus tanpa akhir.
+        */
+        @if($deposit->status !== 'PAID' && !$deposit->isExpired())
+            (function(){
+                var sisaDetik = {{ $deposit->expired_at
+                    ? max(0, min(3600, (int) now()->diffInSeconds($deposit->expired_at, false)))
+                    : 1800 }};
+
+                if(sisaDetik > 0){
+                    setTimeout(function(){ window.location.reload(); }, 20000);
+                }
+            })();
         @endif
     </script>
 </body>

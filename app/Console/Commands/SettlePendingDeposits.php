@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Deposit;
 use App\Services\BankPay\BankPayDepositService;
-use App\Services\DepositChannels;
 use App\Services\DepositSettlementService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -19,6 +18,11 @@ use Illuminate\Support\Facades\Log;
  *
  * Idempoten: penyelesaiannya lewat DepositSettlementService yang mengunci
  * baris dan menolak melunasi deposit yang sudah PAID.
+ *
+ * Jalur utama konfirmasi tetap notifikasi server yang instan; ini cuma jaring
+ * pengaman. Karena itu cakupannya sengaja sempit - hanya invoice yang masih
+ * mungkin dibayar - supaya tidak membanjiri gateway dengan pertanyaan soal
+ * invoice yang sudah pasti mati.
  */
 class SettlePendingDeposits extends Command
 {
@@ -32,11 +36,11 @@ class SettlePendingDeposits extends Command
             return self::SUCCESS;
         }
 
-        $pending = Deposit::where('payment_channel', DepositChannels::BANKPAY)
-            ->whereNotIn('status', ['PAID', 'FAILED'])
-            // Termasuk yang sudah EXPIRED: pembayaran telat tetap harus diakui
-            // selama gateway mencatatnya sukses.
-            ->where('created_at', '>=', now()->subDays(2))
+        // Batas kelayakan bertanya ada di Deposit::scopeMenungguGateway supaya
+        // sama persis dengan yang dipakai halaman invoice: hanya invoice yang
+        // masih mungkin dibayar, termasuk kelonggaran untuk pembayaran telat.
+        $pending = Deposit::menungguGateway()
+            ->where('created_at', '>=', now()->subDay())
             ->orderBy('id')
             ->limit(100)
             ->get();

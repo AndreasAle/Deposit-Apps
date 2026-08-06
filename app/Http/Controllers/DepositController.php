@@ -186,8 +186,11 @@ class DepositController extends Controller
         // Cadangan anti notifikasi-gagal: tanya status langsung ke gateway.
         // Kalau ternyata sudah dibayar tapi belum tercatat PAID, lunasi
         // sekarang. Aman dobel karena penyelesaiannya dikunci + idempoten.
-        // Hanya untuk saluran gateway — QRIS statis tidak dikenal BankPay.
-        if ($deposit->isBankPay() && !in_array($deposit->status, ['PAID', 'FAILED'], true)) {
+        //
+        // Halaman ini memuat ulang dirinya secara berkala selama menunggu
+        // pembayaran, jadi tanpa penjagaan kelayakan di bawah satu tab yang
+        // ditinggalkan terbuka akan menanyai gateway tanpa henti.
+        if ($deposit->masihBisaDitanyakanKeGateway()) {
             $this->syncBankPayStatus($deposit, $bankPay);
             $deposit->refresh();
         }
