@@ -3,6 +3,8 @@
 namespace App\Services\BankPay;
 
 use App\Models\Deposit;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -68,6 +70,73 @@ class BankPayDepositService extends BankPayClient
             'qr_content' => $qrContent,
             'response' => $body,
         ];
+    }
+
+    /**
+     * Ambil isi QR dari halaman kasir BankPay.
+     *
+     * BankPay tidak mengembalikan `qrCode` lewat API, padahal halaman kasir
+     * mereka jelas menampilkan QRIS-nya. Fungsi ini mengambil halaman itu dan
+     * memungut QR-nya supaya user bisa membayar tanpa keluar dari aplikasi.
+     *
+     * INI RAPUH DAN DISENGAJA BERSIFAT USAHA-TERBAIK. Kita menyandarkan diri
+     * pada bentuk halaman orang lain, yang bisa berubah kapan saja tanpa
+     * pemberitahuan. Karena itu:
+     *   - kegagalan TIDAK PERNAH menggagalkan pembuatan deposit;
+     *   - kalau nihil, alur lama (tombol ke halaman kasir) tetap jalan;
+     *   - jangan pernah menjadikan ini satu-satunya cara user bisa membayar.
+     *
+     * Solusi sebenarnya tetap: minta BankPay mengaktifkan `qrCode` di API.
+     *
+     * @return string|null  String EMV QRIS, atau data URI gambar, atau null
+     */
+    public function fetchQrFromCheckout(?string $payUrl): ?string
+    {
+        if (!$payUrl) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(8)
+                ->withHeaders([
+                    // Halaman kasir ada di balik Cloudflare; permintaan yang
+                    // terlihat seperti bot besar kemungkinan ditantang.
+                    'User-Agent' => 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
+                        . '(KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36',
+                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language' => 'id,en-US;q=0.8',
+                ])
+                ->get($payUrl);
+        } catch (\Throwable $e) {
+            Log::warning('BankPay ambil QR kasir gagal', ['message' => $e->getMessage()]);
+
+            return null;
+        }
+
+        if (!$response->successful()) {
+            Log::warning('BankPay ambil QR kasir non-200', ['http' => $response->status()]);
+
+            return null;
+        }
+
+        $html = $response->body();
+
+        // Prioritas: string EMV mentah. Ini yang paling berharga karena QR-nya
+        // bisa kita render sendiri dengan ukuran dan gaya yang kita mau.
+        if (preg_match('/\b(00020101[0-9A-Za-z.\-]{30,512}6304[0-9A-Fa-f]{4})\b/', $html, $m)) {
+            return $m[1];
+        }
+
+        // Cadangan: gambar QR yang sudah jadi, tertanam sebagai data URI.
+        if (preg_match('#data:image/(?:png|jpeg|gif);base64,[A-Za-z0-9+/]{200,}={0,2}#', $html, $m)) {
+            return $m[0];
+        }
+
+        Log::info('BankPay halaman kasir tidak memuat QR yang dikenali', [
+            'panjang_html' => strlen($html),
+        ]);
+
+        return null;
     }
 
     /**

@@ -132,9 +132,19 @@ class DepositController extends Controller
         }
 
         $deposit->pay_url = $result['pay_url'];
+
         // Kalau gateway mengirim isi QR, QR dirender lokal di halaman invoice
         // sehingga user menyelesaikan pembayaran tanpa keluar dari aplikasi.
-        $deposit->pay_data = $result['qr_content'];
+        $qrContent = $result['qr_content'];
+
+        // BankPay tidak mengirim `qrCode` lewat API, jadi sebagai usaha terbaik
+        // QR-nya dipungut dari halaman kasir. Kegagalannya tidak apa-apa: alur
+        // tombol "Buka Halaman Pembayaran" tetap tersedia sebagai jalan utama.
+        if ($qrContent === null) {
+            $qrContent = $bankPay->fetchQrFromCheckout($result['pay_url']);
+        }
+
+        $deposit->pay_data = $qrContent;
         $deposit->gateway_response = $result['response'];
         $deposit->save();
 
@@ -199,18 +209,24 @@ class DepositController extends Controller
         $qrImageSrc = null;
 
         if ($deposit->status !== 'PAID' && !empty($deposit->pay_data)) {
-            try {
-                $qrSvg = QrCode::format('svg')
-                    ->size(520)
-                    ->margin(1)
-                    ->generate($deposit->pay_data);
+            if (str_starts_with($deposit->pay_data, 'data:image')) {
+                // Gambar QR yang sudah jadi (dipungut dari halaman kasir
+                // gateway) — pakai apa adanya, tidak ada yang perlu dirender.
+                $qrImageSrc = $deposit->pay_data;
+            } else {
+                try {
+                    $qrSvg = QrCode::format('svg')
+                        ->size(520)
+                        ->margin(1)
+                        ->generate($deposit->pay_data);
 
-                $qrImageSrc = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
-            } catch (\Throwable $e) {
-                Log::error('Gagal generate QR deposit', [
-                    'deposit_id' => $deposit->id,
-                    'message' => $e->getMessage(),
-                ]);
+                    $qrImageSrc = 'data:image/svg+xml;base64,' . base64_encode($qrSvg);
+                } catch (\Throwable $e) {
+                    Log::error('Gagal generate QR deposit', [
+                        'deposit_id' => $deposit->id,
+                        'message' => $e->getMessage(),
+                    ]);
+                }
             }
         }
 
