@@ -4,6 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/*
+ * Penjagaan `Schema::hasTable(...) ||` di bawah membuat migration ini idempoten.
+ *
+ * Database produksi lahir dari import `deposit.sql`, bukan dari `migrate`,
+ * sehingga banyak tabel sudah ada sementara barisnya belum tercatat di tabel
+ * `migrations`. Tanpa penjagaan ini `migrate` berhenti total di tabel pertama
+ * yang sudah ada, dan SEMUA migration sesudahnya ikut tidak jalan - termasuk
+ * yang menambah kolom baru.
+ */
 return new class extends Migration
 {
     /**
@@ -11,7 +20,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('jobs', function (Blueprint $table) {
+        Schema::hasTable('jobs') || Schema::create('jobs', function (Blueprint $table) {
             $table->id();
             $table->string('queue')->index();
             $table->longText('payload');
@@ -21,7 +30,7 @@ return new class extends Migration
             $table->unsignedInteger('created_at');
         });
 
-        Schema::create('job_batches', function (Blueprint $table) {
+        Schema::hasTable('job_batches') || Schema::create('job_batches', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('name');
             $table->integer('total_jobs');
@@ -34,7 +43,7 @@ return new class extends Migration
             $table->integer('finished_at')->nullable();
         });
 
-        Schema::create('failed_jobs', function (Blueprint $table) {
+        Schema::hasTable('failed_jobs') || Schema::create('failed_jobs', function (Blueprint $table) {
             $table->id();
             $table->string('uuid')->unique();
             $table->text('connection');
