@@ -96,31 +96,139 @@ class BankPayDepositService extends BankPayClient
             return null;
         }
 
+        $html = $this->fetchHtml($payUrl);
+
+        if ($html === null) {
+            return null;
+        }
+
+        if ($qr = $this->extractQr($html)) {
+            return $qr;
+        }
+
+        // `payurl` ternyata bukan halaman kasir, melainkan pembungkus tipis
+        // (~3 KB) yang menyembunyikan alamat kasir sesungguhnya: sebuah URL
+        // yang di-XOR lalu di-base64, dibongkar oleh JavaScript dan dimuat ke
+        // dalam <iframe>. Kasir aslinya bahkan ada di domain lain. Karena
+        // server kita tidak menjalankan JavaScript, lompatan itu harus
+        // diikuti sendiri di sini.
+        $inner = $this->resolveWrappedCheckoutUrl($html);
+
+        if ($inner === null) {
+            Log::info('BankPay halaman kasir tidak memuat QR yang dikenali', [
+                'panjang_html' => strlen($html),
+            ]);
+
+            return null;
+        }
+
+        $innerHtml = $this->fetchHtml($inner, $payUrl);
+
+        return $innerHtml === null ? null : $this->extractQr($innerHtml);
+    }
+
+    /**
+     * Bongkar URL kasir yang disamarkan di halaman pembungkus.
+     *
+     * Bentuknya:
+     *   var encryptedPayUrl = '<base64 dari hasil XOR>';
+     *   var payUrlKey = '<kunci>';
+     */
+    private function resolveWrappedCheckoutUrl(string $html): ?string
+    {
+        if (!preg_match('/encryptedPayUrl\s*=\s*[\'"]([A-Za-z0-9+\/=]+)[\'"]/', $html, $a)) {
+            return null;
+        }
+
+        if (!preg_match('/payUrlKey\s*=\s*[\'"]([^\'"]+)[\'"]/', $html, $b)) {
+            return null;
+        }
+
+        $raw = base64_decode($a[1], true);
+        $key = $b[1];
+
+        if ($raw === false || $key === '') {
+            return null;
+        }
+
+        $url = '';
+
+        for ($i = 0, $n = strlen($raw); $i < $n; $i++) {
+            $url .= chr(ord($raw[$i]) ^ ord($key[$i % strlen($key)]));
+        }
+
+        // URL ini berasal dari halaman pihak lain, jadi diperlakukan sebagai
+        // masukan tidak tepercaya: wajib HTTPS ke host publik. Tanpa penjagaan
+        // ini, siapa pun yang bisa mengubah halaman kasir dapat menyuruh
+        // server kita menembak alamat internal (SSRF).
+        return $this->isSafePublicUrl($url) ? $url : null;
+    }
+
+    private function isSafePublicUrl(string $url): bool
+    {
+        $parts = parse_url($url);
+
+        if (!$parts || ($parts['scheme'] ?? '') !== 'https') {
+            return false;
+        }
+
+        $host = strtolower($parts['host'] ?? '');
+
+        if ($host === '' || !str_contains($host, '.')) {
+            return false;
+        }
+
+        if ($host === 'localhost' || filter_var($host, FILTER_VALIDATE_IP) && !filter_var(
+            $host,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+        )) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function fetchHtml(string $url, ?string $referer = null): ?string
+    {
+        $headers = [
+            // Halaman kasir ada di balik Cloudflare; permintaan yang terlihat
+            // seperti bot besar kemungkinan ditantang.
+            'User-Agent' => 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
+                . '(KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36',
+            'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language' => 'id,en-US;q=0.8',
+        ];
+
+        if ($referer) {
+            $headers['Referer'] = $referer;
+        }
+
         try {
-            $response = Http::timeout(8)
-                ->withHeaders([
-                    // Halaman kasir ada di balik Cloudflare; permintaan yang
-                    // terlihat seperti bot besar kemungkinan ditantang.
-                    'User-Agent' => 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 '
-                        . '(KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36',
-                    'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language' => 'id,en-US;q=0.8',
-                ])
-                ->get($payUrl);
+            $response = Http::timeout(8)->withHeaders($headers)->get($url);
         } catch (\Throwable $e) {
-            Log::warning('BankPay ambil QR kasir gagal', ['message' => $e->getMessage()]);
+            Log::warning('BankPay ambil halaman kasir gagal', [
+                'url' => $url,
+                'message' => $e->getMessage(),
+            ]);
 
             return null;
         }
 
         if (!$response->successful()) {
-            Log::warning('BankPay ambil QR kasir non-200', ['http' => $response->status()]);
+            Log::warning('BankPay halaman kasir non-200', [
+                'url' => $url,
+                'http' => $response->status(),
+            ]);
 
             return null;
         }
 
-        $html = $response->body();
+        return $response->body();
+    }
 
+    private function extractQr(string $html): ?string
+    {
         // Prioritas: string EMV mentah. Ini yang paling berharga karena QR-nya
         // bisa kita render sendiri dengan ukuran dan gaya yang kita mau.
         if (preg_match('/\b(00020101[0-9A-Za-z.\-]{30,512}6304[0-9A-Fa-f]{4})\b/', $html, $m)) {
@@ -131,10 +239,6 @@ class BankPayDepositService extends BankPayClient
         if (preg_match('#data:image/(?:png|jpeg|gif);base64,[A-Za-z0-9+/]{200,}={0,2}#', $html, $m)) {
             return $m[0];
         }
-
-        Log::info('BankPay halaman kasir tidak memuat QR yang dikenali', [
-            'panjang_html' => strlen($html),
-        ]);
 
         return null;
     }
