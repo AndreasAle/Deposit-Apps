@@ -54,6 +54,11 @@ class DepositController extends Controller
 
         $orderId = 'DEP' . now()->format('YmdHis') . strtoupper(substr(md5($user->id . microtime(true)), 0, 6));
 
+        // Driver qris_statis: QRIS sendiri + nominal unik, tanpa gateway.
+        if (config('deposit.driver') === 'qris_statis') {
+            return $this->storeViaQrisStatis($user, $amount, $channel, $orderId);
+        }
+
         DB::beginTransaction();
 
         try {
@@ -129,6 +134,42 @@ class DepositController extends Controller
         }
     }
 
+    /**
+     * Alur deposit tanpa gateway: QRIS statis milik sendiri dibuat dinamis
+     * dengan nominal unik per deposit, lalu dikonfirmasi oleh notification
+     * listener (lihat ListenerController + MutationMatcher).
+     *
+     * Tidak ada perubahan tampilan: invoice.blade.php sudah menampilkan
+     * `real_amount ?: amount` sebagai nominal bayar, dan me-render QR dari
+     * `pay_data`. Keduanya diisi di sini.
+     */
+    private function storeViaQrisStatis(User $user, int $amount, string $channel, string $orderId)
+    {
+        try {
+            $deposit = app(\App\Services\DepositQrisService::class)
+                ->createInvoice($user, $amount, $channel, $orderId);
+        } catch (\RuntimeException $e) {
+            Log::warning('Deposit QRIS statis gagal', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'message' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Deposit QRIS statis error', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Terjadi kesalahan saat membuat deposit');
+        }
+
+        return redirect()
+            ->route('deposit.invoice', $deposit->id)
+            ->with('success', 'Invoice deposit berhasil dibuat');
+    }
+
     public function invoice($id, BayarProService $bayarPro)
     {
         $user = User::findOrFail(Auth::id());
@@ -140,7 +181,9 @@ class DepositController extends Controller
         // Fallback anti webhook-gagal: tanya status langsung ke BayarPro.
         // Kalau transaksi sudah SUCCESS tapi belum tercatat PAID (webhook tidak
         // sampai), kreditkan saldo sekarang. Aman dobel karena dikunci + idempoten.
-        if (!in_array($deposit->status, ['PAID', 'FAILED'], true) && $deposit->plat_order_num) {
+        // Dilewati untuk driver qris_statis: deposit-nya tidak pernah ada di BayarPro.
+        if (config('deposit.driver') !== 'qris_statis'
+            && !in_array($deposit->status, ['PAID', 'FAILED'], true) && $deposit->plat_order_num) {
             $this->syncBayarProStatus($deposit, $bayarPro);
             $deposit->refresh();
         }
@@ -309,19 +352,19 @@ class DepositController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Deposit hanya menambah saldo utama
+    |--------------------------------------------------------------------------
+    | Deposit tidak menaikkan VIP.
+    | Deposit tidak memberi komisi referral.
+    | Komisi referral hanya dari pembelian produk BASIC.
+    |
+    | Logikanya dipindah ke DepositCreditService supaya jalur webhook BayarPro,
+    | listener QRIS, dan aksi manual admin memakai aturan yang sama persis.
+    */
     private function processPaidDeposit(Deposit $deposit): void
     {
-        $user = User::lockForUpdate()->findOrFail($deposit->user_id);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Deposit hanya menambah saldo utama
-        |--------------------------------------------------------------------------
-        | Deposit tidak menaikkan VIP.
-        | Deposit tidak memberi komisi referral.
-        | Komisi referral hanya dari pembelian produk BASIC.
-        */
-        $user->saldo = (float) $user->saldo + (float) $deposit->amount;
-        $user->save();
+        app(\App\Services\DepositCreditService::class)->credit($deposit);
     }
 }

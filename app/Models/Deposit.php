@@ -21,6 +21,7 @@ class Deposit extends Model
         'gateway_response',
         'status',
         'paid_at',
+        'unique_code',
     ];
 
     protected $casts = [
@@ -30,7 +31,15 @@ class Deposit extends Model
         'expired_at' => 'datetime',
         'paid_at' => 'datetime',
         'gateway_response' => 'array',
+        'unique_code' => 'integer',
     ];
+
+    /*
+    | Catatan: kolom `pending_unique_amount` di tabel deposits adalah GENERATED
+    | COLUMN milik MySQL (berisi nominal bayar selama status UNPAID, NULL
+    | setelahnya). Jangan pernah dimasukkan ke $fillable atau di-set manual -
+    | MySQL akan menolak penulisannya.
+    */
 
     public function user()
     {

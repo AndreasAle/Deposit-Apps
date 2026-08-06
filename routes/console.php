@@ -11,3 +11,6 @@ Artisan::command('inspire', function () {
 Schedule::command('investments:settle-vip-profits')->everyMinute();
 Schedule::command('deposits:settle-pending')->everyTenSeconds()->withoutOverlapping();
 Schedule::command('withdrawals:settle-pending')->everyTenSeconds()->withoutOverlapping();
+
+// Bebaskan nominal unik dari invoice QRIS yang sudah lewat waktu.
+Schedule::command('deposits:expire')->everyMinute()->withoutOverlapping();

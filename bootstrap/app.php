@@ -43,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
         */
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'listener.token' => \App\Http\Middleware\ListenerToken::class,
         ]);
 
         /*
@@ -52,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
         */
         $middleware->validateCsrfTokens(except: [
             'api/bayarpro-webhook',
+            'api/listener/*',
         ]);
 
         // 2. LOGIKA REDIRECT UNTUK GUEST

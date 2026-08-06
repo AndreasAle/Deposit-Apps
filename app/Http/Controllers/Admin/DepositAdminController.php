@@ -71,12 +71,9 @@ class DepositAdminController extends Controller
             $deposit->paid_at = now();
             $deposit->save();
 
-            $user = $deposit->user()->lockForUpdate()->first();
-
-            if ($user) {
-                $user->saldo = (float) $user->saldo + (float) $deposit->amount;
-                $user->save();
-            }
+            // Pakai service yang sama dengan webhook & listener supaya aturan
+            // kreditnya tidak pernah beda antar jalur.
+            app(\App\Services\DepositCreditService::class)->credit($deposit);
         });
 
         return response()->json([

@@ -285,6 +285,22 @@ Route::post('/api/bayarpro-webhook', [\App\Http\Controllers\BayarProWebhookContr
 
 /*
 |--------------------------------------------------------------------------
+| Listener QRIS Statis (ditembak HP Android / MacroDroid)
+|--------------------------------------------------------------------------
+| Dilindungi token, bukan session login. Wajib HTTPS di produksi.
+*/
+Route::middleware('listener.token')
+    ->prefix('api/listener')
+    ->group(function () {
+        Route::post('/mutasi', [\App\Http\Controllers\ListenerController::class, 'mutasi'])
+            ->name('listener.mutasi');
+
+        Route::post('/heartbeat', [\App\Http\Controllers\ListenerController::class, 'heartbeat'])
+            ->name('listener.heartbeat');
+    });
+
+/*
+|--------------------------------------------------------------------------
 | ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
@@ -341,6 +357,23 @@ Route::post('/deposits/{id}/paid', [DepositAdminController::class, 'markPaid'])
 
 Route::post('/deposits/{id}/failed', [DepositAdminController::class, 'markFailed'])
     ->name('admin.deposits.failed');
+
+/*
+|--------------------------------------------------------------------------
+| Admin Mutasi QRIS (JSON only - tidak mengubah tampilan admin yang ada)
+|--------------------------------------------------------------------------
+*/
+Route::get('/mutations', [\App\Http\Controllers\Admin\MutationAdminController::class, 'index'])
+    ->name('admin.mutations.data');
+
+Route::post('/mutations/resolve', [\App\Http\Controllers\Admin\MutationAdminController::class, 'resolve'])
+    ->name('admin.mutations.resolve');
+
+Route::post('/mutations/dismiss', [\App\Http\Controllers\Admin\MutationAdminController::class, 'dismiss'])
+    ->name('admin.mutations.dismiss');
+
+Route::get('/listener/status', [\App\Http\Controllers\ListenerController::class, 'status'])
+    ->name('admin.listener.status');
 
 
     Route::get('/investments', [InvestmentAdminController::class, 'index'])
