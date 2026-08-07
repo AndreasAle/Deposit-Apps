@@ -59,9 +59,9 @@ class WithdrawalAdminGuardTest extends TestCase
         ]);
     }
 
-    private function buatWithdrawal(User $user, string $status = 'PROCESSING'): Withdrawal
+    private function buatRekening(User $user): \App\Models\UserPayoutAccount
     {
-        $rekening = \App\Models\UserPayoutAccount::forceCreate([
+        return \App\Models\UserPayoutAccount::forceCreate([
             'user_id' => $user->id,
             'type' => 'EWALLET',
             'provider' => 'DANA',
@@ -69,6 +69,11 @@ class WithdrawalAdminGuardTest extends TestCase
             'account_number' => '089630162241',
             'is_default' => true,
         ]);
+    }
+
+    private function buatWithdrawal(User $user, string $status = 'PROCESSING'): Withdrawal
+    {
+        $rekening = $this->buatRekening($user);
 
         return Withdrawal::create([
             'user_id' => $user->id,
@@ -195,6 +200,79 @@ class WithdrawalAdminGuardTest extends TestCase
             ->postJson('/admin/withdrawals/' . $wd->id . '/failed', ['reason' => 'Ditolak gateway'])
             ->assertOk();
 
+        $user->refresh();
+        $this->assertEquals(70000, $user->saldo_penarikan);
+        $this->assertEquals(0, $user->saldo_hold);
+        $this->assertSame('FAILED', $wd->fresh()->status);
+    }
+
+    // ------------------------------------------------- persetujuan manual admin
+
+    public function test_pengajuan_berhenti_di_pending_saat_persetujuan_diwajibkan(): void
+    {
+        config(['withdraw.require_approval' => true]);
+        Http::fake();
+
+        $user = $this->buatUser('user', saldoPenarikan: 200000);
+        $rekening = $this->buatRekening($user);
+
+        $this->actingAs($user)
+            ->postJson('/withdrawals', ['amount' => 70000, 'user_payout_account_id' => $rekening->id])
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'PENDING');
+
+        // Saldo ditahan, tapi TIDAK ada apa pun yang dikirim ke gateway.
+        Http::assertNothingSent();
+
+        $user->refresh();
+        $this->assertEquals(130000, $user->saldo_penarikan);
+        $this->assertEquals(70000, $user->saldo_hold);
+    }
+
+    public function test_approve_mengirim_ke_gateway_dan_jadi_processing(): void
+    {
+        config(['withdraw.require_approval' => true]);
+
+        Http::fake(['*' => Http::response([
+            'status' => 1,
+            'msg' => ['transaction_id' => 'TRX-99', 'trade_state' => 'SUCCESS'],
+        ])]);
+
+        $admin = $this->buatUser('admin');
+        $user = $this->buatUser('user', saldoPenarikan: 0, hold: 70000);
+        $wd = $this->buatWithdrawal($user, 'PENDING');
+
+        $this->actingAs($admin)
+            ->postJson('/admin/withdrawals/' . $wd->id . '/approve')
+            ->assertOk();
+
+        $wd->refresh();
+        $this->assertSame('PROCESSING', $wd->status);
+        $this->assertSame('TRX-99', $wd->plat_order_num);
+
+        // Saldo tetap ditahan - dana baru benar-benar keluar saat gateway
+        // mengabarkan sukses.
+        $user->refresh();
+        $this->assertEquals(0, $user->saldo_penarikan);
+        $this->assertEquals(70000, $user->saldo_hold);
+    }
+
+    public function test_approve_gagal_terkirim_mengembalikan_saldo(): void
+    {
+        config(['withdraw.require_approval' => true]);
+
+        Http::fake(['*' => Http::response(['status' => 0, 'msg' => 'The request IP is not allowed'])]);
+
+        $admin = $this->buatUser('admin');
+        $user = $this->buatUser('user', saldoPenarikan: 0, hold: 70000);
+        $wd = $this->buatWithdrawal($user, 'PENDING');
+
+        $this->actingAs($admin)
+            ->postJson('/admin/withdrawals/' . $wd->id . '/approve')
+            ->assertStatus(422);
+
+        // Gagal TERKIRIM berbeda dari gagal DICAIRKAN: gateway belum memegang
+        // apa pun, jadi mengembalikan saldo di sini aman.
         $user->refresh();
         $this->assertEquals(70000, $user->saldo_penarikan);
         $this->assertEquals(0, $user->saldo_hold);

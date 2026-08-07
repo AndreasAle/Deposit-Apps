@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Withdrawal;
 use App\Services\BankPay\BankPayPayoutService;
+use App\Services\WithdrawalDispatchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -182,13 +183,23 @@ class WithdrawalAdminController extends Controller
         return response()->json(['message' => 'Test withdrawal dihapus.']);
     }
 
-    public function approve(Request $request, $id)
+    /**
+     * Setujui penarikan DAN kirimkan ke gateway.
+     *
+     * Ini titik tidak bisa kembali: sebelum tombol ini ditekan, penarikan
+     * masih bisa dibatalkan user atau ditolak admin tanpa risiko. Sesudahnya
+     * uang sudah lepas dan hanya gateway yang boleh memutuskan nasibnya.
+     *
+     * Sebelumnya approve hanya mengubah status tanpa mengirim apa pun,
+     * sehingga penarikan menggantung selamanya di APPROVED.
+     */
+    public function approve(Request $request, $id, WithdrawalDispatchService $dispatcher)
     {
         $admin = $request->user();
 
         $row = Withdrawal::where('id', $id)->firstOrFail();
 
-        if ($row->status !== 'PENDING') {
+        if (!in_array($row->status, ['PENDING', 'APPROVED'], true)) {
             return response()->json([
                 'message' => 'Status harus PENDING untuk approve.',
             ], 422);
@@ -200,9 +211,20 @@ class WithdrawalAdminController extends Controller
             'approved_at' => now(),
         ]);
 
+        try {
+            $terkirim = $dispatcher->send($row->fresh());
+        } catch (\Throwable $e) {
+            // Gagal TERKIRIM berarti gateway belum memegang apa pun, jadi
+            // saldo user sudah dikembalikan oleh dispatcher. Aman.
+            return response()->json([
+                'message' => 'Penarikan gagal dikirim ke gateway: ' . $e->getMessage()
+                    . ' Saldo user sudah dikembalikan.',
+            ], 422);
+        }
+
         return response()->json([
-            'message' => 'Withdraw approved',
-            'data' => $row,
+            'message' => 'Withdraw disetujui dan sedang diproses gateway.',
+            'data' => $terkirim,
         ]);
     }
 

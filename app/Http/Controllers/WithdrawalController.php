@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Withdrawal;
 use App\Services\BankPay\BankPayBanks;
-use App\Services\BankPay\BankPayPayoutService;
+use App\Services\WithdrawalDispatchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -44,7 +44,7 @@ class WithdrawalController extends Controller
         return response()->json(['data' => $row]);
     }
 
-    public function store(Request $request, BankPayPayoutService $bankPay)
+    public function store(Request $request, WithdrawalDispatchService $dispatcher)
     {
         $data = $request->validate([
             'amount' => ['required', 'integer', 'min:' . self::MIN_WITHDRAW, 'max:' . self::MAX_WITHDRAW],
@@ -109,64 +109,34 @@ class WithdrawalController extends Controller
 
         /*
          * Step 2:
-         * Kirim permintaan pencairan ke gateway. Kalau gagal terkirim, saldo
-         * penarikan langsung dikembalikan supaya dana user tidak menggantung.
-         *
+         * Kalau persetujuan admin diwajibkan, berhenti di sini. Saldo sudah
+         * ditahan tapi belum ada apa pun yang dikirim ke gateway - sehingga
+         * penarikan ini masih bisa dibatalkan atau ditolak dengan aman.
+         */
+        if (config('withdraw.require_approval', true)) {
+            return response()->json([
+                'message' => 'Permintaan penarikan berhasil dibuat dan menunggu persetujuan admin.',
+                'data' => $withdrawal->fresh('payoutAccount'),
+            ], 201);
+        }
+
+        /*
          * Pencocokan notifikasi memakai `order_id` kita sendiri (BankPay
          * mengembalikannya sebagai `orderid`), jadi tidak bergantung pada
          * nomor transaksi gateway.
          */
         try {
-            $result = $bankPay->createPayout($withdrawal->fresh(['user', 'payoutAccount']));
-
-            $withdrawal->update([
-                // Diterima gateway, belum tentu cair. Status akhir datang dari
-                // notifikasi server atau poller.
-                'status' => 'PROCESSING',
-                'plat_order_num' => $result['transaction_id'],
-                'gateway_status' => 'WAIT PAY',
-                'gateway_message' => 'Diterima gateway',
-                'gateway_response' => $result['response'],
-                'processing_at' => now(),
-            ]);
-
-            return response()->json([
-                'message' => 'Withdraw berhasil dibuat dan sedang diproses gateway.',
-                'data' => $withdrawal->fresh('payoutAccount'),
-            ], 201);
+            $terkirim = $dispatcher->send($withdrawal);
         } catch (\Throwable $e) {
-            report($e);
-
-            DB::transaction(function () use ($withdrawal, $e) {
-                $row = Withdrawal::where('id', $withdrawal->id)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-                // Hanya PENDING yang boleh di-refund di sini: kalau statusnya
-                // sudah bergerak, jalur lain yang memegang saldonya.
-                if ($row->status !== 'PENDING') {
-                    return;
-                }
-
-                $user = $row->user()->lockForUpdate()->firstOrFail();
-
-                $user->saldo_penarikan = (float) $user->saldo_penarikan + (float) $row->amount;
-                $user->saldo_hold = max(0, (float) $user->saldo_hold - (float) $row->amount);
-                $user->save();
-
-                $row->update([
-                    'status' => 'FAILED',
-                    'gateway_status' => 'REQUEST_FAILED',
-                    'gateway_message' => $e->getMessage(),
-                    'failed_reason' => $e->getMessage(),
-                    'failed_at' => now(),
-                ]);
-            });
-
             return response()->json([
                 'message' => 'Withdraw gagal dikirim ke gateway: ' . $e->getMessage(),
             ], 422);
         }
+
+        return response()->json([
+            'message' => 'Withdraw berhasil dibuat dan sedang diproses gateway.',
+            'data' => $terkirim,
+        ], 201);
     }
 
     public function cancel(Request $request, $id)
