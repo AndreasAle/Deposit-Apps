@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Withdrawal;
+use App\Services\BankPay\BankPayPayoutService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -146,7 +147,7 @@ class WithdrawalAdminController extends Controller
             'status' => $data['status'],
             'gateway_status' => 'TEST_' . $data['status'],
             'gateway_message' => $data['status'] === 'FAILED'
-                ? ($data['reason'] ?: 'Simulated failure dari admin testing tool.')
+                ? (($data['reason'] ?? null) ?: 'Simulated failure dari admin testing tool.')
                 : 'Simulated callback dari admin testing tool.',
         ];
 
@@ -155,7 +156,7 @@ class WithdrawalAdminController extends Controller
             $update['failed_at'] = null;
         } elseif ($data['status'] === 'FAILED') {
             $update['failed_at'] = now();
-            $update['failed_reason'] = $data['reason'] ?: 'Simulated failure dari admin testing tool.';
+            $update['failed_reason'] = ($data['reason'] ?? null) ?: 'Simulated failure dari admin testing tool.';
             $update['paid_at'] = null;
         } else {
             $update['paid_at'] = null;
@@ -218,8 +219,27 @@ class WithdrawalAdminController extends Controller
                 ->where('id', $id)
                 ->firstOrFail();
 
-            if (!in_array($row->status, ['PENDING', 'APPROVED', 'PROCESSING'], true)) {
-                abort(422, 'Status harus PENDING/APPROVED/PROCESSING untuk reject.');
+            /*
+            |------------------------------------------------------------------
+            | PROCESSING sengaja TIDAK boleh direject
+            |------------------------------------------------------------------
+            | PROCESSING berarti permintaan pencairan sudah dikirim ke gateway
+            | dan tidak bisa kita tarik kembali. Menolaknya di sini hanya
+            | mengembalikan saldo user di sisi kita, sementara gateway tetap
+            | mencairkan dananya - user menerima dua kali dan uangnya hilang.
+            |
+            | Ini pernah terjadi (7 Agustus 2026, dua penarikan sekaligus).
+            |
+            | Untuk yang sudah PROCESSING, pakai Set FAILED: jalur itu bertanya
+            | dulu ke gateway sebelum berani mengembalikan saldo.
+            */
+            if ($row->status === 'PROCESSING') {
+                abort(422, 'Penarikan ini sudah dikirim ke gateway dan tidak bisa direject. '
+                    . 'Tunggu keputusan gateway, atau pakai Set FAILED yang akan memeriksanya lebih dulu.');
+            }
+
+            if (!in_array($row->status, ['PENDING', 'APPROVED'], true)) {
+                abort(422, 'Status harus PENDING/APPROVED untuk reject.');
             }
 
             $user = $row->user()->lockForUpdate()->first();
@@ -304,13 +324,53 @@ class WithdrawalAdminController extends Controller
         ]);
     }
 
-    public function markFailed(Request $request, $id)
+    public function markFailed(Request $request, $id, BankPayPayoutService $payout)
     {
         $data = $request->validate([
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
         $admin = $request->user();
+
+        /*
+        |----------------------------------------------------------------------
+        | Tanya gateway dulu sebelum mengembalikan saldo
+        |----------------------------------------------------------------------
+        | Menandai FAILED berarti mengembalikan saldo user. Kalau ternyata
+        | gateway sudah mencairkan dananya, user menerima dua kali dan uangnya
+        | hilang. Jadi untuk penarikan yang sudah dikirim (PROCESSING), status
+        | gateway yang menentukan - bukan tebakan admin.
+        |
+        | `force` disediakan untuk keadaan darurat saat gateway tidak bisa
+        | dihubungi sama sekali. Admin harus benar-benar yakin dananya tidak
+        | cair, karena tidak ada yang memverifikasi lagi sesudah ini.
+        */
+        $row = Withdrawal::findOrFail($id);
+
+        if ($row->status === 'PROCESSING' && !$request->boolean('force')) {
+            $cek = $payout->queryPayout($row->order_id);
+
+            if (empty($cek['success'])) {
+                return response()->json([
+                    'message' => 'Status penarikan ini belum bisa dipastikan ke gateway. '
+                        . 'Coba lagi sebentar, jangan kembalikan saldo sebelum jelas.',
+                ], 422);
+            }
+
+            if ($cek['state'] === 'SUCCESS') {
+                return response()->json([
+                    'message' => 'Gateway mencatat penarikan ini SUDAH CAIR. Mengembalikan saldo akan '
+                        . 'membuat user menerima dua kali. Gunakan Set PAID.',
+                ], 422);
+            }
+
+            if ($cek['state'] !== 'REFUSE') {
+                return response()->json([
+                    'message' => 'Gateway masih memproses penarikan ini (' . $cek['state'] . '). '
+                        . 'Tunggu keputusannya sebelum mengembalikan saldo.',
+                ], 422);
+            }
+        }
 
         DB::transaction(function () use ($id, $data, $admin) {
             $row = Withdrawal::lockForUpdate()
@@ -348,7 +408,8 @@ class WithdrawalAdminController extends Controller
             $row->update([
                 'status' => 'FAILED',
                 'admin_id' => $admin->id,
-                'reject_reason' => $data['reason'] ?: 'Set FAILED by admin',
+                // `reason` opsional, jadi kuncinya bisa tidak ada sama sekali.
+                'reject_reason' => ($data['reason'] ?? null) ?: 'Set FAILED by admin',
             ]);
         });
 
