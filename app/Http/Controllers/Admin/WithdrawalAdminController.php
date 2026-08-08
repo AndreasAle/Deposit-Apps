@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Withdrawal;
 use App\Services\BankPay\BankPayPayoutService;
 use App\Services\WithdrawalDispatchService;
+use App\Services\WithdrawalFee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -102,8 +103,14 @@ class WithdrawalAdminController extends Controller
             }
         }
 
-        $fee = 7800;
+        /*
+         * Biaya dihitung dengan rumus yang SAMA PERSIS dengan penarikan
+         * sungguhan (persentase dari config), bukan angka mati. Alat testing
+         * yang memakai biaya berbeda tidak ada gunanya - yang diuji jadi bukan
+         * angka yang benar-benar diterima user.
+         */
         $amount = (int) $data['amount'];
+        $fee = WithdrawalFee::hitung($amount);
         $net = max($amount - $fee, 0);
 
         $withdrawal = Withdrawal::create([

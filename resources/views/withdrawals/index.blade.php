@@ -3,6 +3,16 @@
   $user = auth()->user();
   $saldoPenarikan = (int) data_get($user, 'saldo_penarikan', 0);
   $saldoHold = (int) data_get($user, 'saldo_hold', 0);
+
+  // Jam layanan penarikan. Tombol dimatikan di luar jam ini, tapi yang
+  // benar-benar menjaga adalah penolakan di server (WithdrawalController).
+  $jamDibatasi = \App\Services\WithdrawWindow::enabled();
+  $penarikanDibuka = \App\Services\WithdrawWindow::isOpen();
+  $jamLayanan = \App\Services\WithdrawWindow::label();
+
+  $feePersen = \App\Services\WithdrawalFee::label();
+  $minPenarikan = (int) config('withdraw.min', 50000);
+  $maxPenarikan = (int) config('withdraw.max', 50000000);
 @endphp
 
 @if(!$user)
@@ -142,6 +152,13 @@
       padding:13px 18px; border-radius:14px; background:var(--navy); color:#fff; box-shadow:var(--sh-lg); font-size:12.5px; font-weight:600; transition:.28s cubic-bezier(.22,.8,.22,1); }
     .wd-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
     .wd-toast.is-error{ background:linear-gradient(135deg,#dc5757,#b83f3f); }
+    /* Pemberitahuan jam layanan penarikan */
+    .wd-hours{ display:flex; gap:11px; align-items:flex-start; margin:0 0 14px; padding:13px 15px; border-radius:16px;
+      background:#fff8e6; border:1px solid #f2dfae; color:#7a5a12; font-size:12.5px; font-weight:500; line-height:1.5; }
+    .wd-hours.is-open{ background:#eef6ee; border-color:#cfe3d0; color:#3d6b45; }
+    .wd-hours svg{ width:17px; height:17px; flex:0 0 auto; margin-top:1px; }
+    .wd-hours b{ display:block; margin-bottom:2px; color:var(--navy); font-weight:700; }
+
     @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ animation:none !important; transition:none !important; } }
   </style>
 </head>
@@ -166,9 +183,23 @@
         <div class="wd-hero-big">Rp {{ number_format($saldoPenarikan, 0, ',', '.') }}</div>
         <div class="wd-hero-boxes">
           <div class="wd-hbox"><span><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/></svg> Dalam Proses</span><strong>Rp {{ number_format($saldoHold, 0, ',', '.') }}</strong></div>
-          <div class="wd-hbox"><span><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 4.4-3.2 7.2-8 8.5C7.2 19.2 4 16.4 4 12V7l8-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> Biaya Admin</span><strong>5%</strong></div>
+          <div class="wd-hbox"><span><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 20 7v5c0 4.4-3.2 7.2-8 8.5C7.2 19.2 4 16.4 4 12V7l8-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg> Biaya Admin</span><strong>{{ $feePersen }}</strong></div>
         </div>
       </section>
+
+      @if($jamDibatasi)
+        <div class="wd-hours {{ $penarikanDibuka ? 'is-open' : '' }}" role="status">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>
+            <b>Jam Penarikan {{ $jamLayanan }}</b>
+            @if($penarikanDibuka)
+              Penarikan sedang dibuka. Pengajuan di luar jam tersebut tidak dapat diproses.
+            @else
+              Penarikan sedang tutup. Silakan ajukan kembali pada jam {{ $jamLayanan }}.
+            @endif
+          </span>
+        </div>
+      @endif
 
       <p class="wd-sec-label">Rekening Tujuan</p>
       <div id="selectedBank"></div>
@@ -216,7 +247,10 @@
   </main>
 
   <div class="wd-bottom">
-    <button class="wd-submit" type="submit" form="wdForm" id="btnSubmitWd">Ajukan Penarikan</button>
+    <button class="wd-submit" type="submit" form="wdForm" id="btnSubmitWd"
+      @if(!$penarikanDibuka) disabled @endif>
+      {{ $penarikanDibuka ? 'Ajukan Penarikan' : 'Penarikan Tutup (' . $jamLayanan . ')' }}
+    </button>
   </div>
 
   <div id="wdToast" class="wd-toast" role="status" aria-live="polite">
@@ -239,9 +273,12 @@
     const toastEl = document.getElementById('wdToast');
     const toastText = document.getElementById('wdToastText');
 
- const MIN = 50000;
-const MAX = 50000000;
-const ESTIMATED_GATEWAY_FEE = 0;
+ const MIN = {{ $minPenarikan }};
+const MAX = {{ $maxPenarikan }};
+// Penjagaan sesungguhnya ada di server; ini hanya supaya tombolnya jujur.
+const WITHDRAW_OPEN = @json($penarikanDibuka);
+const WITHDRAW_HOURS = @json($jamLayanan);
+const FEE_PERCENT = {{ (float) config('withdraw.fee_percent', 5) }};
 const AVAILABLE_WITHDRAW = {{ (int) $saldoPenarikan }};
 
     function csrfToken(){
@@ -543,13 +580,18 @@ async function loadWithdrawals(){
 function updateReceived(){
   const n = Number(amountHidden.value || 0);
 
-  receivedEl.textContent = rupiah(n);
+  // Rumusnya harus sama persis dengan sisi server (WithdrawalFee::hitung),
+  // termasuk pembulatannya - kalau berbeda, angka di layar berbohong dan
+  // user merasa dipotong diam-diam.
+  const fee = Math.round(n * FEE_PERCENT / 100);
+
+  receivedEl.textContent = rupiah(Math.max(n - fee, 0));
 
   const taxEl = document.querySelector('.wd-tax');
   if(taxEl){
     taxEl.textContent = n > 0
-      ? 'Biaya gateway akan dihitung setelah diproses'
-      : 'Biaya mengikuti response gateway pembayaran';
+      ? 'Sudah dipotong biaya admin ' + FEE_PERCENT + '% (' + rupiah(fee) + ')'
+      : 'Biaya admin ' + FEE_PERCENT + '% dari nominal penarikan';
   }
 }
 
@@ -569,6 +611,10 @@ function validate(show = true){
     msg = 'Maksimal penarikan Rp 50.000.000';
   }else if(n > AVAILABLE_WITHDRAW){
     msg = 'Nominal melebihi saldo siap ditarik. Saldo tersedia ' + rupiah(AVAILABLE_WITHDRAW);
+  }
+
+  if(!WITHDRAW_OPEN){
+    msg = 'Penarikan hanya dibuka jam ' + WITHDRAW_HOURS + '.';
   }
 
   if(errorEl){

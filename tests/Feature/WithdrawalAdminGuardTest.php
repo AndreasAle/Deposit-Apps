@@ -208,9 +208,87 @@ class WithdrawalAdminGuardTest extends TestCase
 
     // ------------------------------------------------- persetujuan manual admin
 
+    public function test_pengajuan_ditolak_di_luar_jam_layanan(): void
+    {
+        // Penjagaan server, bukan sekadar tombol yang dimatikan: tombol bisa
+        // dihidupkan siapa saja lewat inspect element.
+        config([
+            'withdraw.hours.enabled' => true,
+            'withdraw.hours.start' => '09:00',
+            'withdraw.hours.end' => '21:00',
+            'withdraw.hours.timezone' => 'Asia/Jakarta',
+        ]);
+
+        // 17:00 UTC = 00:00 WIB
+        $this->travelTo(\Carbon\Carbon::parse('2026-08-07 17:00', 'UTC'));
+
+        Http::fake();
+
+        $user = $this->buatUser('user', saldoPenarikan: 200000);
+        $rekening = $this->buatRekening($user);
+
+        $this->actingAs($user)
+            ->postJson('/withdrawals', ['amount' => 70000, 'user_payout_account_id' => $rekening->id])
+            ->assertStatus(422)
+            ->assertJsonPath('message', \App\Services\WithdrawWindow::pesanTutup());
+
+        // Saldo tidak boleh tersentuh sama sekali.
+        $user->refresh();
+        $this->assertEquals(200000, $user->saldo_penarikan);
+        $this->assertEquals(0, $user->saldo_hold);
+
+        $this->travelBack();
+    }
+
+    public function test_pengajuan_diterima_di_dalam_jam_layanan(): void
+    {
+        config([
+            'withdraw.hours.enabled' => true,
+            'withdraw.hours.start' => '09:00',
+            'withdraw.hours.end' => '21:00',
+            'withdraw.hours.timezone' => 'Asia/Jakarta',
+            'withdraw.require_approval' => true,
+        ]);
+
+        // 05:00 UTC = 12:00 WIB
+        $this->travelTo(\Carbon\Carbon::parse('2026-08-07 05:00', 'UTC'));
+
+        Http::fake();
+
+        $user = $this->buatUser('user', saldoPenarikan: 200000);
+        $rekening = $this->buatRekening($user);
+
+        $this->actingAs($user)
+            ->postJson('/withdrawals', ['amount' => 70000, 'user_payout_account_id' => $rekening->id])
+            ->assertCreated();
+
+        $this->travelBack();
+    }
+
+    public function test_biaya_admin_penarikan_lima_persen(): void
+    {
+        config([
+            'withdraw.hours.enabled' => false,
+            'withdraw.require_approval' => true,
+            'withdraw.fee_percent' => 5,
+        ]);
+
+        Http::fake();
+
+        $user = $this->buatUser('user', saldoPenarikan: 200000);
+        $rekening = $this->buatRekening($user);
+
+        $this->actingAs($user)
+            ->postJson('/withdrawals', ['amount' => 150000, 'user_payout_account_id' => $rekening->id])
+            ->assertCreated()
+            // Dulu Rp 7.800 mati; sekarang 5% dari nominal.
+            ->assertJsonPath('data.fee', '7500.00')
+            ->assertJsonPath('data.net_amount', '142500.00');
+    }
+
     public function test_pengajuan_berhenti_di_pending_saat_persetujuan_diwajibkan(): void
     {
-        config(['withdraw.require_approval' => true]);
+        config(['withdraw.require_approval' => true, 'withdraw.hours.enabled' => false]);
         Http::fake();
 
         $user = $this->buatUser('user', saldoPenarikan: 200000);

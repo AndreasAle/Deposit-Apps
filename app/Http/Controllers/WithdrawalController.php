@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Withdrawal;
 use App\Services\BankPay\BankPayBanks;
 use App\Services\WithdrawalDispatchService;
+use App\Services\WithdrawWindow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -20,9 +21,20 @@ use Illuminate\Support\Str;
  */
 class WithdrawalController extends Controller
 {
-    private const MIN_WITHDRAW = 50000;
-    private const MAX_WITHDRAW = 50000000;
-    private const WITHDRAW_FEE_PERCENT = 5;
+    /*
+    | Batas nominal dan biaya admin dibaca dari config/withdraw.php supaya
+    | alat testing admin memakai angka yang sama persis - hasil pengujian
+    | tidak ada gunanya kalau biayanya berbeda dari penarikan sungguhan.
+    */
+    private function min(): int
+    {
+        return (int) config('withdraw.min', 50000);
+    }
+
+    private function max(): int
+    {
+        return (int) config('withdraw.max', 50000000);
+    }
 
     public function index(Request $request)
     {
@@ -46,8 +58,18 @@ class WithdrawalController extends Controller
 
     public function store(Request $request, WithdrawalDispatchService $dispatcher)
     {
+        /*
+         * Jam layanan diperiksa di server, bukan sekadar mematikan tombol.
+         * Tombol yang mati hanya kesopanan - siapa pun bisa menghidupkannya
+         * lewat inspect element, dan penarikan di luar jam berarti dana keluar
+         * saat tidak ada admin yang memantau.
+         */
+        if (!WithdrawWindow::isOpen()) {
+            return response()->json(['message' => WithdrawWindow::pesanTutup()], 422);
+        }
+
         $data = $request->validate([
-            'amount' => ['required', 'integer', 'min:' . self::MIN_WITHDRAW, 'max:' . self::MAX_WITHDRAW],
+            'amount' => ['required', 'integer', 'min:' . $this->min(), 'max:' . $this->max()],
             'user_payout_account_id' => ['required', 'integer'],
         ]);
 
@@ -66,7 +88,7 @@ class WithdrawalController extends Controller
 
         $amount = (int) $data['amount'];
 
-        $fee = (int) round($amount * self::WITHDRAW_FEE_PERCENT / 100);
+        $fee = \App\Services\WithdrawalFee::hitung($amount);
         $net = $amount - $fee;
 
         /*
