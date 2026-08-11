@@ -7,24 +7,24 @@ use App\Models\UserInvestment;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-class SettleVipInvestmentProfits extends Command
+class SettleInvestmentProfits extends Command
 {
-    protected $signature = 'investments:settle-vip-profits';
+    protected $signature = 'investments:settle-profits';
 
-    protected $description = 'Settle profit produk VIP yang sudah selesai durasinya ke saldo penarikan user';
+    protected $description = 'Cairkan profit investasi yang sudah selesai durasinya ke saldo penarikan user';
 
     public function handle(): int
     {
         /*
         |--------------------------------------------------------------------------
-        | Kategori VIP
+        | Semua kategori, bukan hanya VIP
         |--------------------------------------------------------------------------
-        | category_id:
-        | 2 = Saham Rubik
-        | 3 = Rubik Pro
+        | Dulu perintah ini sengaja hanya memproses kategori 2 dan 3, karena
+        | produk BASIC (kategori 1) tidak punya profit sama sekali. Sekarang
+        | BASIC juga berjalan selama durasinya, jadi profitnya harus ikut
+        | dicairkan - kalau tidak, investasinya menggantung selamanya di
+        | status active meski tanggalnya sudah lewat.
         */
-        $vipCategoryIds = [2, 3];
-
         $processed = 0;
 
         UserInvestment::query()
@@ -32,9 +32,6 @@ class SettleVipInvestmentProfits extends Command
             ->where('status', 'active')
             ->whereNotNull('end_date')
             ->where('end_date', '<=', now())
-            ->whereHas('product', function ($q) use ($vipCategoryIds) {
-                $q->whereIn('category_id', $vipCategoryIds);
-            })
             ->orderBy('id')
             ->chunkById(100, function ($investments) use (&$processed) {
                 foreach ($investments as $investment) {
@@ -101,7 +98,7 @@ class SettleVipInvestmentProfits extends Command
                 }
             });
 
-        $this->info("VIP investment profits settled: {$processed}");
+        $this->info("Investment profits settled: {$processed}");
 
         return self::SUCCESS;
     }

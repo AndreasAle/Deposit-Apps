@@ -17,11 +17,17 @@ class ProductBuyController extends Controller
     |--------------------------------------------------------------------------
     | Sesuai request client terbaru:
     |
-    | category_id = 1 / Semua / All Asset
+    | category_id = 1 / Semua / All Asset (BASIC)
     | - Bisa dibeli berkali-kali
     | - Bisa dibeli berkali-kali dalam 1 hari
-    | - TIDAK masuk profit harian
+    | - MASUK profit, dikunci sampai tanggal selesai
     | - Dapat referral
+    |
+    | Catatan perubahan: dulu kategori ini sengaja dibuat tanpa profit dan
+    | langsung berstatus selesai, sehingga di layar user tampak "Durasi 0 Hari,
+    | profit Rp 0, FINISHED" tepat setelah dibeli - itu yang banyak
+    | dikeluhkan. Sekarang perlakuannya sama seperti kategori lain: berjalan
+    | selama durasi produknya, profitnya masuk ke saldo penarikan saat selesai.
     |
     | category_id = 2 / Saham Capital Wave
     | - Masuk profit harian
@@ -36,9 +42,11 @@ class ProductBuyController extends Controller
 
     private const BASIC_CATEGORY_IDS = [1];
 
-    private const NON_PROFIT_CATEGORY_IDS = [1]; // Semua / All Asset
-
-    private const PROFIT_CATEGORY_IDS = [2, 3]; // Saham Capital Wave + Capital Wave Pro
+    /*
+    | Semua kategori kini menghasilkan profit. Yang membedakannya tinggal
+    | aturan pembelian (berkali-kali vs sekali) dan referral.
+    */
+    private const PROFIT_CATEGORY_IDS = [1, 2, 3];
 
     private const VIP_CATEGORY_IDS = [2, 3]; // Untuk rule 1 kali beli per produk
 
@@ -131,8 +139,6 @@ class ProductBuyController extends Controller
             |--------------------------------------------------------------------------
             | Sesuai request:
             | Produk kategori Semua boleh dibeli berkali-kali dalam 1 hari asal saldo cukup.
-            |
-            | Namun kategori Semua TIDAK masuk profit harian.
             */
 
             /*
@@ -147,12 +153,19 @@ class ProductBuyController extends Controller
             |--------------------------------------------------------------------------
             | Buat investasi user
             |--------------------------------------------------------------------------
-            | Rule profit:
-            | - category_id 1 / Semua        => tidak masuk profit
-            | - category_id 2 / Saham Capital Wave => masuk profit
-            | - category_id 3 / Capital Wave Pro   => masuk profit
+            | Semua kategori masuk profit. Profitnya TIDAK cair saat dibeli:
+            | dikunci sampai end_date, lalu dimasukkan ke saldo penarikan oleh
+            | perintah investments:settle-profits.
             */
             $isProfitProduct = $this->isProfitProduct($product);
+
+            /*
+            | Durasi diambil apa adanya dari produk. Minimal 1 hari supaya
+            | investasi tidak pernah lahir dalam keadaan sudah selesai -
+            | itu yang dulu membuat produk BASIC tampak langsung FINISHED
+            | dengan profit nol begitu dibeli.
+            */
+            $durasi = max((int) ($product->duration_days ?? 0), 1);
 
             $investment = UserInvestment::create([
                 'user_id'       => $user->id,
@@ -160,12 +173,12 @@ class ProductBuyController extends Controller
                 'price'         => (int) ($product->price ?? 0),
 
                 'daily_profit'  => $isProfitProduct ? (int) ($product->daily_profit ?? 0) : 0,
-                'duration_days' => $isProfitProduct ? (int) ($product->duration_days ?? 0) : 0,
+                'duration_days' => $isProfitProduct ? $durasi : 0,
                 'total_profit'  => $isProfitProduct ? (int) ($product->total_profit ?? 0) : 0,
 
                 'start_date'    => now(),
                 'end_date'      => $isProfitProduct
-                    ? now()->addDays((int) ($product->duration_days ?? 0))
+                    ? now()->addDays($durasi)
                     : now(),
 
                 /*
@@ -276,15 +289,6 @@ class ProductBuyController extends Controller
         return in_array(
             (int) ($product->category_id ?? 0),
             self::BASIC_CATEGORY_IDS,
-            true
-        );
-    }
-
-    private function isNonProfitProduct(Product $product): bool
-    {
-        return in_array(
-            (int) ($product->category_id ?? 0),
-            self::NON_PROFIT_CATEGORY_IDS,
             true
         );
     }

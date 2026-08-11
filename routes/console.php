@@ -8,7 +8,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('investments:settle-vip-profits')->everyMinute();
+Schedule::command('investments:settle-profits')->everyMinute()->withoutOverlapping();
 
 /*
 | Poller gateway sengaja tiap MENIT, bukan tiap sepuluh detik.
